@@ -466,6 +466,9 @@ void QCstmConfigMonitoring:: setUpGuiForReadOutMode(int idx)
     for(int i=0; i<5; i++){
         triggerItems[i] = triggerModel->item(i+1);
     }
+    QStandardItemModel *csmSpmModel = qobject_cast<QStandardItemModel *>(ui->csmSpmCombo->model());
+    Q_ASSERT(csmSpmModel != nullptr);
+    QStandardItem *csmSpmItem = csmSpmModel->item(1);
     if(idx == Mpx3Config::__operationMode_ContinuousRW){
         if(ui->pixelDepthCombo->currentIndex() == 3){ //if readout mode is 24-bit set it to 12-bit
             ui->pixelDepthCombo->setCurrentIndex(2);
@@ -475,6 +478,9 @@ void QCstmConfigMonitoring:: setUpGuiForReadOutMode(int idx)
         for(int i=0; i<5; i++){
             triggerItems[i]->setFlags(triggerItems[i]->flags() & ~Qt::ItemIsEnabled);
         }
+        ui->csmSpmCombo->setCurrentIndex(0);
+        csmSpmItem->setFlags(csmSpmItem->flags() & ~Qt::ItemIsEnabled);
+
         ui->inhibitShutterCheckBox->setChecked(false);
         ui->inhibitShutterCheckBox->setVisible(false);
     }
@@ -484,8 +490,12 @@ void QCstmConfigMonitoring:: setUpGuiForReadOutMode(int idx)
         for(int i=0; i<5; i++){
             triggerItems[i]->setFlags(triggerItems[i]->flags() | Qt::ItemIsEnabled);
         }
+        csmSpmItem->setFlags(csmSpmItem->flags() | Qt::ItemIsEnabled);
         ui->inhibitShutterCheckBox->setVisible(true);
+
     }
+
+
 
 
 }
@@ -601,6 +611,8 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->logLevelSpinner, SIGNAL( editingFinished() ), this, SLOT( setLogLevel() ) );
     connect(config, SIGNAL(logLevelChanged(int)), ui->logLevelSpinner, SLOT(setValue(int)) );
 
+
+
 }
 
 void QCstmConfigMonitoring::nTriggersEdited() {
@@ -681,10 +693,10 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
 
         ui->contRWFreq->setEnabled( false );
         ui->contRWFreq->hide();
-
-        ui->readBothCountersCheckBox->show();
-        ui->readBothCountersCheckBox->setEnabled( true );
-
+        if(ui->pixelDepthCombo->currentIndex() != 3){
+            ui->readBothCountersCheckBox->show();
+            ui->readBothCountersCheckBox->setEnabled( true );
+        }
     } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
         ui->triggerLengthSpinner->setEnabled( false );
         ui->triggerLengthSpinner->hide();
@@ -710,6 +722,15 @@ void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx) {
         ui->triggerDowntimeSpinner->setMinimum(2);
     else
         ui->triggerDowntimeSpinner->setMinimum(1);
+
+    if(newValIndx == 3){
+        ui->readBothCountersCheckBox->hide();
+    }
+    else
+        ui->readBothCountersCheckBox->show();
+
+
+
 }
 
 void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {
