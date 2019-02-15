@@ -293,12 +293,12 @@ int CommandHandler::setThreshold(int idx, int val, int chipId)
 
     if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
         SpidrController *spidrController = Mpx3GUI::getInstance()->GetSpidrController();
-        Mpx3GUI::getInstance()->getConfigMonitoring()->protectTriggerMode(spidrController);
+        //Mpx3GUI::getInstance()->getConfigMonitoring()->protectTriggerMode(spidrController);
         QCstmDacs::getInstance()->setRemoteRequestForSettingThreshold(true);
         // Set actual DAC
         spidrController->setDac(chipId,idx+1,val);
         QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
-        Mpx3GUI::getInstance()->getConfigMonitoring()->returnLastTriggerMode(spidrController);
+        //Mpx3GUI::getInstance()->getConfigMonitoring()->returnLastTriggerMode(spidrController);
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
