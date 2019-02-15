@@ -811,11 +811,13 @@ void setThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
     }
     int idx = cmd->arguments.at(0).toInt();
     double val = cmd->arguments.at(2).toDouble(); //energy in Kev
-    qDebug() << "[Info]\t Recieved energy [keV] : " << val;
+    qDebug() << "[Info]\t Received [Dac value] : " << val;
     int chipId = cmd->arguments.at(1).toInt();
 
-
-    int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(chipId,val);
+    // No need for the conversion here. Per chip we address the setting in DAC units.
+    //int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(chipId,val);
+    
+    int dac = val;
     saturateThresholdDacValue(&dac);
 
     qDebug() << "[Info]\t Converted to [Dac value] : " << dac;
@@ -834,8 +836,11 @@ void getThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
     int chipId = cmd->arguments.at(1).toInt();
     int val =0;
     int error = ch->getThreshold(idx,chipId,&val);
-    double energy = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(chipId,val);
-    cmd->setData(QString::number(energy));
+    qDebug() << "[Info]\t val [Dac value] : " << val;
+    // In the per chip case there is no need for energy conversion. 
+    //double energy = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(chipId,val);
+    //cmd->setData(QString::number(energy));
+    cmd->setData(QString::number(val));
     cmd->setError((ERROR_TYPE)error);
 }
 
