@@ -124,7 +124,7 @@ public:
     QString getDeviceWaferId(int id){return _deviceWaferIdMap.at(id); }
     int getIndexFromID(int id){return _activeChips.indexOf(id);}
     int getSystemClock() { return SystemClock; }
-    int getTriggerPeriodMS(){return _trigPeriod_ms;}
+    int getTriggerPeriodMS();//{//return _trigPeriod_ms;}
     double getBiasVoltage() { return biasVolt; }
 
     void checkChipResponse(int devIndx, detector_response dr);

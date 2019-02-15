@@ -312,6 +312,7 @@ void QCstmGLVisualization::CalcETA() {
 
     if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
         _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
+    if( _mpx3gui->getConfig()->getTriggerPeriodMS() < LONG_PERIOD_MS )
         _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.
     } else {
         double period_ms =  (1. / (double)(_mpx3gui->getConfig()->getContRWFreq())) * 1000;

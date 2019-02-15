@@ -556,6 +556,11 @@ int Mpx3Config::getDataBufferId(int devIndx) {
     return -1;
 }
 
+int Mpx3Config::getTriggerPeriodMS()
+{
+    return getTriggerDowntime_ms_64() + getTriggerLength_ms_64();
+}
+
 
 void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 
