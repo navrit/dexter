@@ -11,7 +11,7 @@ class DataControllerThread : public QThread
 public:
     explicit DataControllerThread(Mpx3GUI *, QObject * parent = nullptr);
     virtual ~DataControllerThread();
-    void saveTIFFParallel(QString filename, const uint imageWidth, const int * pixels);
+    void saveTIFFParallel(QString filename, const uint imageWidth, Canvas pixels);
 
 protected:
 

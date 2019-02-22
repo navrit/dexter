@@ -1009,7 +1009,7 @@ void Mpx3GUI::initialiseServers()
     } else {
         qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
     }
-    connect(commandHandlerWrapper,SIGNAL(imageIsReady(QByteArray,std::pair<const char*,int>)),dataServer,SLOT(on_imageIsReady(QByteArray,std::pair<const char*,int>)));
+    connect(commandHandlerWrapper,SIGNAL(imageIsReady(QByteArray,Canvas)),dataServer,SLOT(on_imageIsReady(QByteArray,Canvas)));
 
 }
 
@@ -1169,7 +1169,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         for (int i = 0; i < thresholds.length(); i++) {
             int imageWidth = getDataset()->getWidth();
             QString tmpFilename = unmodifiedFilename;
-            int * frame = nullptr;
+            Canvas frame;
 
             if (selectedFilter == SPATIAL_TIFF_FILES) {
                 frame = getDataset()->makeFrameForSaving(i, true, true);

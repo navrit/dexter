@@ -3,13 +3,14 @@
 
 #include <QObject>
 #include <stdint.h>
+#include "canvas.h"
 
 class TiffFile : public QObject
 {
     Q_OBJECT
 public:
     explicit TiffFile(QObject *parent = nullptr);
-    static bool saveToTiff32(const char* filePath, const int* pixels, int width, int height);
+    static bool saveToTiff32(const char* filePath, Canvas pixels, int width, int height);
     // const QList<int> thresholds, const bool crossCorrection, const bool spatialCorrectionOnly
 
 private:

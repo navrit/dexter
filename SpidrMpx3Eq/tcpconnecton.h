@@ -6,6 +6,7 @@
 #include <QTcpSocket>
 #include <QRegularExpression>
 #include <QMutex>
+#include "canvas.h"
 
 class TcpConnecton : public QObject
 {
@@ -34,7 +35,7 @@ public slots:
     //for sending the response to the client(get response from tcpconnections)
     void on_responseIsReady(QString);
     //for sending the data(image) to the client(get data from tcpconnections)
-    void on_imageIsReady(QByteArray, std::pair<const char*,int>);
+    void on_imageIsReady(QByteArray, Canvas);
 };
 
 #endif // TCPCONNECTON_H

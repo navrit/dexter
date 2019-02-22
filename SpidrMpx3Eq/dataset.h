@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <vector>
 #include "spline.h"
+#include "canvas.h"
 #include <tiffio.h> /* Sam Leffler's libtiff library. */
 #include "mpx3config.h"
 #include "FrameSet.h"
@@ -105,7 +106,7 @@ public:
         std::vector<double> stdev_v;
     } bstats;//!Calculated mean and stdev of the selected region of interest.
 
-    int * getFullImageAsArrayWithLayout(int threshold);
+    Canvas getFullImageAsArrayWithLayout(int threshold);
 
 private:
     int m_nx, m_ny; //!<Pixel size in the x and y direction, per detector.
@@ -134,7 +135,7 @@ private:
     bool corrected; //!indicates whether or not an image has been corrected.
     int getLayerIndex(int threshold);
     void rewindScores();
-    int *createCorrectedImage(int threshold, bool spatialOnly = false);
+    Canvas createCorrectedImage(int threshold, bool spatialOnly = false);
 
     QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
     QVector<QVector<int> > valuesinRoI;//!A matrix of the values of the pixels contained in the region of interest. Each row corresponds to a row of pixels (LtR), from Bottom to Top.
@@ -158,11 +159,11 @@ public:
     int getNChipsY();
 
     QByteArray toByteArray(); //!< Serializes the dataset for saving.
-    pair<const char*,int> toCanvas(int threshold); //!< Serializes the dataset for sending via socket to clients.
+    Canvas toCanvas(int threshold); //!< Serializes the dataset for sending via socket to clients.
     QVector<int> toQVector(); //!< Serializes the dataset for saving.
     void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
     void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false);  //! Puts the dataset into a TIFF format and saves.
-    int *makeFrameForSaving(int threshold, bool crossCorrection = true, bool spatialOnly = false);
+    Canvas makeFrameForSaving(int threshold, bool crossCorrection = true, bool spatialOnly = false);
     void toASCII(QString filename); //! Puts the dataset into ASCII format and saves.
 
     void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.

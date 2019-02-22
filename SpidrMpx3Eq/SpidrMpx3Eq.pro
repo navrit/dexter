@@ -34,7 +34,7 @@ CONFIG(release, debug|release) {
     CONFIG += warn_off
 }
 
-INCLUDEPATH += ../SpidrMpx3Lib/
+INCLUDEPATH += ../SpidrMpx3Lib/ moc
 
 INCLUDEPATH += $$PWD/../Qzmq
 include($$PWD/../Qzmq/Qzmq.pri)
@@ -94,7 +94,8 @@ SOURCES += main.cpp \
     commandhandlerwrapper.cpp \
     GeneralSettings.cpp \
     EnergyCalibrator.cpp \
-    RemoteThresholdDlg.cpp
+    RemoteThresholdDlg.cpp \
+    canvas.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -143,7 +144,8 @@ HEADERS += mpx3gui.h \
     GeneralSettings.h \
     EnergyCalibrator.h \
     RemoteThresholdDlg.h \
-    ServerStatus.h
+    ServerStatus.h \
+    canvas.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

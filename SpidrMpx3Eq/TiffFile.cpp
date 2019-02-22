@@ -7,13 +7,8 @@ TiffFile::TiffFile(QObject *parent) : QObject(parent)
 
 }
 
-bool TiffFile::saveToTiff32(const char* filePath, const int *pixels, int width, int height)
+bool TiffFile::saveToTiff32(const char* filePath, Canvas pixels, int width, int height)
 {
-    //! FIXME BUG Unresolved, unknown cause
-    if (pixels == nullptr) {
-        qDebug() << "[ERROR] TiffFile::saveToTiff32_512, pixels == nullptr. pixels ==" << pixels;
-        return false;
-    }
 
     //! Open the TIFF file, write mode
     TIFF * m_pTiff = TIFFOpen(filePath, "w");
@@ -32,8 +27,10 @@ bool TiffFile::saveToTiff32(const char* filePath, const int *pixels, int width, 
         TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH,      width);                  // set the width of the image
         TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     height);                 // set the height of the image
 
+        uint8_t* img = pixels.image;
         for (uint y=0; y < height; y++) {
-            TIFFWriteScanline(m_pTiff, (void*) (pixels + y * width), y, 0);
+            TIFFWriteScanline(m_pTiff, img, y, 0);
+            img += pixels.rowStride;
         }
 
     } else if (m_pTiff == nullptr) {
