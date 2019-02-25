@@ -7,7 +7,7 @@
 #include <QTcpSocket>
 #include <QMap>
 #include <QReadWriteLock>
-#include "tcpconnecton.h"
+#include "tcpconnection.h"
 
 
 class TcpConnections : public QObject
@@ -26,11 +26,11 @@ protected:
 signals:
     void quitting();
     void finished();
-    //pass recieved data to tcp server
-    void dataRecieved(QString);
-    //pass the response to tcpconnection
+    // Pass received data to tcp server
+    void dataReceived(QString);
+    // Pass the response to tcpconnection
     void responseIsReady(QString);
-    //pass the image to tcpconnection
+    // Pass the image to tcpconnection
     void imageIsReady(QByteArray,std::pair<const char*,int>);
 
 protected slots:
@@ -43,7 +43,7 @@ public slots:
     void quit();
     void accept(qintptr handle, TcpConnecton *connection);
     //recieve data from tcp connection
-    void on_dataRecieved(QString);
+    void on_dataReceived(QString);
     //get response from tcpserver
     void on_responseIsReady(QString);
     //get image from tcpserver

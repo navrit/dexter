@@ -6,7 +6,7 @@
 #include <QTcpServer>
 #include <QThread>
 #include "tcpconnections.h"
-#include "tcpconnecton.h"
+#include "tcpconnection.h"
 
 class TcpServer : public QTcpServer
 {
@@ -19,7 +19,6 @@ public:
     virtual void close();
     virtual qint64 port();
 
-
 protected:
     QThread *m_thread;
     TcpConnections *m_connections;
@@ -29,19 +28,17 @@ protected:
 signals:
     void accepting(qintptr handle, TcpConnecton *connection);
     void finished();
-    //inform outside world about the recieved data at socket
-    void dataRecieved(QString);
+    //inform outside world about the received data at socket
+    void dataReceived(QString);
     //pass the response to tcpconnections
     void responseIsReady(QString);
     //pass the image to tcpconnections
     void imageIsReady(QByteArray,std::pair<const char*,int>);
 
-
-
 public slots:
     void complete();
-    //recieve data from tcp connections
-    void on_dataRecieved(QString);
+    //receive data from tcp connections
+    void on_dataReceived(QString);
     //get response from outside world
     void on_responseIsReady(QString);
     //get image from outside world

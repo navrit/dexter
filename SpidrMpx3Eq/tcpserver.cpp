@@ -18,7 +18,7 @@ bool TcpServer::listen(const QHostAddress &address, quint16 port)
     m_thread = new QThread(this);
     m_connections = new TcpConnections();
 
-    connect(m_connections,SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
+    connect(m_connections,SIGNAL(dataReceived(QString)),this,SLOT(on_dataReceived(QString)));
     connect(this,SIGNAL(responseIsReady(QString)),m_connections,SLOT(on_responseIsReady(QString)));
     //connect(this,SIGNAL(imageIsReady(QByteArray,QByteArray)),m_connections,SLOT(on_imageIsReady(QByteArray,QByteArray)));
 
@@ -85,10 +85,10 @@ void TcpServer::complete()
 
 }
 
-void TcpServer::on_dataRecieved(QString data)
+void TcpServer::on_dataReceived(QString data)
 {
-    //qDebug() << "Recieved at tcpserver : " << data;
-    emit dataRecieved(data);
+    //qDebug() << "Received at tcpserver : " << data;
+    emit dataReceived(data);
 
 }
 
@@ -100,9 +100,7 @@ void TcpServer::on_responseIsReady(QString response)
 
 void TcpServer::on_imageIsReady(QByteArray header,std::pair<const char*,int> image)
 {
-    //qDebug() << "Image recieved at the tcpserver, size: " << image.size();
+    //qDebug() << "Image received at the tcpserver, size: " << image.size();
     //emit imageIsReady(header,image);
     m_connections->on_imageIsReady(header, image);
-
 }
-

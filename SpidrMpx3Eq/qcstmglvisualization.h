@@ -22,7 +22,7 @@
 #include <QVector>
 
 #define __display_eta_granularity 200 // ms
-#define __networkOverhead 0.1
+#define __overhead 0.01
 
 #include <vector>
 
@@ -65,7 +65,6 @@ public:
     void clearThresholdsVector(void);
     void timerEvent( QTimerEvent * );
     void refreshScoringInfo();
-    void drawFrameImage();
     void rewindScoring();
 
     void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
@@ -226,8 +225,6 @@ private slots:
 
     void on_layerSelector_activated(const QString &arg1);
 
-    void UnlockWaitingForFrame();
-
     void on_correctionsDialogPushButton_clicked();
 
     void on_singleshotPushButton_clicked();
@@ -281,7 +278,7 @@ public slots:
     void on_zero();
     //!Called when the display range of the data is changed. (so the scale on the heatmap).
     void range_changed(QCPRange);
-    void data_taking_finished();
+    void dataTakingFinished();
     void progress_signal(int);
     void changeBinCount(int count); //! user requested a different bin-count. Recomputes the histograms for each threshold.
     void updateETA();

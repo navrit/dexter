@@ -130,7 +130,7 @@ public:
 private:
     QString cmd;                // core command
     QString data;               // command data string to repond to commands excepts 'GetImage'
-    QByteArray imageToSend;     // image to be sent when 'GetImage' recieved
+    QByteArray imageToSend;     // image to be sent when 'GetImage' received
     ERROR_TYPE _error = NO_ERROR;
     void print(void); //test
 };

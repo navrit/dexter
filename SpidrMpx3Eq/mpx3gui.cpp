@@ -68,7 +68,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 //        return;
 //    }
 //    commandHandlerWrapper = new CommandHandlerWrapper;
-//    connect(tcpServer,SIGNAL(dataRecieved(QString)),commandHandlerWrapper,SLOT(on_dataRecieved(QString)));
+//    connect(tcpServer,SIGNAL(dataReceived(QString)),commandHandlerWrapper,SLOT(on_dataReceived(QString)));
 //    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
 //    dataServer = new DataServer;
 
@@ -887,7 +887,7 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     } else if (filename.toLower().contains(".txt")) {
         filename = filename.replace(".txt",".json");
     } else {
-        qDebug() << "[ERROR] failed writing the JSON file, input name didn't include .bin or .tiff";
+        qDebug() << "[ERROR]\tFailed writing the JSON file, input name didn't include .tiff, .bin or .txt";
         return;
     }
 
@@ -975,14 +975,14 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
 
     QFile saveFile(filename);
     if(!saveFile.open(QIODevice::WriteOnly)){
-        qDebug() << "[WARN] JSON file CANNOT be opened as QIODevice::WriteOnly, aborting";
+        qDebug() << "[WARN]\tJSON file CANNOT be opened as QIODevice::WriteOnly, aborting";
         sig_statusBarAppend(tr("Cannot write JSON metadata, skipping"),"red");
         return;
     }
     saveFile.write(doc.toJson());
     saveFile.close();
 
-    qDebug() << "[INFO] JSON File saved";
+    qDebug() << "[INFO]\tJSON File saved";
 }
 
 void Mpx3GUI::initialiseServers()
@@ -997,7 +997,7 @@ void Mpx3GUI::initialiseServers()
         qDebug().nospace() << "[INFO]\tTCP Command server listening on \"tcp://*:" << tcpCommandPort << "\"";
     }
     commandHandlerWrapper = new CommandHandlerWrapper(this);
-    connect(tcpServer,SIGNAL(dataRecieved(QString)),commandHandlerWrapper,SLOT(on_dataRecieved(QString)));
+    connect(tcpServer,SIGNAL(dataReceived(QString)),commandHandlerWrapper,SLOT(on_dataReceived(QString)));
     connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
 
     //! Diamond - Merlin interface data socket

@@ -1,4 +1,4 @@
-#include "tcpconnecton.h"
+#include "tcpconnection.h"
 #include <iostream>
 #include <QMutex>
 
@@ -50,11 +50,11 @@ void TcpConnecton::readyRead()
     char rcv_data[4096];
     memset(rcv_data,0,sizeof(rcv_data));
     socket->read(rcv_data,sizeof(rcv_data));
-    QString recievedData;
-    recievedData.sprintf("%s",rcv_data);
+    QString receivedData;
+    receivedData.sprintf("%s",rcv_data);
     //for debg purpose
-    //qDebug() << "Recieved data from client : " << recievedData;
-    emit dataRecieved(recievedData.split("\n").at(0).split("\r").at(0));
+    //qDebug() << "received data from client : " << receivedData;
+    emit dataReceived(receivedData.split("\n").at(0).split("\r").at(0));
     if(!socket) return;
     //socket->close();
 }
@@ -79,7 +79,7 @@ void TcpConnecton::error(QAbstractSocket::SocketError socketError)
 
 void TcpConnecton::on_responseIsReady(QString response)
 {
-    //qDebug() << "Response recieved at the tcpconnection : " << response;
+    //qDebug() << "Response received at the tcpconnection : " << response;
     QByteArray ba = response.toLatin1();
     //qDebug()<<"size:"<<ba.size();
     mutex.lock();
@@ -92,7 +92,7 @@ void TcpConnecton::on_responseIsReady(QString response)
 
 void TcpConnecton::on_imageIsReady(QByteArray header,std::pair<const char*,int> image)
 {
-    //qDebug() << "Data recieved at the tcpconnection.";
+    //qDebug() << "Data received at the tcpconnection.";
     //qDebug()<<"header size:"<<header.size();
    // qDebug()<<"Image size:"<<image.size();
     mutex.lock();

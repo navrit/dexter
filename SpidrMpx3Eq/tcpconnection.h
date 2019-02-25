@@ -11,7 +11,7 @@ class TcpConnecton : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpConnecton(QObject *parent = 0);
+    explicit TcpConnecton(QObject *parent = nullptr);
     ~TcpConnecton();
 
     virtual void setSocket(QTcpSocket *socket);
@@ -22,7 +22,7 @@ protected:
     QMutex mutex;
 
 signals:
-    void dataRecieved(QString);
+    void dataReceived(QString);
 
 public slots:
     virtual void connected();

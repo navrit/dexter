@@ -91,8 +91,6 @@ void QCstmGLVisualization::setThresholdsVector(int chipId, int idx, int value)
     //_loadFromThresholdsVector();
 }
 
-
-
 int QCstmGLVisualization::getThresholdVector(int chipId, int idx)
 {
     if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
@@ -112,13 +110,11 @@ void QCstmGLVisualization::clearThresholdsVector()
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
 {
     refreshScoringInfo();
-
-    drawFrameImage();
+    reload_all_layers();
 }
 
 void QCstmGLVisualization::refreshScoringInfo()
 {
-
     updateETA();
 
     // Progress
@@ -144,26 +140,8 @@ void QCstmGLVisualization::refreshScoringInfo()
     // FPS
     fps_update(int(_score.nFramesReceived));
     BuildStatsStringLostFrames( _score.lostFrames );
-
-    //
     BuildStatsStringLostPackets( _score.lostPackets );
-
-    //
     BuildStatsString();
-
-    // Network consumption?
-}
-
-void QCstmGLVisualization::drawFrameImage()
-{
-    // On data cleared the active threshold is -1
-    // Force it here to be at least the first threshold
-    //int actTHL = getActiveThreshold();
-    //if ( actTHL < 0 ) actTHL = 0;
-    //reload_layer( actTHL );
-
-    reload_all_layers();
-
 }
 
 void QCstmGLVisualization::rewindScoring()
@@ -175,7 +153,6 @@ void QCstmGLVisualization::rewindScoring()
     _score.framesCount = 0;
     _score.mpx3clock_stops = 0;
     _score.dataMisaligned = false;
-
 }
 
 void QCstmGLVisualization::rewindHistoLimits() {
@@ -191,22 +168,16 @@ void QCstmGLVisualization::SetBusyState() {
 
     _busyDrawing = true;
     emit busy_drawing();
-
 }
 
 void QCstmGLVisualization::FreeBusyState() {
 
     _busyDrawing = false;
     emit free_to_draw();
-
 }
 
 bool QCstmGLVisualization::isBusyDrawing() {
     return  _busyDrawing;
-}
-
-void QCstmGLVisualization::UnlockWaitingForFrame() {
-    qDebug() << "QCstmGLVisualization::UnlockWaitingForFrame ...";
 }
 
 void QCstmGLVisualization::updateETA() {
@@ -227,7 +198,6 @@ void QCstmGLVisualization::updateETA() {
     } else {
         ui->etaCntr->setText( "--:--:--" );
     }
-
 }
 
 void QCstmGLVisualization::FinishDataTakingThread() {
@@ -241,7 +211,6 @@ void QCstmGLVisualization::FinishDataTakingThread() {
         delete _dataConsumerThread;
         _dataConsumerThread = nullptr;
     }
-
 }
 
 void QCstmGLVisualization::StopDataTakingThread()
@@ -313,13 +282,12 @@ void QCstmGLVisualization::CalcETA() {
     if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
         _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
     if( _mpx3gui->getConfig()->getTriggerPeriodMS() < LONG_PERIOD_MS )
-        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.
+        _estimatedETA += _estimatedETA * __overhead; // add 1% overhead
     } else {
-        double period_ms =  (1. / (double)(_mpx3gui->getConfig()->getContRWFreq())) * 1000;
+        double period_ms =  (1. / double((_mpx3gui->getConfig()->getContRWFreq()))) * 1000;
         _estimatedETA = period_ms * _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
-        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.
+        _estimatedETA += _estimatedETA * __overhead; // add 1% overhead
     }
-
 }
 
 //! Used in Mpx3GUI::save_data to send the save file path from the UI to save_data.
@@ -358,9 +326,7 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
         runningCT = true;
     } else if (mode == "THScan") {
         runningTHScan = true;
-    }
-    else
-    {
+    } else {
         runningCT = false;
         runningTHScan = false;
     }
@@ -368,156 +334,44 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
     if ( !_dataTakingThread ) {
 
         _dataConsumerThread = new DataConsumerThread(_mpx3gui, this);
-        _dataConsumerThread->setObjectName("Consumer thread");
+        _dataConsumerThread->setObjectName("Dexter consumer");
 
         _dataTakingThread = new DataTakingThread(_mpx3gui, _dataConsumerThread, this);
-
-
-        _dataTakingThread->setObjectName("Producer thread");
+        _dataTakingThread->setObjectName("Dexter producer");
         _dataTakingThread->ConnectToHardware();
-
     }
-    if(_mpx3gui->getConfig()->getTriggerMode() == SHUTTERMODE_AUTO){ //if is Auto, it is internal otherwise is external
+
+    if (_mpx3gui->getConfig()->getTriggerMode() == SHUTTERMODE_AUTO) { //if is Auto, it is internal otherwise is external
         _dataTakingThread->setExternalTrigger(false);
     //todo : disable/enable  ui->triggerLengthSpinBox->setReadOnly(false);
-    }
-    else
-    {
+    } else {
         _dataTakingThread->setExternalTrigger(true);
-
     }
 
     if ( ! _takingData ) { // new data
-         //_loadFromThresholdsVector();
+        //_loadFromThresholdsVector();
         //qDebug() << "start taking data .. ";
         _takingData = true;
-        if(!runningTHScan)
-            emit busy(SB_DATA_TAKING);
 
-        // ETA
+        if (!runningTHScan) {
+            emit busy(SB_DATA_TAKING);
+        }
+
         CalcETA();
 
         // Producer and Consumer threads
         _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
         _dataTakingThread->takedata();
-        // The data taking thread will awake the consumer
-        //_dataConsumerThread->consume();
 
-        // Timers
         ArmAndStartTimer();
-
-        // GUI
         ConfigureGUIForDataTaking();
 
-        // info refresh
-        _timerId = this->startTimer( 100 ); // 42 (answer to life) // 100 ms is a good compromise to refresh the scoring info
-        //qDebug() << "Start : " << _timerId;
+        _timerId = this->startTimer( 16 ); // Refresh readout information at ~60 Hz
 
     } else { // stop
-
         // By premature user signal !
-        _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the data_taking_finished
+        _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the dataTakingFinished
     }
-
-    //! TODO Why is this all commented out?
-    /*
-    // The Start button becomes the Stop button
-    if ( ! _takingData ) {
-
-        // In the situation where data has been lost and
-        //  the system is trying to complete the requested
-        //  number of frames, the data shouldn't be cleared.
-        bool clearpreviousdata = true;
-        if ( _dataTakingThread ) {
-            if ( _dataTakingThread->isACompleteJob() ) {
-                qDebug() << "[INFO] continue with "
-                         << _dataTakingThread->getMissingFramesToCompleteJob()
-                         << "missing frames";
-                clearpreviousdata = false;
-            }
-        }
-        if ( _infDataTaking ) clearpreviousdata = false;
-
-        if ( clearpreviousdata ) {
-            _mpx3gui->clear_data( false );
-            rewindHistoLimits();
-        }
-
-        // Threads
-        if ( _dataTakingThread ) {
-            if ( _dataTakingThread->isRunning() ) {
-                return;
-            }
-            //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
-
-            // If this is a complete job, keep the same thread
-            if ( ! _dataTakingThread->isACompleteJob() ) {
-                delete _dataTakingThread;
-                _dataTakingThread = nullptr;
-            }
-
-        }
-
-        // Create the thread
-        if ( ! _dataTakingThread ) {
-            _dataTakingThread = new DataTakingThread(_mpx3gui, this);
-            _dataTakingThread->ConnectToHardware();
-        }
-
-        // Change the Start button to Stop
-        ui->startButton->setText( "Stop" );
-        ui->singleshotPushButton->setText( "Stop" );
-
-        // Start data taking
-        // FIXME, depends on the mode !
-        _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
-        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
-
-        // Free to draw now
-        FreeBusyState();
-        _dataTakingThread->setFramesRequested (
-                    _mpx3gui->getConfig()->getNTriggers()
-                    );
-
-        _takingData = true;
-        _dataTakingThread->start();
-
-        // Start the timer to display eta
-        ArmAndStartTimer();
-
-        emit sig_statusBarAppend("start","blue");
-
-    } else {
-
-        // Attempt to stop the thread
-        if ( _dataTakingThread ) emit stop_data_taking_thread();
-
-        // The thread will try to finish itself.
-        // Now let's block this thread until that
-        // happens. It will be fast
-        _dataTakingThread->wait();
-
-        // Change the Stop button to Start
-        ui->startButton->setText( "Start" );
-        ui->singleshotPushButton->setText( "single" );
-
-        _takingData = false;
-
-        // force the GUI to update
-        update();
-
-        // Finish
-        DestroyTimer();
-        ETAToZero();
-
-        emit sig_statusBarAppend("stop","orange");
-    }
-
-    //Set corrected status of the newly taken data to false.
-    _mpx3gui->getDataset()->setCorrected(false);
-    */
-
-
 }
 
 void QCstmGLVisualization::StartDataTakingRemotely(bool flag)
@@ -530,12 +384,10 @@ void QCstmGLVisualization::ETAToZero() {
 
     QString textT = QTime(0,0,0).toString("hh:mm:ss");
     ui->etaCntr->setText( textT );
-
 }
 
 void QCstmGLVisualization::setRangeSpinBoxesManual()
 {
-
     // Geometry
     // I will force the geometry so it looks
     //  the same in both Manual and Percentile.
@@ -554,12 +406,10 @@ void QCstmGLVisualization::setRangeSpinBoxesManual()
     ui->upperSpin->setSingleStep( 1 );
     ui->upperSpin->setDecimals( 0 );
     ui->upperSpin->setValue( _manualRange.upper );
-
 }
 
 void QCstmGLVisualization::setRangeSpinBoxesPercentile()
 {
-
     // Geometry
     ui->lowerSpin->setFixedWidth( 80 );
     ui->upperSpin->setFixedWidth( 80 );
@@ -576,12 +426,10 @@ void QCstmGLVisualization::setRangeSpinBoxesPercentile()
     ui->upperSpin->setSingleStep( 0.01 );
     ui->upperSpin->setDecimals( 3 );
     ui->upperSpin->setValue( _percentileRange.upper );
-
 }
 
 void QCstmGLVisualization::clearStatsString()
 {
-
     _statsString.counts.clear();
     _statsString.lostPackets.clear();
     _statsString.lostFrames.clear();
@@ -590,7 +438,6 @@ void QCstmGLVisualization::clearStatsString()
     _statsString.overflowFlg = false;
 
     _statsString.displayString.clear();
-
 }
 
 void QCstmGLVisualization::initStatsString()
@@ -601,7 +448,7 @@ void QCstmGLVisualization::initStatsString()
 }
 
 //! @brief When the acquisition is done
-void QCstmGLVisualization::data_taking_finished() {
+void QCstmGLVisualization::dataTakingFinished() {
 
     int UDP_packetCounter = -1;
      _mpx3gui->GetSpidrController()->getSpidrReg(0x384, &UDP_packetCounter);
@@ -610,30 +457,22 @@ void QCstmGLVisualization::data_taking_finished() {
      _mpx3gui->GetSpidrController()->getSpidrReg(0x388, &UDP_packetCounterMonitorStream);
      qDebug() << "[DEBUG]\tUDP_packetCounterMonitorStream 0x388 =" << UDP_packetCounterMonitorStream;
 
+    _takingData = false;
+
     // Recover from single shot if it was requested
     if ( _singleShot ) {
         _singleShot = false;
         _mpx3gui->getConfig()->setNTriggers( _singleShotSaveCurrentNTriggers );
     }
-
-    reload_all_layers(); //! Only update the 0th threshold for speed?
-    refreshScoringInfo();
-    DestroyTimer();
-    ETAToZero();
-    ConfigureGUIForIdling();
-    rewindScoring();
-
-    //! If Save checkbox is checked and Save line edit is not empty,
-    //!    Save the data to .bin file with path obtained from UI
-    if( ui->saveCheckBox->isChecked() &&
-        !(ui->saveLineEdit->text().isEmpty()) &&
-        !isSaveAllFramesChecked() // if it's checked the last was already saved
-        ) {
-        QString selectedFileType = ui->saveFileComboBox->currentText();
-        _mpx3gui->save_data(true, 0, selectedFileType);
+    // Inform the consumer that the data taking is finished
+    if ( _dataConsumerThread->isRunning() ) {
+        _dataConsumerThread->dataTakingSaysIFinished();
     }
 
-    _takingData = false;
+    refreshScoringInfo();
+    ETAToZero();
+    rewindScoring();
+    DestroyTimer();
 
     if (!runningTHScan) {
         emit busy(FREE);
@@ -644,13 +483,20 @@ void QCstmGLVisualization::data_taking_finished() {
     if (runningTHScan) {
         emit sig_resumeTHScan();
     }
-
-    // Inform the consumer that the data taking is finished
-    if ( _dataConsumerThread->isRunning() ) {
-        _dataConsumerThread->dataTakingSaysIFinished();
-    }
-
     emit someCommandHasFinished_Successfully();
+
+    ConfigureGUIForIdling();
+    reload_all_layers(); //! Only update the 0th threshold for speed?
+
+    //! If Save checkbox is checked and Save line edit is not empty,
+    //!    Save the data to .bin file with path obtained from UI
+    if( ui->saveCheckBox->isChecked() && // TODO optimise
+        !(ui->saveLineEdit->text().isEmpty()) &&
+        !isSaveAllFramesChecked() // if it's checked the last was already saved
+        ) {
+        QString selectedFileType = ui->saveFileComboBox->currentText();
+        _mpx3gui->save_data(true, 0, selectedFileType);
+    }
 }
 
 void QCstmGLVisualization::ArmAndStartTimer(){

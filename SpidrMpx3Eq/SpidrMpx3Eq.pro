@@ -89,12 +89,12 @@ SOURCES += main.cpp \
     commandhandler.cpp \
     MerlinInterface.cpp \
     tcpserver.cpp \
-    tcpconnecton.cpp \
     tcpconnections.cpp \
     commandhandlerwrapper.cpp \
     GeneralSettings.cpp \
     EnergyCalibrator.cpp \
-    RemoteThresholdDlg.cpp
+    RemoteThresholdDlg.cpp \
+    tcpconnection.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -137,13 +137,13 @@ HEADERS += mpx3gui.h \
     MerlinInterface.h \
     merlinCommandsDef.h \
     tcpserver.h \
-    tcpconnecton.h \
     tcpconnections.h \
     commandhandlerwrapper.h \
     GeneralSettings.h \
     EnergyCalibrator.h \
     RemoteThresholdDlg.h \
-    ServerStatus.h
+    ServerStatus.h \
+    tcpconnection.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

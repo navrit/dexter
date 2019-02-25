@@ -29,7 +29,7 @@ signals:
 
 public slots:
     //recive commands from command socket(server)
-    void on_dataRecieved(QString);
+    void on_dataReceived(QString);
     //provide image data for image socket(server) when is requested.
     void on_requestForDataTaking(bool);
     //recive image from commandHandler

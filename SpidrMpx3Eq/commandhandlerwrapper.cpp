@@ -15,11 +15,10 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
     connect(QCstmEqualization::getInstance(),SIGNAL(busy(SERVER_BUSY_TYPE)),this,SLOT(on_serverStatusChanged(SERVER_BUSY_TYPE)));
 }
 
-void CommandHandlerWrapper::on_dataRecieved(QString command)
+void CommandHandlerWrapper::on_dataReceived(QString command)
 {
-
     MerlinCommand merlinCmd (command, *merlinInterface);
-    qDebug() << "[Info]\t Mapped : " << merlinCmd.parseResult;
+    qDebug() << "[INFO]\tMapped : " << merlinCmd.parseResult;
     Command cmd(merlinCmd.parseResult);
     cmd.invoke(commandHandler,_serverStatus);
     //get response
@@ -30,11 +29,10 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
     else if(merlinCmd.getCommandType() == "GET")
         response = merlinCmd.makeGetResponse(cmd.getData());
     else
-        response = "[Info]\t Invalid command type";
+        response = "[INFO]\tInvalid command type";
 
     emit responseIsReady(response); //must be passed to command socket in order to send it to the client
-    qDebug() << "[Info]\t Response from handler : " << response;
-
+    qDebug() << "[INFO]\tResponse from handler : " << response;
 }
 
 void CommandHandlerWrapper::on_requestForDataTaking(bool)
@@ -43,10 +41,6 @@ void CommandHandlerWrapper::on_requestForDataTaking(bool)
     const char* dummy="";
     emit imageIsReady(acqHeader.toLatin1(), std::pair<const char*,int>(dummy,0));
     commandHandler->getImage();
-
-//    QByteArray image;
-//    image = QString("This is a test imageeeeeeeeeeeeeee....!").toLatin1();
-
 }
 
 void CommandHandlerWrapper::on_ImageIsReady(QByteArray header,std::pair<const char*,int> image)

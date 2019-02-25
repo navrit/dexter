@@ -38,7 +38,7 @@ void TcpConnections::removeSocket(QTcpSocket *socket)
         socket->close();
     }
 
-    disconnect(m_connections[socket],SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
+    disconnect(m_connections[socket],SIGNAL(dataReceived(QString)),this,SLOT(on_dataReceived(QString)));
     disconnect(this,SIGNAL(responseIsReady(QString)),m_connections[socket],SLOT(on_responseIsReady(QString)));
     //disconnect(this,SIGNAL(imageIsReady(QByteArray,QByteArray)),m_connections[socket],SLOT(on_imageIsReady(QByteArray,QByteArray)));
 
@@ -113,7 +113,7 @@ void TcpConnections::accept(qintptr handle, TcpConnecton *connection)
     connection->moveToThread(QThread::currentThread());
     connection->setSocket(socket);
     //connect to data_recived
-    connect(connection,SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
+    connect(connection,SIGNAL(dataReceived(QString)),this,SLOT(on_dataReceived(QString)));
     connect(this,SIGNAL(responseIsReady(QString)),connection,SLOT(on_responseIsReady(QString)));
     //connect(this,SIGNAL(imageIsReady(QByteArray,QByteArray)),connection,SLOT(on_imageIsReady(QByteArray,QByteArray)),Qt::DirectConnection);
     //always accept one connection
@@ -134,25 +134,23 @@ void TcpConnections::accept(qintptr handle, TcpConnecton *connection)
 
 }
 
-void TcpConnections::on_dataRecieved(QString data)
+void TcpConnections::on_dataReceived(QString data)
 {
-    //qDebug() << "Recieved at tcpconnections : " << data;
-    emit dataRecieved(data);
+    //qDebug() << "Received at tcpconnections : " << data;
+    emit dataReceived(data);
 }
 
 void TcpConnections::on_responseIsReady(QString response)
 {
-    //qDebug() << "Response recieved at the tcpconnections : " << response;
+    //qDebug() << "Response received at the tcpconnections : " << response;
     emit responseIsReady(response);
 }
 
 void TcpConnections::on_imageIsReady(QByteArray header,std::pair<const char*,int> image)
 {
-     //qDebug() << "Image recieved at the tcpconnections, size: " << image.size();
+     //qDebug() << "Image received at the tcpconnections, size: " << image.size();
      //emit imageIsReady(header,image);
     foreach(TcpConnecton *conn, m_connections.values()) {
         conn->on_imageIsReady(header, image);
     }
-
 }
-

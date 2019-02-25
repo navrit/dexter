@@ -80,7 +80,7 @@ public slots:
 
 signals:
     // drawing signals calling back to QCstmGLVisualization
-    void data_taking_finished();
+    void dataTakingFinished();
     void bufferFull(int);
 
     void scoring_sig(int nFramesReceived, int nFramesKept, int lost_frames,

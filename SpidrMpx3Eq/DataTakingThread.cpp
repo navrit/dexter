@@ -118,7 +118,7 @@ void DataTakingThread::run() {
     connect(this, SIGNAL(scoring_sig(int,int,int,int,int,int,bool)),
             _vis,   SLOT( on_scoring(int,int,int,int,int,int,bool)) );
 
-    connect(this, SIGNAL(data_taking_finished()), _vis, SLOT(data_taking_finished()) );
+    connect(this, SIGNAL(dataTakingFinished()), _vis, SLOT(dataTakingFinished()) );
     connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) ); // stop signal from qcstmglvis
     connect( this, &DataTakingThread::bufferFull,
              _vis, &QCstmGLVisualization::consumerBufferFull );
@@ -363,13 +363,13 @@ void DataTakingThread::run() {
         if(stopTimers){
             spidrcontrol->stopAutoTrigger();
             _mpx3gui->stopTriggerTimers();
-            qDebug() << "[Info]\t Software triggering stopped.";
+            qDebug() << "[INFO]\tSoftware triggering stopped";
         }
 
         _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
         _consumer->consume();
 
-        if ( ! _restart ) {  emit data_taking_finished();}
+        if ( ! _restart ) {  emit dataTakingFinished();}
 
         // If this was an emergency stop
         // Have the consumer free resources
@@ -394,7 +394,7 @@ void DataTakingThread::run() {
     disconnect(this, SIGNAL(scoring_sig(int,int,int,int,int,int,bool)),
                _vis,   SLOT( on_scoring(int,int,int,int,int,int,bool)) );
 
-    disconnect(this, SIGNAL(data_taking_finished()), _vis, SLOT(data_taking_finished()));
+    disconnect(this, SIGNAL(dataTakingFinished()), _vis, SLOT(dataTakingFinished()));
     disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 
     disconnect(this,SIGNAL(sendingShutter()),_mpx3gui,SLOT(sendingShutter()));
