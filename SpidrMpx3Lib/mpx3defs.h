@@ -22,6 +22,12 @@ History:
 #define MPX3RX_CFG_TESTBIT      0x800
 
 // ----------------------------------------------------------------------------
+// Look these up in the SPIDR register map
+
+#define MPX3RX_UDP_PKTCNTR      0x384
+#define MPX3RX_UDP_PKTCNTR_MON  0x388
+
+// ----------------------------------------------------------------------------
 // Medipix3 DACs
 
 #define MPX3RX_DAC_COUNT        27
