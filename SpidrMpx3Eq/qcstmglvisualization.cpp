@@ -2372,12 +2372,6 @@ void QCstmGLVisualization::on_saveAllCheckBox_toggled(bool checked)
 }
 
 
-uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
-    uint32 res = 0;
-    res = a | (b << 8)| (c << 16)  | (d << 24);
-    return res;
-}
-
 void QCstmGLVisualization::on_testBtn_clicked()
 {
 

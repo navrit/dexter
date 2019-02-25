@@ -11,7 +11,7 @@ DataControllerThread::~DataControllerThread()
 
 }
 
-void DataControllerThread::saveTIFFParallel(QString filename, const uint imageWidth, Canvas pixels)
+void DataControllerThread::saveTIFFParallel(QString filename, Canvas pixels)
 {
 //    qDebug() << "[INFO] Saving in parallel - TIFF" << filename << imageWidth;
     if (!pixels.saveToTiff(filename.toUtf8().data())) {

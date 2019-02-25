@@ -70,6 +70,7 @@ class TcpServer;
 #define TIFF_FILES "TIFF (*.tiff)"
 #define SPATIAL_TIFF_FILES "Spatial corrected TIFF (*_spatialCorrected.tiff)"
 #define RAW_TIFF_FILES "Raw TIFF (*_raw.tiff)"
+#define RAW_TIFF16_FILES "Raw TIFF16 (*_raw.tiff)"
 #define BOTH_TIFF_FILES "Corrected and uncorrected TIFFs (*.tiff)"
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"

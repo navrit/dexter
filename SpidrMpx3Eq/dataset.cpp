@@ -346,20 +346,26 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
             Canvas imageCorrected = createCorrectedImage(i, spatialOnly);
             imageCorrected.saveToTiff(tmpFilename.toUtf8().data());
         } else {
-            Canvas image = getFullImageAsArrayWithLayout(i);
+            Canvas image = getFullImageAsArrayWithLayout(i, 4);
             image.saveToTiff(tmpFilename.toUtf8().data());
         }
     }
 }
 
-//! Cheaper than expected
+/**
+ * @brief Dataset::makeFrameForSaving
+ * @param threshold
+ * @param crossCorrection
+ * @param spatialOnly
+ * @return the Canvas with the frame in 4 bytes per pixel
+ */
 Canvas Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spatialOnly) {
     //----------------------------------------------------
 
     if (crossCorrection) {
         return createCorrectedImage(threshold, spatialOnly);
     } else {
-        return getFullImageAsArrayWithLayout(threshold);
+        return getFullImageAsArrayWithLayout(threshold, 4);
     }
 }
 
@@ -1877,8 +1883,13 @@ int * Dataset::getLayer(int threshold){
     return m_layers[layerIndex];
 }
 
-
-Canvas Dataset::getFullImageAsArrayWithLayout(int threshold) {
+/**
+ * @brief Dataset::getFullImageAsArrayWithLayout
+ * @param threshold the number of the threshold
+ * @param bpp 2 or 4 bytes per pixel
+ * @return Canvas with the image
+ */
+Canvas Dataset::getFullImageAsArrayWithLayout(int threshold, int bpp) {
     return Canvas(this, m_thresholdsToIndices[threshold], 0, 4);
 }
 

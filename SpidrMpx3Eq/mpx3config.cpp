@@ -967,11 +967,7 @@ void Mpx3Config::setInhibitShutter(bool turnOn)
     spidrcontrol->getSpidrReg(0x0810,&val);
     qDebug().noquote() << "[INFO]\tOld HDMI config : " << QString::number(val, 2);
 
-    uint8 inhibitShutterVal = 0xF;
-    if(turnOn)
-        inhibitShutterVal = 0x8;
-
-    inhibitShutterVal = inhibitShutterVal << 4;
+    uint8_t inhibitShutterVal = (turnOn ? 0x8 : 0xF) << 4;
     val = (val & 0xFFFFFF0F) | inhibitShutterVal;
 
     spidrcontrol->setSpidrReg(0x0810, val, true);

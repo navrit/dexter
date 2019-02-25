@@ -23,7 +23,6 @@
 #include <vector>
 #include "spline.h"
 #include "canvas.h"
-#include <tiffio.h> /* Sam Leffler's libtiff library. */
 #include "mpx3config.h"
 #include "FrameSet.h"
 
@@ -106,7 +105,13 @@ public:
         std::vector<double> stdev_v;
     } bstats;//!Calculated mean and stdev of the selected region of interest.
 
-    Canvas getFullImageAsArrayWithLayout(int threshold);
+    /**
+     * @brief Dataset::getFullImageAsArrayWithLayout
+     * @param threshold the number of the threshold
+     * @param bpp 2 or 4 bytes per pixel
+     * @return Canvas with the image
+     */
+    Canvas getFullImageAsArrayWithLayout(int threshold, int bpp);
 
 private:
     int m_nx, m_ny; //!<Pixel size in the x and y direction, per detector.
