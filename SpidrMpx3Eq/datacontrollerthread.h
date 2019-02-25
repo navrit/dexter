@@ -3,23 +3,20 @@
 
 #include <QObject>
 #include <QThread>
-#include "mpx3gui.h"
+
+class Mpx3GUI;
 
 class DataControllerThread : public QThread
 {
     Q_OBJECT
+
 public:
     explicit DataControllerThread(Mpx3GUI *, QObject * parent = nullptr);
-    virtual ~DataControllerThread();
+    virtual ~DataControllerThread() override;
     void saveTIFFParallel(QString filename, const uint imageWidth, const int * pixels);
 
 protected:
-
     void run() Q_DECL_OVERRIDE;
-
-private:
-
-
 };
 
 #endif

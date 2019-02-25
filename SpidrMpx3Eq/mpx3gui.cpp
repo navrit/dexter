@@ -1120,20 +1120,20 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         //! Autosave
         //!
         //! Get the visualisation dialog UI saveLineEdit text and assign to filename
-        path = getVisualization()->getsaveLineEdit_Text();
+        path = getVisualization()->getsaveLineEdit_Text(); // TODO optimise this, no need to call this every loop
 
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and ".bin"
         filename = path;
         filename.append("/");
         filename.append( QString::number( QDateTime::currentMSecsSinceEpoch()) );
 
-        //! if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 ms)
-        if ( getVisualization()->isSaveAllFramesChecked() ) {
+        //! if saving all frames, append the frame ID too - more than 1 frame may be saved within 1 ms
+        if ( getVisualization()->isSaveAllFramesChecked() ) { // TODO optimise this, no need to call this every loop
             filename.append( QString("_%1").arg(frameId) );
         }
 
         //! Handle the different file types that you can autosave to via
-        //! the QCstmGLVisualization saveFileComboBox and propogate correct
+        //! the QCstmGLVisualization saveFileComboBox and propagate correct
         //! information forwards.
 
         if (selectedFileType == ""){
@@ -1152,7 +1152,6 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
             filename.append(".txt");
             selectedFilter = ASCII_FILES;
         }
-
     }
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
@@ -1164,10 +1163,12 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     } else if (selectedFilter == SPATIAL_TIFF_FILES || selectedFilter == RAW_TIFF_FILES || selectedFilter == TIFF_FILES || selectedFilter == BOTH_TIFF_FILES) {
 
         //! This is a shitty way of doing it but whatever the disk is still the bottleneck... maybe fix it later
+        //!
+        //! TODO Fix this for colour mode
 
-        QList<int> thresholds = getDataset()->getThresholds();
+        QList<int> thresholds = getDataset()->getThresholds(); // TODO optimise this, no need to call this every loop
         for (int i = 0; i < thresholds.length(); i++) {
-            int imageWidth = getDataset()->getWidth();
+            int imageWidth = getDataset()->getWidth(); // TODO optimise this, no need to call this every loop
             QString tmpFilename = unmodifiedFilename;
             int * frame = nullptr;
 
@@ -1177,10 +1178,9 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
                 tmpFilename = tmpFilename.replace("_spatialCorrected.tiff", QString("-th"+ QString::number(thresholds[i]) +"_spatialCorrected.tiff"));
 
             } else if (selectedFilter == RAW_TIFF_FILES) {
-                //frame = getDataset()->makeFrameForSaving(i, false);
-
                 //! Debugging function only
                 // generateFrame();
+
                 frame = getDataset()->getFullImageAsArrayWithLayout(i);
                 tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
 
@@ -1201,7 +1201,6 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
                 tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(thresholds[i]) +".tiff"));
             }
 
-            //tmpFilename = "/dev/null";
             QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, tmpFilename, imageWidth, frame);
         }
     } else if (selectedFilter == ASCII_FILES) {
@@ -1220,9 +1219,6 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         saveMetadataToJSON(filename);
     } else {
         // Autosave
-
-        // You don't need to clear the dataset, that's handled by the "mode" (0 = not summing / 1 = summing)
-        //getDataset()->clear();
 
         // Not good for high speed without some buffer system
         //saveMetadataToJSON(filename);

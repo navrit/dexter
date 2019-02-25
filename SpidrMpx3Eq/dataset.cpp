@@ -1939,35 +1939,6 @@ int * Dataset::getLayer(int threshold){
     return m_layers[layerIndex];
 }
 
-
 int * Dataset::getFullImageAsArrayWithLayout(int threshold) {
     return (int*) toCanvas2<int32_t>(this, m_thresholdsToIndices[threshold], 0).first;
 }
-
-
-/*
-////////////////////////////////////////////////
-int val = frame[i];
-// TO REMOVE !!!!!!!!!!!
-// Remove singles quickly
-if ( val > 1 ) val = 0;
-// Remove singles which are
-if ( val != 0
-     && i > m_nx
-     && i < ((m_nx*m_ny)-1)-m_nx
-     && i%m_nx!=0
-     && (i%(m_nx-1))!=0 ) {
-    if ( frame[i+1] == 0
-         &&
-         frame[i-1] == 0
-         &&
-         frame[i+m_nx] == 0
-         &&
-         frame[i-m_nx] == 0
-         ) {
-        val = 0;
-    }
-}
-newFrame[i] += val;
-////////////////////////////////////////////////
-*/

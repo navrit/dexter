@@ -600,7 +600,8 @@ void QCstmGLVisualization::initStatsString()
     _statsString.displayString = "Offline";
 }
 
-void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when acquisition is done,
+//! @brief When the acquisition is done
+void QCstmGLVisualization::data_taking_finished() {
 
     int UDP_packetCounter = -1;
      _mpx3gui->GetSpidrController()->getSpidrReg(0x384, &UDP_packetCounter);
@@ -633,88 +634,23 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when a
     }
 
     _takingData = false;
-    if(!runningTHScan)
-        emit busy(FREE);
 
+    if (!runningTHScan) {
+        emit busy(FREE);
+    }
     if (runningCT) {
         emit sig_resumeCT();
-
     }
     if (runningTHScan) {
         emit sig_resumeTHScan();
-
     }
 
-    // inform the consumer that the data taking is finished
+    // Inform the consumer that the data taking is finished
     if ( _dataConsumerThread->isRunning() ) {
         _dataConsumerThread->dataTakingSaysIFinished();
     }
 
     emit someCommandHasFinished_Successfully();
-
-    /*
-    if ( _takingData ) {
-
-        _takingData = false;
-        DestroyTimer();
-        ETAToZero();
-
-        _dataTakingThread->rewindScoring();
-
-        // When finished taking data save the original data
-        //_mpx3gui->saveOriginalDataset();
-
-        // And replot, this also attempts to apply selected corrections
-        //reload_all_layers( true );
-
-        // Change the Stop button to Start
-        ui->startButton->setText( "Start" );
-        ui->singleshotPushButton->setText( "single" );
-
-        // At this point I need to decide if the data taking is really finished.
-        // If the user is requesting that all frames are needed we look at
-        // Inf data taking takes priority here
-
-        if ( _infDataTaking ) {
-
-            _dataTakingThread->rewindScoring();
-            StartDataTaking();
-
-        } else {
-
-            if ( ui->completeFramesCheckBox->isChecked() ) {
-
-                int missing = _dataTakingThread->calcScoreDifference();
-
-                if ( missing != 0 ) {
-                    //qDebug() << "[INFO] missing : " << missing;
-                    StartDataTaking();
-                } else {
-                    _dataTakingThread->rewindScoring();
-                }
-
-            }
-        }
-
-
-        // If single shot, recover previous NTriggers
-        if ( _singleShot ) {
-            ui->nTriggersSpinBox->setValue( _singleShotSaveCurrentNTriggers );
-            _singleShot = false;
-            _singleShotSaveCurrentNTriggers = 0;
-        }
-
-        emit sig_statusBarAppend("done","blue");
-
-        /////////////////////////////
-        // TEST
-        //_mpx3gui->getDataset()->dumpAllActivePixels();
-
-    }
-*/
-    // Also we will inform the visualization to go straight to the very last frame to be drawn
-    //  in case the data taking thread was too fast compared to drawing
-
 }
 
 void QCstmGLVisualization::ArmAndStartTimer(){
@@ -729,7 +665,6 @@ void QCstmGLVisualization::ArmAndStartTimer(){
     _timer->start( __display_eta_granularity );
     // and start the elapsed timer
     _etatimer->start();
-
 }
 
 void QCstmGLVisualization::DestroyTimer() {
@@ -741,9 +676,9 @@ void QCstmGLVisualization::DestroyTimer() {
     disconnect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
     if( _timer ) delete _timer;
     _timer = nullptr;
+
     if( _etatimer ) delete _etatimer;
     _etatimer = nullptr;
-
 }
 
 void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {
@@ -770,29 +705,19 @@ void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<
             indx = XYtoX( i, j, __matrix_size_x);
             indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
 
-            //if(indxRed > 16380 ) cout << "indx " << indx << ", indxRed = " << indxRed << endl;
-
             if( i % 2 == 0 && j % 2 == 0) {
                 (*th6)[indxRed] = data[indx]; // P4
-            }
-            if( i % 2 == 0 && j % 2 == 1) {
+            } if( i % 2 == 0 && j % 2 == 1) {
                 (*th4)[indxRed] = data[indx]; // P3
-            }
-            if( i % 2 == 1 && j % 2 == 0) {
+            } if( i % 2 == 1 && j % 2 == 0) {
                 (*th2)[indxRed] = data[indx]; // P2
-            }
-            if( i % 2 == 1 && j % 2 == 1) {
+            } if( i % 2 == 1 && j % 2 == 1) {
                 (*th0)[indxRed] = data[indx]; // P1
-            }
-
-            if (i % 2 == 1) redi++;
-
+            } if (i % 2 == 1) redi++;
         }
 
         if (j % 2 == 1) redj++;
-
     }
-
 }
 
 pair<int, int> QCstmGLVisualization::XtoXY(int X, int dimX){
@@ -1368,25 +1293,7 @@ void QCstmGLVisualization::on_scoring(int nFramesReceived,
 
 void QCstmGLVisualization::progress_signal(int framecntr) {
 
-    _score.nFramesReceived = framecntr;
-
-    /*
-    // framecntr: frames kept
-    int argcntr = framecntr;
-    if ( _dataTakingThread ) {
-        if ( _dataTakingThread->isACompleteJob() ) {
-            argcntr += _dataTakingThread->getFramesReceived();
-        }
-    }
-
-    int nTriggers = _mpx3gui->getConfig()->getNTriggers();
-    QString prog;
-    if ( nTriggers > 0 ) prog = QString("%1/%2").arg( argcntr ).arg( nTriggers );
-    else prog = QString("%1").arg( argcntr ); // nTriggers=0 is keep taking data forever
-
-    ui->frameCntr->setText( prog );
-    */
-
+    _score.nFramesReceived = uint(framecntr);
 }
 
 
@@ -1395,13 +1302,10 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
     // Get busy
     SetBusyState();
 
-    //_mpx3gui->saveOriginalDataset();
-
     // Corrections
     if ( corrections && _corrdialog ) {
         _mpx3gui->getDataset()->applyCorrections( _corrdialog );
     }
-
 
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
@@ -1414,17 +1318,12 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
                                    _mpx3gui->getDataset()->getPixelsPerLayer(),
                                    _manualRange.lower,
                                    _manualRange.upper);
-
     }
 
-    // done
-    active_frame_changed();
-
-    //ui->glPlot->update();
+    active_frame_changed(); // done
 
     // Get free
     FreeBusyState();
-
 }
 
 void QCstmGLVisualization::addThresholdToSelector(int threshold){
