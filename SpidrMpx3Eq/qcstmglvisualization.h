@@ -281,7 +281,7 @@ public slots:
     void on_zero();
     //!Called when the display range of the data is changed. (so the scale on the heatmap).
     void range_changed(QCPRange);
-    void data_taking_finished(int);
+    void data_taking_finished();
     void progress_signal(int);
     void changeBinCount(int count); //! user requested a different bin-count. Recomputes the histograms for each threshold.
     void updateETA();

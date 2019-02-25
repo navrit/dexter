@@ -168,7 +168,7 @@ void thresholdScan::stopScan()
 
     _stop = true;
     _running = false;
-    _mpx3gui->getVisualization()->data_taking_finished(0);
+    _mpx3gui->getVisualization()->data_taking_finished();
     emit busy(FREE);
 }
 
