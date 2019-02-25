@@ -320,7 +320,9 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
 
 void QCstmGLVisualization::StartDataTaking(QString mode) {
 
-
+    //! Reset the UDP packet counter on the SPIDR to 0
+    //! Note: any write to this register sets it to 0
+    _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_UDP_PKTCNTR, 0);
 
     if (mode == "CT") {
         runningCT = true;
@@ -451,11 +453,8 @@ void QCstmGLVisualization::initStatsString()
 void QCstmGLVisualization::dataTakingFinished() {
 
     int UDP_packetCounter = -1;
-     _mpx3gui->GetSpidrController()->getSpidrReg(0x384, &UDP_packetCounter);
-     qDebug() << "[DEBUG]\tUDP_packetCounter 0x384 =" << UDP_packetCounter;
-     int UDP_packetCounterMonitorStream = -1;
-     _mpx3gui->GetSpidrController()->getSpidrReg(0x388, &UDP_packetCounterMonitorStream);
-     qDebug() << "[DEBUG]\tUDP_packetCounterMonitorStream 0x388 =" << UDP_packetCounterMonitorStream;
+    _mpx3gui->GetSpidrController()->getSpidrReg(MPX3RX_UDP_PKTCNTR, &UDP_packetCounter);
+    qDebug().nospace() << "[DEBUG]\t0x" << hex << MPX3RX_UDP_PKTCNTR << " UDP packet counter = " << dec << UDP_packetCounter;
 
     _takingData = false;
 
