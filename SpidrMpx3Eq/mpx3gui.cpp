@@ -1209,7 +1209,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         getDataset()->toTIFF(filename, false);
     }
 
-    if (!requestPath){
+    if (!requestPath || frameId == 0){
         // Manual saving
         //qDebug() << "[INFO] File saved: ..." << filename;
         QString msg = "Saved: ...";
