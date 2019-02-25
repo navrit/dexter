@@ -17,28 +17,40 @@ uint8_t* allocateBuffer(size_t size) {
 
 Canvas::Canvas() {}
 
-template <typename INTTYPE> void fill(uint8_t* image, int dim, int gap, Dataset *ds, int* layer) {
-    INTTYPE* img = (INTTYPE*) image;
-    int imgDim = 2 * dim + gap;
+template <typename INTTYPE> void fill(Canvas* canvas, int gap, Dataset *ds, int* layer) {
+    INTTYPE* img = (INTTYPE*) canvas->image;
+    int imgWidth = canvas->width;
 
     auto positions = ds->getLayoutVector();
     auto orientations = ds->getOrientationVector();
+    int chipW, chipH; // chip width and height on the canvas
+    if (orientations[0] >= 4) {
+        // image is rotated
+        canvas->height = ds->getWidth() + gap;
+        canvas->width  = imgWidth = ds->getHeight() + gap;
+        chipW = ds->y();
+        chipH = ds->x();
+    } else {
+        chipW = ds->x();
+        chipH = ds->y();
+    }
     int nChips = ds->getFrameCount();
+    int chipRows = ds->y(), chipCols = ds->x(); // chip native rows and columns
     for (int chip = 0; chip < nChips; chip++) {
         int posx = positions[chip].x();
         int posy = positions[chip].y(); // NB: bottom to top
-        int base = (1 - posy) * (dim + gap) * imgDim + posx * (dim + gap);
+        int base = (1 - posy) * (chipH + gap) * imgWidth + posx * (chipW + gap);
 
         imgOrientation io = orientation[orientations[chip]];
 
-        int cs = io.fast.ix - imgDim * io.fast.iy,
-            rs = io.slow.ix - imgDim * io.slow.iy;
-        if (cs < 0) base += (dim-1)*imgDim;
-        if (rs < 0) base += dim-1;
+        int cs = io.fast.ix - imgWidth * io.fast.iy,
+            rs = io.slow.ix - imgWidth * io.slow.iy;
+        if (cs < 0) base += (chipH-1)*imgWidth;
+        if (rs < 0) base += chipW-1;
 
-        for (int i = 0; i < dim; i++) {
+        for (int i = 0; i < chipRows; i++) {
             int ix = base;
-            int j = dim;
+            int j = chipCols;
             switch (cs) {
             case  1: while (j--) img[ix++] = *(layer++); break;
             case -1: while (j--) img[ix--] = *(layer++); break;
@@ -59,16 +71,17 @@ Canvas::Canvas(Dataset *ds, int key, int gap, int bytesPerPixel)
         return;
     }
 
-    const int dim = 256;
-    int imgDim = 2 * dim + gap;
+    width = ds->getWidth() + gap;
+    height = ds->getHeight() + gap;
 
-    rowStride = imgDim * bytesPerPixel;
-    size = imgDim * rowStride;
+    pixelStride = bytesPerPixel;
+    rowStride = width * bytesPerPixel;
+    size = height * rowStride;
     image = allocateBuffer(size_t (size));
 
     if (bytesPerPixel == 2) {
-        fill<uint16_t>(image, dim, gap, ds, layer);
+        fill<uint16_t>(this, gap, ds, layer);
     } else {
-        fill<uint32_t>(image, dim, gap, ds, layer);
+        fill<uint32_t>(this, gap, ds, layer);
     }
 }
