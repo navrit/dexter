@@ -15,8 +15,6 @@
 #include <vector>
 #include <fstream>      // std::ofstream
 
-#include "TiffFile.h"
-
 using namespace std;
 
 Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
@@ -345,14 +343,11 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
 
         //! Default mode - do cross and spatial corrections
         if (crossCorrection){
-            const int extraPixels       = 2;
-            int width  = getWidth()+2*extraPixels;  // Should always be 512 or 256 for a quad without spatial correction
-            int height = getHeight()+2*extraPixels; // ""
             Canvas imageCorrected = createCorrectedImage(i, spatialOnly);
-            TiffFile::saveToTiff32(tmpFilename.toUtf8().data(), imageCorrected, width, height);
+            imageCorrected.saveToTiff(tmpFilename.toUtf8().data());
         } else {
             Canvas image = getFullImageAsArrayWithLayout(i);
-            TiffFile::saveToTiff32(tmpFilename.toUtf8().data(), image, getWidth(), getHeight());
+            image.saveToTiff(tmpFilename.toUtf8().data());
         }
     }
 }

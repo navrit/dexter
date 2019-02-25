@@ -78,7 +78,6 @@ SOURCES += main.cpp \
     barchart.cpp \
     ThlScan.cpp \
     DataTakingThread.cpp \
-    TiffFile.cpp \
     datacontrollerthread.cpp \
     zmqcontroller.cpp \
     qcstmBHWindow.cpp \
@@ -125,7 +124,6 @@ HEADERS += mpx3gui.h \
     barchart.h  \
     ThlScan.h \
     DataTakingThread.h \
-    TiffFile.h \
     datacontrollerthread.h \
     zmqcontroller.h \
     qcstmBHWindow.h \
