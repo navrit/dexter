@@ -1148,6 +1148,9 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         } else if (selectedFileType == "Raw TIFF16"){
             filename.append("_raw.tiff");
             selectedFilter = RAW_TIFF16_FILES;
+        } else if (selectedFileType == "PGM16"){
+            filename.append("_raw.pgm");
+            selectedFilter = PGM16_FILES;
         } else if (selectedFileType == "Text"){
             filename.append(".txt");
             selectedFilter = ASCII_FILES;
@@ -1167,6 +1170,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     } else if (selectedFilter == SPATIAL_TIFF_FILES
             || selectedFilter == RAW_TIFF_FILES
             || selectedFilter == RAW_TIFF16_FILES
+            || selectedFilter == PGM16_FILES
             || selectedFilter == TIFF_FILES
             || selectedFilter == BOTH_TIFF_FILES) {
 
@@ -1188,6 +1192,12 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
             } else if (selectedFilter == RAW_TIFF16_FILES) {
                 frame = getDataset()->getFullImageAsArrayWithLayout(i, 2);
                 tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
+
+            } else if (selectedFilter == PGM16_FILES) {
+                frame = getDataset()->getFullImageAsArrayWithLayout(i, 2);
+                tmpFilename = tmpFilename.replace("_raw.pgm", QString("-th"+ QString::number(thresholds[i]) +"_raw.pgm"));
+                QtConcurrent::run( dataControllerThread, &DataControllerThread::savePGMParallel, tmpFilename, frame);
+                continue;
 
             } else if (selectedFilter == TIFF_FILES) {
                 frame = getDataset()->makeFrameForSaving(i);

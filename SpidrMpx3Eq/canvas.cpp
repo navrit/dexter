@@ -127,3 +127,23 @@ bool Canvas::saveToTiff(const char* filePath)
     }
     return true;
 }
+
+bool Canvas::saveToPGM16(const char* filePath) {
+    FILE * f = fopen(filePath, "w");
+    fprintf(f, "P5\n%d %d\n%d\n", width, height, 4095);
+    const int bufsiz = 16384;
+    uint16_t buf[bufsiz];
+    uint16_t* img = (uint16_t*) image;
+    int n = size/2;
+    while (n > 0) {
+        int n2 = n > bufsiz ? bufsiz : n;
+        uint16_t* bufp = buf;
+        for (int i = 0; i < n2; i++) {
+            uint16_t l = *(img++);
+            *(bufp++) = ((l >> 8) & 0x00ff) | ((l << 8) & 0xff00);
+        }
+        fwrite (buf, n2 * 2, 1, f);
+        n -= n2;
+    }
+    fclose(f);
+}

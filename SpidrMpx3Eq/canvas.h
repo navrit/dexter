@@ -17,6 +17,7 @@ public:
     uint8_t* image = nullptr;
 
     bool saveToTiff(const char* filePath);
+    bool saveToPGM16(const char* filePath);
 };
 
 #endif // CANVAS_H

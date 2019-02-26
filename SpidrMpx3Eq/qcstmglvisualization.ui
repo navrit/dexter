@@ -289,6 +289,16 @@ If you run too fast this feature should not be used.</string>
               </item>
               <item>
                <property name="text">
+                <string>Raw TIFF16</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PGM16</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
                 <string>Text</string>
                </property>
               </item>

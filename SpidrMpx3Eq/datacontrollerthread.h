@@ -12,6 +12,7 @@ public:
     explicit DataControllerThread(Mpx3GUI *, QObject * parent = nullptr);
     virtual ~DataControllerThread();
     void saveTIFFParallel(QString filename, Canvas pixels);
+    void savePGMParallel(QString filename, Canvas pixels);
 
 protected:
 

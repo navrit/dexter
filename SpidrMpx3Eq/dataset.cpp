@@ -1890,7 +1890,7 @@ int * Dataset::getLayer(int threshold){
  * @return Canvas with the image
  */
 Canvas Dataset::getFullImageAsArrayWithLayout(int threshold, int bpp) {
-    return Canvas(this, m_thresholdsToIndices[threshold], 0, 4);
+    return Canvas(this, m_thresholdsToIndices[threshold], 0, bpp);
 }
 
 

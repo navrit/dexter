@@ -13,9 +13,15 @@ DataControllerThread::~DataControllerThread()
 
 void DataControllerThread::saveTIFFParallel(QString filename, Canvas pixels)
 {
-//    qDebug() << "[INFO] Saving in parallel - TIFF" << filename << imageWidth;
     if (!pixels.saveToTiff(filename.toUtf8().data())) {
         qDebug() << "[ERROR] Failed to save TIFF:" << filename;
+    }
+}
+
+void DataControllerThread::savePGMParallel(QString filename, Canvas pixels)
+{
+    if (!pixels.saveToPGM16(filename.toUtf8().data())) {
+        qDebug() << "[ERROR] Failed to save PGM16:" << filename;
     }
 }
 
