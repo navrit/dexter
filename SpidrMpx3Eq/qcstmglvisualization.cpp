@@ -456,22 +456,23 @@ void QCstmGLVisualization::dataTakingFinished() {
     _mpx3gui->GetSpidrController()->getSpidrReg(MPX3RX_UDP_PKTCNTR, &UDP_packetCounter);
     qDebug().nospace() << "[DEBUG]\t0x" << hex << MPX3RX_UDP_PKTCNTR << " UDP packet counter = " << dec << UDP_packetCounter;
 
-    _takingData = false;
-
     // Recover from single shot if it was requested
     if ( _singleShot ) {
         _singleShot = false;
         _mpx3gui->getConfig()->setNTriggers( _singleShotSaveCurrentNTriggers );
     }
-    // Inform the consumer that the data taking is finished
-    if ( _dataConsumerThread->isRunning() ) {
-        _dataConsumerThread->dataTakingSaysIFinished();
-    }
 
+    reload_all_layers(); //! Only update the 0th threshold for speed?
     refreshScoringInfo();
-    ETAToZero();
-    rewindScoring();
     DestroyTimer();
+    ETAToZero();
+    ConfigureGUIForIdling();
+    rewindScoring();
+
+    //! Decide whether to save the file or not
+    consumerFinishedOneFrame(0);
+
+    _takingData = false;
 
     if (!runningTHScan) {
         emit busy(FREE);
@@ -482,20 +483,13 @@ void QCstmGLVisualization::dataTakingFinished() {
     if (runningTHScan) {
         emit sig_resumeTHScan();
     }
-    emit someCommandHasFinished_Successfully();
 
-    ConfigureGUIForIdling();
-    reload_all_layers(); //! Only update the 0th threshold for speed?
-
-    //! If Save checkbox is checked and Save line edit is not empty,
-    //!    Save the data to .bin file with path obtained from UI
-    if( ui->saveCheckBox->isChecked() && // TODO optimise
-        !(ui->saveLineEdit->text().isEmpty()) &&
-        !isSaveAllFramesChecked() // if it's checked the last was already saved
-        ) {
-        QString selectedFileType = ui->saveFileComboBox->currentText();
-        _mpx3gui->save_data(true, 0, selectedFileType);
+    // Inform the consumer that the data taking is finished
+    if ( _dataConsumerThread->isRunning() ) {
+        _dataConsumerThread->dataTakingSaysIFinished();
     }
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::ArmAndStartTimer(){
@@ -1830,9 +1824,10 @@ void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 
             // When toggling here recompute the min and max
             int * data = _mpx3gui->getDataset()->getLayer( activeTHL );
-//            if (data == nullptr)
+//            if (data == nullptr) {
 //                qDebug() << "WTF IS HAPPENING??"; //! TODO FIX THIS SHIT RIGHT NOW
 //                return;
+//            }
             int size = _mpx3gui->getDataset()->getPixelsPerLayer();
             int min = INT_MAX, max = INT_MIN;
             for(int i = 0; i < size; i++) {
@@ -2046,14 +2041,10 @@ void QCstmGLVisualization::consumerFinishedOneFrame(int frameId){
 
     //! If Save checkbox is checked and Save line edit is not empty,
     //! AND the used requested every frame to be saved.
-    //! Save the data to .tiff file with path obtained from UI
-    if(
-            ui->saveCheckBox->isChecked() &&
-            !(ui->saveLineEdit->text().isEmpty()) &&
-            ui->saveAllCheckBox->isChecked()
-            ){
-        QString selectedFileType = ui->saveFileComboBox->currentText();
-        _mpx3gui->save_data(true, frameId, selectedFileType);
+    //! Save the data to file with path obtained from UI
+
+    if ( _saveCheckBox_isChecked && _saveLineEdit_isNotEmpty && _saveAllCheckBox_isChecked ) {
+        _mpx3gui->save_data(true, frameId, _saveFileComboBox_text);
     }
 }
 
@@ -2062,59 +2053,11 @@ void QCstmGLVisualization::on_resetViewPushButton_clicked(){
     reload_all_layers();
 }
 
-//! Clear saveLineEdit on_saveCheckBox_clicked by a user, every time
-void QCstmGLVisualization::on_saveCheckBox_clicked(){
-    if ( zmqRunning ) {
-        return;
-    } else {
-
-        //! Open file dialog, get path and set saveLineEdit to given path and continue
-        if(ui->saveCheckBox->isChecked()){
-
-            //! Get the Absolute folder path
-            QString path = getPath("Select a directory to auto-saved files to");
-
-            //! GUI update - save LineEdit set to path from dialog
-            ui->saveLineEdit->setText(path);
-
-            //! If user selected nothing, path comes back empty (or "/" ?)
-            if(path.isEmpty()) {
-                ui->saveCheckBox->setChecked(0);
-                ui->saveAllCheckBox->setChecked(0);
-                ui->saveLineEdit->clear();
-            }
-
-            //qDebug() << "[INFO]\tSelected path:" << path;
-
-            //! When finished, see data_taking_finished() where the data is saved
-        } else {
-            ui->saveLineEdit->clear();
-        }
-    }
-}
-
 void QCstmGLVisualization::consumerBufferFull(int)
 {
-
     QMessageBox::critical(this, tr("System buffer"),
                           tr("The system can't keep up. Please review your settings. Increasing UDP kernel buffer size or getting a faster CPU may help."));
-
 }
-
-void QCstmGLVisualization::on_saveAllCheckBox_toggled(bool checked)
-{
-    if ( zmqRunning ) {
-        ui->saveCheckBox->setChecked( true );
-        return;
-    }
-    if ( checked ) {
-        ui->saveCheckBox->setChecked( true );
-        if ( getsaveLineEdit_Text() == "" ) {
-            on_saveCheckBox_clicked();
-        }
-    }
-}
-
 
 uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
     uint32 res = 0;
@@ -2124,7 +2067,6 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 
 void QCstmGLVisualization::on_testBtn_clicked()
 {
-
     int per,freq;
     _mpx3gui->GetSpidrController()->getSpidrReg(0x0298,&per);
     qDebug()<< "PERIOD: " << per;
@@ -2239,6 +2181,12 @@ void QCstmGLVisualization::on_saveLineEdit_editingFinished()
 {
     bool success = requestToSetSavePath(ui->saveLineEdit->text());
     Q_UNUSED(success);
+
+    if (!ui->saveLineEdit->text().isEmpty()) {
+        _saveLineEdit_isNotEmpty = true;
+    } else {
+        _saveLineEdit_isNotEmpty = false;
+    }
 }
 
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
@@ -2311,7 +2259,6 @@ void QCstmGLVisualization::_loadFromThresholdsVector()
     for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
         for (int idx = 0; idx < 8; ++idx) {
             _mpx3gui->GetSpidrController()->setDac(chipId,idx+1,_thresholdsVector[chipId][idx]);
-
         }
     }
 }
@@ -2343,4 +2290,59 @@ void QCstmGLVisualization::onRequestToUnmaskPixelRemotely(int x, int y)
     _maskingRequestFromServer = true;
     _maskOpration = UNMASK;
     pixel_selected(QPoint(x,y),QPoint());
+}
+
+//! @brief Clear saveLineEdit on_saveCheckBox_stateChanged by a user, every time
+void QCstmGLVisualization::on_saveCheckBox_stateChanged()
+{
+    _saveCheckBox_isChecked = ui->saveCheckBox->isChecked();
+    _saveFileComboBox_text = ui->saveFileComboBox->currentText();
+
+    if (zmqRunning) {
+        return;
+    }
+
+    //! Open file dialog, get path and set saveLineEdit to given path and continue
+    if (ui->saveCheckBox->isChecked()) {
+
+        //! Get the Absolute folder path
+        QString path = getPath("Select a directory to auto-saved files to");
+
+        //! GUI update - save LineEdit set to path from dialog
+        ui->saveLineEdit->setText(path);
+
+        //! If user selected nothing, path comes back empty (or "/" ?)
+        if (path.isEmpty()) {
+            ui->saveCheckBox->setChecked(0);
+            ui->saveAllCheckBox->setChecked(0);
+            ui->saveLineEdit->clear();
+        }
+
+        //qDebug() << "[INFO]\tSelected path:" << path;
+
+        //! When finished, see dataTakingFinished() where the data is saved
+    } else {
+        ui->saveLineEdit->clear();
+    }
+}
+
+void QCstmGLVisualization::on_saveAllCheckBox_stateChanged()
+{
+    _saveAllCheckBox_isChecked = ui->saveAllCheckBox->isChecked();
+
+    if ( zmqRunning ) {
+        ui->saveCheckBox->setChecked( true );
+        return;
+    }
+    if ( ui->saveAllCheckBox->isChecked() ) {
+        ui->saveCheckBox->setChecked( true );
+        if ( getsaveLineEdit_Text() == "" ) {
+            on_saveCheckBox_stateChanged();
+        }
+    }
+}
+
+void QCstmGLVisualization::on_saveFileComboBox_currentIndexChanged(const QString &currentText)
+{
+    _saveFileComboBox_text = currentText;
 }

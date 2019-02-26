@@ -162,6 +162,11 @@ private:
     bool _dropFrames = true;
     QString _equalizationPath = "";
 
+    bool _saveCheckBox_isChecked = false;
+    bool _saveAllCheckBox_isChecked = false;
+    bool _saveLineEdit_isNotEmpty = false;
+    QString _saveFileComboBox_text = "";
+
     MASK_OPERATION _maskOpration = MASK;
     bool _maskingRequestFromServer = false;
     int _thresholdsVector [NUMBER_OF_CHIPS][8];
@@ -245,15 +250,15 @@ private slots:
 
     void on_resetViewPushButton_clicked();
 
-    void on_saveCheckBox_clicked();
-
-    void on_saveAllCheckBox_toggled(bool checked);
-
     void on_testBtn_clicked();
 
     void on_saveLineEdit_editingFinished();
 
     void onEqualizationPathExported(QString path);
+
+    void on_saveCheckBox_stateChanged();
+    void on_saveAllCheckBox_stateChanged();
+    void on_saveFileComboBox_currentIndexChanged(const QString &currentText);
 
 public slots:
 
