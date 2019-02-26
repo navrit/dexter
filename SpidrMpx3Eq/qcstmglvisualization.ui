@@ -279,12 +279,12 @@ If you run too fast this feature should not be used.</string>
               </property>
               <item>
                <property name="text">
-                <string>TIFF</string>
+                <string>Raw TIFF</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Raw TIFF</string>
+                <string>TIFF</string>
                </property>
               </item>
               <item>
