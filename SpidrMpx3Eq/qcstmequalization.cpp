@@ -2809,7 +2809,9 @@ bool Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
     temp_pixId_Adj_X = file.readAll();
     file.close();
     int readSize = temp_pixId_Adj_X.size();
-    qDebug() << "[INFO]\tRead " << temp_pixId_Adj_X.size() << " bytes";
+    if ( (temp_pixId_Adj_X.size() % (64*1024) != 0) ) {
+        qDebug() << "[WARN]\tRead " << temp_pixId_Adj_X.size() << " bytes";
+    }
 
     //! Now split in Low and High
     //!
