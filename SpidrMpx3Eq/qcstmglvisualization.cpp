@@ -1439,7 +1439,7 @@ void QCstmGLVisualization::loadConfiguration(QString filePath)
     qDebug() << "[INFO]\tZMQ Load configuration from:" << filePath;
 #endif
 
-    if (_mpx3gui->getConfig()->fromJsonFile(filePath, true)) {
+    if ( _mpx3gui->getConfig()->fromJsonFile(filePath, true) ) {
         emit someCommandHasFinished_Successfully();
     } else {
         emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not load configuration JSON file from" + filePath));

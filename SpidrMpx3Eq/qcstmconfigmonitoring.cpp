@@ -576,8 +576,6 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->csmSpmCombo, SIGNAL(currentIndexChanged(int)), this, SLOT( setCsmSpmByIndex(int) ) );
     connect(config, SIGNAL(csmSpmChanged(int)), this, SLOT( csmSpmChangedByValue(int)) );
 
-
-
     // BothCounters
     connect(ui->readBothCountersCheckBox, SIGNAL(toggled(bool)), config, SLOT(setReadBothCounters(bool)));
     connect(config, SIGNAL(readBothCountersChanged(bool)), ui->readBothCountersCheckBox, SLOT(setChecked(bool)));
@@ -612,9 +610,6 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     // Log level
     connect(ui->logLevelSpinner, SIGNAL( editingFinished() ), this, SLOT( setLogLevel() ) );
     connect(config, SIGNAL(logLevelChanged(int)), ui->logLevelSpinner, SLOT(setValue(int)) );
-
-
-
 }
 
 void QCstmConfigMonitoring::nTriggersEdited() {

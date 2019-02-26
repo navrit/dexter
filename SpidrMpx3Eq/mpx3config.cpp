@@ -135,12 +135,12 @@ void Mpx3Config::SendConfiguration( config_items item ) {
 
     // This are configuration bits which are not settable like the system clock
     if ( item == __ALL ) {
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, _chipIDELAYS[0], true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, _chipIDELAYS[1], true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, _chipIDELAYS[2], true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, _chipIDELAYS[3], true);
-        PickupStaticConfigurationFigures();
+        _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP0, _chipIDELAYS[0], true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP1, _chipIDELAYS[1], true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP2, _chipIDELAYS[2], true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP3, _chipIDELAYS[3], true);
 
+        PickupStaticConfigurationFigures();
     }
 
     ////////////////////////////////////////////////////////////
@@ -150,14 +150,11 @@ void Mpx3Config::SendConfiguration( config_items item ) {
     ////////////////////////////////////////////////////////////
     // Configuration required on every chip
     if ( RequiredOnEveryChipConfig( item ) ) {
-
         int nDevSupported = getNDevicesSupported();
         for ( int i = 0 ; i < nDevSupported ; i++ ) {
-
             if ( detectorResponds( i ) ) {
                 Configuration(false, i, item);
             }
-
         }
     }
 

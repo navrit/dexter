@@ -27,6 +27,11 @@ History:
 #define MPX3RX_UDP_PKTCNTR      0x384
 #define MPX3RX_UDP_PKTCNTR_MON  0x388
 
+#define MPX3RX_IDELAY_CHIP0     0x10A0
+#define MPX3RX_IDELAY_CHIP1     0x10A4
+#define MPX3RX_IDELAY_CHIP2     0x10A8
+#define MPX3RX_IDELAY_CHIP3     0x10AC
+
 // ----------------------------------------------------------------------------
 // Medipix3 DACs
 

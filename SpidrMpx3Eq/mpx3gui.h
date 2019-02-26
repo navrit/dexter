@@ -276,7 +276,7 @@ private:
 
     bool m_offset = false; //! Used for generating different patterns per test pattern
 
-    bool _loadConfigRemotly = false;
+    bool _loadConfigRemotely = false;
     QString _configPath = "";
 
     GeneralSettings *_generalSettings;

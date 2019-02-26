@@ -351,6 +351,7 @@ void Mpx3GUI::loadLastConfiguration()
                     //! Load the last configuration
                     config->fromJsonFile(lastConfigurationPath + QDir::separator() + "config.json");
                     _ui->DACsWidget->PopulateDACValues();
+
                     emit sig_statusBarClean();
                     emit sig_statusBarAppend(QString("Autoloading last configuration file from " + lastConfigurationPath), "green");
 
@@ -674,10 +675,6 @@ bool Mpx3GUI::establish_connection() {
     getConfigMonitoring()->OperationModeSwitched( Mpx3Config::__operationMode_SequentialRW );
     getConfig()->SendConfiguration( Mpx3Config::__ALL );
 
-    // Load equalization if possible
-    //LoadEqualization();
-
-    // Emit
     emit ConnectionStatusChanged( true );
 
     // A working set had been instantiated before just to have a Dataset
@@ -1235,30 +1232,30 @@ void Mpx3GUI::save_config(){
 
 bool Mpx3GUI::load_config(){
 
-     bool res = false;
-    if(!_loadConfigRemotly){
-       _configPath  = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
+    bool res = false;
+    if(!_loadConfigRemotely){
+        _configPath  = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
     }
     QFileInfo configFileInfo(_configPath);
     if (configFileInfo.exists() && configFileInfo.isFile()) {
         res = config->fromJsonFile(_configPath);
         _generalSettings->setConfigPath(_configPath);
         // update the dacs
-        if(!_loadingBeforeConnecting)
+        if (!_loadingBeforeConnecting) {
             _ui->DACsWidget->PopulateDACValues();
-       } else {
-           res = false;
-       }
+        }
+    } else {
+        res = false;
+    }
 
-
-    _loadConfigRemotly = false; //reset the flag
+    _loadConfigRemotely = false; //reset the flag
 
     return res;
 }
 
 bool Mpx3GUI::load_config_remotely(QString path)
 {
-    _loadConfigRemotly = true;
+    _loadConfigRemotely = true;
     _configPath = path;
     return load_config();
 }
