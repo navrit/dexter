@@ -1051,7 +1051,7 @@ void Mpx3GUI::prepareDetectorForDataTaking()
 
     getVisualization()->StartDataTaking();
     usleep(100000);
-    zero_data();
+    zero_data(false);
 
     getConfig()->setTriggerDowntime(double(closeShutterPeriod/1000.0));
     getConfig()->setTriggerLength(double(openShutterPeriod/1000.0));
@@ -1468,12 +1468,15 @@ void Mpx3GUI::clear_data(bool printToStatusBar) {
     }
 }
 
-void Mpx3GUI::zero_data()
+void Mpx3GUI::zero_data(bool printToStatusBar)
 {
     getDataset()->zero();
     emit data_zeroed();
     this->setWindowTitle( _softwareName);
-    emit sig_statusBarAppend("Zeroed data", "orange");
+
+    if ( printToStatusBar ) {
+        emit sig_statusBarAppend("Zeroed data", "orange");
+    }
 }
 
 // Change me when adding extra views???
