@@ -110,7 +110,7 @@ void QCstmGLVisualization::clearThresholdsVector()
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
 {
     refreshScoringInfo();
-    reload_all_layers();
+    drawFrameImage();
 }
 
 void QCstmGLVisualization::refreshScoringInfo()
@@ -142,6 +142,14 @@ void QCstmGLVisualization::refreshScoringInfo()
     BuildStatsStringLostFrames( _score.lostFrames );
     BuildStatsStringLostPackets( _score.lostPackets );
     BuildStatsString();
+}
+
+//! @brief This looks stupid, but for some reason it isn't...
+//! Calling reload_all_layers() directly as a public slot is somehow different to calling it through this
+//! public non-slot wrapper
+void QCstmGLVisualization::drawFrameImage()
+{
+    reload_all_layers();
 }
 
 void QCstmGLVisualization::rewindScoring()
