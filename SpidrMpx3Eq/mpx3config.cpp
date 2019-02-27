@@ -415,13 +415,15 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
 void Mpx3Config::setColourMode(bool mode) {
 
-    if(mode != colourMode) {
-        colourMode = mode;
-        emit colourModeChanged(mode);
+    if (mode != colourMode) {
         // When changing mode data needs to be cleared if connected...
         if (_mpx3gui->getConfig()->isConnected()) {
             _mpx3gui->clear_data();
         }
+
+        colourMode = mode;
+        emit colourModeChanged(mode);
+
         //updateColourMode();
         SendConfiguration( __colourMode );
     }

@@ -185,17 +185,14 @@ void DataTakingThread::run() {
 
         spidrdaq->releaseAll();
 
-            bool stopTimers = true;
-            if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-                spidrcontrol->startContReadout( contRWFreq );
-                stopTimers = false;
-            } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (_mpx3gui->getConfig()->getTriggerLength_ms_64() + _mpx3gui->getConfig()->getTriggerDowntime_ms_64() <= LONG_PERIOD_MS)&&!_isExternalTrigger){
-                spidrcontrol->startAutoTrigger();
-                stopTimers = false;
-            }
-
-
-
+        bool stopTimers = true;
+        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+            spidrcontrol->startContReadout( contRWFreq );
+            stopTimers = false;
+        } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (_mpx3gui->getConfig()->getTriggerLength_ms_64() + _mpx3gui->getConfig()->getTriggerDowntime_ms_64() <= LONG_PERIOD_MS)&&!_isExternalTrigger){
+            spidrcontrol->startAutoTrigger();
+            stopTimers = false;
+        }
 
         bool _break = false;
         timeOutTime = 500;

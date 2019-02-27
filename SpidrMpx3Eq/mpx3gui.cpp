@@ -793,7 +793,6 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
         startupActions();
         m_appActiveFirstTime = true;
     }
-
 }
 
 //! Debugging function to generate test patterns, used to verify files are being saved correctly
@@ -1044,15 +1043,18 @@ void Mpx3GUI::prepareDetectorForDataTaking()
     uint64_t openShutterPeriod   = config-> getTriggerLength_64();
     int csmSpm = config->getCsmSpm();
     int nframes = config->getNTriggers();
-    config->setTriggerDowntime(2.0);
-    config->setTriggerLength(2.0);
+
+    config->setTriggerDowntime(2.0); //! Units of ms now
+    config->setTriggerLength(2.0); //! Units of ms now
     config->setCsmSpm(0);
     config->setNTriggers(1);
+
     getVisualization()->StartDataTaking();
     usleep(100000);
     zero_data();
-    getConfig()->setTriggerDowntime((double)closeShutterPeriod/1000.0);
-    getConfig()->setTriggerLength((double)openShutterPeriod/1000.0);
+
+    getConfig()->setTriggerDowntime(double(closeShutterPeriod/1000.0));
+    getConfig()->setTriggerLength(double(openShutterPeriod/1000.0));
     getConfig()->setCsmSpm(csmSpm);
     getConfig()->setNTriggers(nframes);
 }
@@ -1455,15 +1457,15 @@ void Mpx3GUI::clear_configuration(){
 
 }
 
-void Mpx3GUI::clear_data(bool clearStatusBar) {
+void Mpx3GUI::clear_data(bool printToStatusBar) {
 
     getDataset()->clear();
     emit data_cleared();
     this->setWindowTitle( _softwareName);
 
-    if ( clearStatusBar )
+    if ( printToStatusBar ) {
         emit sig_statusBarAppend("Clear data","orange");
-
+    }
 }
 
 void Mpx3GUI::zero_data()
@@ -1725,6 +1727,7 @@ void Mpx3GUI::autoConnectToDetector() {
     connect(getEqualization(), SIGNAL(equalizationPathExported(QString)), this,
             SLOT(onEqualizationPathExported(QString)));
     _loadEqualizationFromGeneralSettings();
+
     prepareDetectorForDataTaking();
   }
 }

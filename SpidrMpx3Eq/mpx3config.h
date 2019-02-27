@@ -252,14 +252,15 @@ public slots:
     void setColourMode(bool mode);
 
     void setReadBothCounters(bool rbc) {
-        if(rbc != readBothCounters) {
-            readBothCounters=rbc; emit readBothCountersChanged(rbc);
+        if (rbc != readBothCounters) {
+            readBothCounters = rbc;
+            emit readBothCountersChanged(rbc);
             SendConfiguration( __readBothCounters );
         }
     }
 
     void setDecodeFrames(bool decode){
-        if(decode != decodeFrames){
+        if (decode != decodeFrames){
             decodeFrames = decode; emit decodeFramesChanged(decode);
             SendConfiguration( __decodeFrames );
         }
