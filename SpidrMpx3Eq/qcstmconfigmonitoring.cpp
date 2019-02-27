@@ -1080,6 +1080,7 @@ void QCstmConfigMonitoring::saveConfigFileRemotely(QString path){
 void QCstmConfigMonitoring::on_LoadButton_clicked() {
     QString filename = QFileDialog::getOpenFileName(this, tr("Open configuration"), tr("./config"), tr("Json files (*.json)"));
     _mpx3gui->getConfig()->fromJsonFile(filename, ui->IncludeDacsCheck->isChecked());
+    _mpx3gui->getConfig()->SendConfiguration( Mpx3Config::__ALL );
 }
 
 void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked) {

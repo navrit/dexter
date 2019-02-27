@@ -1245,6 +1245,7 @@ bool Mpx3GUI::load_config(){
         // update the dacs
         if (!_loadingBeforeConnecting) {
             _ui->DACsWidget->PopulateDACValues();
+            getConfig()->SendConfiguration( Mpx3Config::__ALL );
         }
     } else {
         res = false;
