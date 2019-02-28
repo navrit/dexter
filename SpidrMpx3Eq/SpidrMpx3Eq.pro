@@ -32,6 +32,9 @@ CONFIG(release, debug|release) {
     message("Enabling all optimisation flags as qmake sees fit")
     CONFIG *= optimize_full
     CONFIG += warn_off
+
+    QMAKE_CFLAGS   *= -flto
+    QMAKE_CXXFLAGS *= -flto
 }
 
 INCLUDEPATH += ../SpidrMpx3Lib/
