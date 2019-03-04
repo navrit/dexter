@@ -114,7 +114,8 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       row_counter = -1;
       [[fallthrough]];
     case PIXEL_DATA_SOR:
-      ++row_counter;
+        if(row_counter <  MPX_PIXEL_ROWS - 1) // kinda saturation
+            ++row_counter;
       assert (row_counter >= 0 && row_counter < MPX_PIXEL_ROWS);
       row = frame->getRow(row_counter);
       cursor = 0;
