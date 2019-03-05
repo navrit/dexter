@@ -1,5 +1,6 @@
 #include <cassert>
 #include "FrameSet.h"
+#include <iostream>
 
 FrameSet::FrameSet()
 {
@@ -18,6 +19,9 @@ void FrameSet::setBothCounters(bool b) {
     counters = b ? 2 : 1;
 }
 
+/**
+ * @brief FrameSet::clear marks the ChipFrames as clear
+ */
 void FrameSet::clear() {
     for (int i = 0; i < number_of_chips; i++)
       for (int j = 0; j < 2; j++)
@@ -29,6 +33,10 @@ void FrameSet::clear() {
     counters = 1;
 }
 
+/**
+ * @brief FrameSet::isComplete checks if all ChipFrames are present
+ * @return
+ */
 bool FrameSet::isComplete() {
     for (int j = 0; j < counters; j++)
         for (int i = 0; i < number_of_chips; i++)
@@ -37,6 +45,12 @@ bool FrameSet::isComplete() {
     return true;
 }
 
+/**
+ * @brief FrameSet::takeChipFrame	takes out an existing ChipFrame
+ * @param chipIndex the index of the chip
+ * @param counterH  whether to take the high counter entry
+ * @return the ChipFrame or nullptr
+ */
 ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
     assert (chipIndex >= 0 && chipIndex < number_of_chips);
     if (counterH) counters = 2;
@@ -48,11 +62,15 @@ ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
     return result;
 }
 
+/**
+ * @brief FrameSet::putChipFrame	put in an existing ChipFrame
+ * @param chipIndex the index of the chip
+ * @param the ChipFrame
+ */
 void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
     assert (chipIndex >= 0 && chipIndex < number_of_chips);
     assert (cf != nullptr);
     // in 24 bit mode use both counters, not in CRW;
-    // FOR NOW not in "both counters" mode!
     if (cf->omr.getCountL() == 3) counters = 2;
     int hi = (counters == 2 && cf->omr.getMode() == 4) ? 1 : 0;
     assert (hi == 0 || counters == 2);
@@ -61,6 +79,12 @@ void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
     *spot = cf;
 }
 
+/**
+ * @brief FrameSet::copyTo32 copy one frame (could be 24 bits) into an 32 bit array
+ * @param chipIndex the index of the chip
+ * @param counterH whether to use the high counter (not for 24 bits)
+ * @param dest where to copy to
+ */
 void FrameSet::copyTo32(int chipIndex, bool counterH, uint32_t *dest) {
     ChipFrame *f0 = frame[0][chipIndex];
     ChipFrame *f1 = frame[1][chipIndex];
@@ -71,8 +95,13 @@ void FrameSet::copyTo32(int chipIndex, bool counterH, uint32_t *dest) {
         uint16_t *src1 = f1->getRow(0);
         while (n--) *(dest++) = (uint32_t(*(src1++)) << 12) | *(src0++) ;
     } else {
-        uint16_t *src = (counterH ? f1 : f0)->getRow(0);
-        while (n--) *(dest++) = *(src++);
+        ChipFrame *f = counterH ? f1 : f0;
+        if (f == nullptr) {
+            std::cerr << " missing ChipFrame" << std::endl;
+        } else {
+            uint16_t *src = f->getRow(0);
+            while (n--) *(dest++) = *(src++);
+        }
     }
 }
 

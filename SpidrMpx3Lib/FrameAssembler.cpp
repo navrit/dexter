@@ -20,8 +20,12 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
     if (row_counter >= 0) {
       // we're in a frame
       int eorIndex = (endCursor - (cursor & 0xff)) / pixels_per_word;
-      packetLoss = firstType == POLL_TIME_OUT ||
-              eorIndex >= packetSize || ! packetEndsRow(pixel_packet[eorIndex]);
+      packetLoss = firstType == POLL_TIME_OUT || eorIndex >= packetSize;
+      if (! packetLoss) {
+          uint64_t eorPacket = pixel_packet[eorIndex];
+          packetLoss = ! packetEndsRow(eorPacket)
+                  || row_counter != extractRow(lutBugFix(eorPacket));
+      }
     } else {
       if (firstType == POLL_TIME_OUT) return;
       packetLoss = firstType != INFO_HEADER_SOF;
@@ -56,6 +60,11 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
           break;
         case PIXEL_DATA_MID:
           while (i < packetSize && packetType(pixel_packet[i]) == PIXEL_DATA_MID) i++;
+          if (i == packetSize) {
+              // bugger, count them all as lost
+              frame->pixelsLost += packetSize * pixels_per_word;
+              return;
+          }
           [[fallthrough]];
         case PIXEL_DATA_EOR :
         case PIXEL_DATA_EOF :
@@ -89,7 +98,9 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
           }
           cursor = next_cursor;
           assert (cursor >= 0 && cursor < MPX_PIXEL_COLUMNS);
-          assert (packetEndsRow(pixel_packet[(endCursor - cursor) / pixels_per_word]));
+          { int rowEndIx = (endCursor - cursor) / pixels_per_word;
+            assert (rowEndIx >= packetSize || packetEndsRow(pixel_packet[rowEndIx]));
+          }
           row_counter = next_row;
           frame->pixelsLost += missing + (row_counter - 1 - last_row) * MPX_PIXEL_COLUMNS + cursor;
           if (cursor == 0) {
@@ -114,8 +125,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       row_counter = -1;
       [[fallthrough]];
     case PIXEL_DATA_SOR:
-        if(row_counter <  MPX_PIXEL_ROWS - 1) // kinda saturation
-            ++row_counter;
+      ++row_counter;
       assert (row_counter >= 0 && row_counter < MPX_PIXEL_ROWS);
       row = frame->getRow(row_counter);
       cursor = 0;

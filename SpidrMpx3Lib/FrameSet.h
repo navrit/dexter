@@ -12,6 +12,7 @@ public:
     ~FrameSet();
     void clear();
     void setBothCounters(bool b);
+    bool hasBothCounters() { return counters == 2; }
     ChipFrame* takeChipFrame(int chipIndex, bool counterH);
     void putChipFrame(int chipIndex, ChipFrame * cf);
     bool isComplete();
