@@ -261,6 +261,10 @@ void DataTakingThread::run() {
                 // sync since the descriptor can stay behind the readdescriptor.
                 // In this case we will drop the frame.
 
+                if (bothCounters && ! fs->hasBothCounters()) {
+                    qDebug() << "[ERROR]\tFrameSet should have both counters but it hasn't";
+                }
+
                 if (fs->isComplete() && ! (fs->pixelsLost() > 0 && _vis->getDropFrames())) {
 
                     for ( int i = 0 ; i < nChips ; i++ ) {
