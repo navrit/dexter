@@ -34,6 +34,12 @@ void UdpReceiver::run() {
   print_affinity();
   if (set_scheduler() != 0) {
     spdlog::get("console")->error("Could not set scheduler");
+
+    std::string etcLimitsSecurityMessage = "Verify that '/etc/limits/security.conf' has the 'rtprio' lines, eg.\n"
+                                           "YOUR_USERNAME\tsoft\trtprio\t99\n"
+                                           "YOUR_USERNAME\thard\trtprio\t99\n"
+                                           "Reboot after changing this file, this message should not appear if is correctly set.";
+    spdlog::get("console")->error(etcLimitsSecurityMessage);
   }
 
   spdlog::get("console")->debug("UDP Receiver starting");
