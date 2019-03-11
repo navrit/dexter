@@ -37,7 +37,7 @@ CONFIG(release, debug|release) {
     QMAKE_CXXFLAGS *= -flto
 }
 
-INCLUDEPATH += ../SpidrMpx3Lib/
+INCLUDEPATH += ../SpidrMpx3Lib/ moc
 
 INCLUDEPATH += $$PWD/../Qzmq
 include($$PWD/../Qzmq/Qzmq.pri)
