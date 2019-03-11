@@ -24,7 +24,8 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       if (! packetLoss) {
           uint64_t eorPacket = pixel_packet[eorIndex];
           packetLoss = ! packetEndsRow(eorPacket)
-                  || row_counter != extractRow(lutBugFix(eorPacket));
+                  || row_counter + (cursor == MPX_PIXEL_COLUMNS ? 1 : 0)
+                                != extractRow(lutBugFix(eorPacket));
       }
     } else {
       if (firstType == POLL_TIME_OUT) return;
