@@ -122,6 +122,22 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
     switch (type) {
     case PIXEL_DATA_SOF:
       assert (frame == nullptr);
+      // the OMR could be bogus on some rare chip boards, verify!
+      if (! packetEndsRow(pixel_packet[endCursor/pixels_per_word])) {
+          std::cerr << "[ERROR] bad OMR in Info Header\n";
+          int countL;
+          if (packetEndsRow(pixel_packet[4])) {
+              counter_bits = 1; countL = 0;
+          } else if (packetEndsRow(pixel_packet[25])) {
+              counter_bits = 6; countL = 1;
+          } else if (packetEndsRow(pixel_packet[51])) {
+              counter_bits = 12; countL = 2;
+          }
+          omr.setCountL(countL);
+          pixels_per_word = 60 / counter_bits;
+          pixel_mask = (1 << counter_bits) - 1;
+          endCursor = MPX_PIXEL_COLUMNS - (MPX_PIXEL_COLUMNS % pixels_per_word);
+      }
       frame = fsm->newChipFrame(chipIndex, omr);
       row_counter = -1;
       [[fallthrough]];
