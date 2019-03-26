@@ -47,17 +47,24 @@ void UdpReceiver::run() {
   int timeout_ms = int((timeout_us+0.5)/1000.); //! Round up
   spdlog::get("console")->debug("Poll timeout = {} us = {} ms", timeout_us, timeout_ms);
 
-  struct epoll_event events[1024]; //! TODO This could be smaller, right?
+  struct epoll_event events[32];
 
+#ifdef UDP_TIMING_INFO
   long poll_count = 0, ev_count = 0, sum_p = 0, sum_r = 0, sum_a = 0;
+#endif
+
   do {
 
+#ifdef UDP_TIMING_INFO
     time_point begin = steady_clock::now();
+#endif
 
-    int ret = epoll_wait(epfd, events, 1024, timeout_ms);
+    int ret = epoll_wait(epfd, events, 32, timeout_ms);
+#ifdef UDP_TIMING_INFO
     time_point polled = steady_clock::now();
     poll_count++;
     sum_p += std::chrono::duration_cast<us>(polled - begin).count();
+#endif
 
     if (ret == 0) {
         // time out
@@ -66,9 +73,11 @@ void UdpReceiver::run() {
         }
     } else if (ret > 0) {
       // Success
+#ifdef UDP_TIMING_INFO
       ev_count += ret;
-      // An event on one of the fds has occurred.
       time_point l0 = polled;
+#endif
+      // An event on one of the fds has occurred.
       for (int j = 0; j < ret; j++) {
           uint32_t etype = events[j].events;
           if (! (etype & EPOLLIN)) {
@@ -82,13 +91,17 @@ void UdpReceiver::run() {
              Assuming no packet loss, extra fragmentation or MTU changing size*/
           long received_size =
               recv(peer->fd, inputQueues[i].data, max_packet_size, 0);
+#ifdef UDP_TIMING_INFO
           time_point lr = steady_clock::now();
+#endif
           inputQueues[i].chipIndex = i;
           inputQueues[i].size = received_size;
 
           ++packets; //! Count the number of packets received.
 
           frameAssembler[i]->onEvent(inputQueues[i]);
+
+#ifdef UDP_TIMING_INFO
           time_point la = steady_clock::now();
 
           {
@@ -96,16 +109,19 @@ void UdpReceiver::run() {
               sum_a += std::chrono::duration_cast<us>(la - lr).count();
               l0 = la;
           }
+#endif
       }
 
     } else if (ret == -1 && errno != EINTR) {
       spdlog::get("console")->error("epoll_wait: ret = {}", ret);
     }
 
-    if (poll_count == 1000 && (ev_count !=0 && sum_r != 0 && sum_a !=0)) {
+#ifdef UDP_TIMING_INFO
+    if (poll_count == 10000 && (ev_count !=0 && sum_r != 0 && sum_a !=0)) {
       spdlog::get("console")->info("Polls {}, time {}, evts {}, rcv {}, ass {} ", poll_count, sum_p, ev_count, sum_r, sum_a);
       poll_count = 0; ev_count = 0; sum_p = 0; sum_r = 0; sum_a = 0;
     }
+#endif
   } while (!finished);
   spdlog::get("console")->info("UdpReceiver finished");
 
