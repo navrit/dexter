@@ -196,7 +196,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       infoIndex = 0; break;
     case INFO_HEADER_MID:
       if (infoIndex == 4)
-        chipId = int((pixelword & 0xffffffff));
+        chipId = int((pixelword & 0x3fffffff));
       else if (infoIndex == 5 && chipId != 0) {
         omr.setHighR(pixelword & 0xffff);
       }

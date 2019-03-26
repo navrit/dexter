@@ -408,16 +408,22 @@ bool SpidrController::reinitMacAddr()
 // Configuration: devices
 // ----------------------------------------------------------------------------
 
+bool zeroTopBits (int *ids, int n) {
+    for (int dev = 0; dev < n; dev++)
+        ids[dev] &= 0x3fffffff;
+    return true;
+}
+
 bool SpidrController::getDeviceId( int dev_nr, int *id )
 {
-  return this->requestGetInt( CMD_GET_DEVICEID, dev_nr, id );
+  return this->requestGetInt(CMD_GET_DEVICEID, dev_nr, id) && zeroTopBits(id, 1);
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getDeviceIds( int *ids )
 {
-  return this->requestGetInts( CMD_GET_DEVICEIDS, 0, 4, ids );
+  return this->requestGetInts(CMD_GET_DEVICEIDS, 0, 4, ids) && zeroTopBits(ids, 4);
 }
 
 // ----------------------------------------------------------------------------
