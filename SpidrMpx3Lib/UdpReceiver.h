@@ -79,6 +79,7 @@ private:
   struct sockaddr_in listen_address; // My address
   int epfd = -1;
   peer_t peers[Config::number_of_chips];
+  const int kNumberOfPollEvents = 32;
 
   FrameSetManager *fsm = new FrameSetManager();
   PacketContainer inputQueues[Config::number_of_chips];

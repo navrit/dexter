@@ -47,7 +47,7 @@ void UdpReceiver::run() {
   int timeout_ms = int((timeout_us+0.5)/1000.); //! Round up
   spdlog::get("console")->debug("Poll timeout = {} us = {} ms", timeout_us, timeout_ms);
 
-  struct epoll_event events[32];
+  struct epoll_event events[kNumberOfPollEvents];
 
 #ifdef UDP_TIMING_INFO
   long poll_count = 0, ev_count = 0, sum_p = 0, sum_r = 0, sum_a = 0;
@@ -59,7 +59,7 @@ void UdpReceiver::run() {
     time_point begin = steady_clock::now();
 #endif
 
-    int ret = epoll_wait(epfd, events, 32, timeout_ms);
+    int ret = epoll_wait(epfd, events, kNumberOfPollEvents, timeout_ms);
 #ifdef UDP_TIMING_INFO
     time_point polled = steady_clock::now();
     poll_count++;
