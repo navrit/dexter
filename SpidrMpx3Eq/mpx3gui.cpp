@@ -674,6 +674,7 @@ bool Mpx3GUI::establish_connection() {
     // Default operation mode
     getConfigMonitoring()->OperationModeSwitched( Mpx3Config::__operationMode_SequentialRW );
     getConfig()->SendConfiguration( Mpx3Config::__ALL );
+    getVisualization()->initialiseThresholdsVector();
 
     emit ConnectionStatusChanged( true );
 

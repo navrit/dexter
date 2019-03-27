@@ -62,7 +62,9 @@ public:
 
     void setThresholdsVector(int chipId,int idx, int value);
     int getThresholdVector(int chipId,int idx);
-    void clearThresholdsVector(void);
+    void clearThresholdsVector();
+    void initialiseThresholdsVector();
+
     void timerEvent( QTimerEvent * );
     void refreshScoringInfo();
     void drawFrameImage();
@@ -215,8 +217,8 @@ private:
 
 private slots:
     void ConnectionStatusChanged(bool connecting);
+
     void on_percentileRangeRadio_toggled(bool checked);
-    void _initializeThresholdsVector(void);
 
     //! Gets called when a new data range was selected in the histogram plot.
     void new_range_dragged(QCPRange newRange);

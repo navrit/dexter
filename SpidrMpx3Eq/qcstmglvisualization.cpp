@@ -69,10 +69,6 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
 
     developerMode(false);
     qCstmGLVisualizationInst = this;
-   // connect(this,SIGNAL(infDataTakingToggeled(bool)),this->ui->infDataTakingCheckBox,SLOT(setChecked(bool)));
-    //_initializeThresholdsVector();
-    QTimer::singleShot(0, this, SLOT(_initializeThresholdsVector()));
-
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
@@ -88,7 +84,6 @@ void QCstmGLVisualization::setThresholdsVector(int chipId, int idx, int value)
 {
     if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
         _thresholdsVector[chipId][idx] = value;
-    //_loadFromThresholdsVector();
 }
 
 int QCstmGLVisualization::getThresholdVector(int chipId, int idx)
@@ -2272,7 +2267,7 @@ void QCstmGLVisualization::_loadFromThresholdsVector()
     }
 }
 
-void QCstmGLVisualization::_initializeThresholdsVector()
+void QCstmGLVisualization::initialiseThresholdsVector()
 {
     for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
         for (int idx = 0; idx < 8; ++idx) {
