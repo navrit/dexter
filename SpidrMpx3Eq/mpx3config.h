@@ -112,9 +112,11 @@ public:
     SpidrController * establishConnection();
     void closeConnection();
     void destroyController();
-    int getDacCount() { return _dacVals[0].length(); }
-    int getDACValue(uint chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
-    void setDACValue(uint chip, int dacIndex, int val) { _dacVals[dacIndex][chip] = val; }
+
+    int getDacCount();
+    int getDACValue(uint chip, int dacIndex);
+    void setDACValue(uint chip, int dacIndex, int dac_value);
+
     QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; }
     int getNDevicesPresent() { return _nDevicesPresent; }
     int getDataBufferId(int devIndx);

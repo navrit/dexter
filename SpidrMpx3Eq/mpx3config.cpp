@@ -537,6 +537,32 @@ void Mpx3Config::destroyController()
     }
 }
 
+int Mpx3Config::getDacCount() {
+    if (_dacVals->length() > 0) {
+        return _dacVals[0].length();
+    }
+    //! Error otherwise. Most likely this function is called too early by a fool!
+    //! Deal with it elsewhere
+    return -1;
+}
+
+int Mpx3Config::getDACValue(uint chip, int dacIndex) {
+    if (_dacVals->length() > 0) {
+        return _dacVals[dacIndex][chip];
+    }
+    //! Error otherwise. Most likely this function is called too early by a fool!
+    //! Deal with it elsewhere
+    return -1;
+}
+
+void Mpx3Config::setDACValue(uint chip, int dacIndex, int dac_value) {
+    if (_dacVals->length() > 0) {
+        _dacVals[dacIndex][chip] = dac_value;
+    } else {
+        qDebug() << "[WARN]\tMpx3Config::setDACValue failed. _dacVals is empty - report this bug. chip =" << chip << " dac_index =" << dacIndex << " dac_value =" << dac_value;
+    }
+}
+
 //! If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
 //! Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1.
 //! This member computes that transform using the detected status of the chips.
@@ -801,7 +827,7 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
                 QJsonObject obj = value.toObject();
                 for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
                     _dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
-                    //cout << obj[MPX3RX_DAC_TABLE[i].name].toInt() << endl;
+                   // qDebug() << "fromJsonFile: " << obj[MPX3RX_DAC_TABLE[i].name].toInt() << "\n";
                 }
             }
         }
