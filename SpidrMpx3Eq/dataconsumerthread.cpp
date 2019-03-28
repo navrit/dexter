@@ -83,7 +83,10 @@ void DataConsumerThread::consume()
                  );
         connect ( this, &DataConsumerThread::doneWithOneFrame,
                   _mpx3gui->getVisualization(),
-                  &QCstmGLVisualization::consumerFinishedOneFrame
+                  &QCstmGLVisualization::consumerFinishedOneFrame,
+                  Qt::DirectConnection
+                  // needs to finish before dataset is overwritten (#266)
+                  // see also #244
                   );
 
         // Start !
