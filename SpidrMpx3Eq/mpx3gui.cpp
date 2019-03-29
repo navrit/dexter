@@ -1163,10 +1163,10 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
     const QString unmodifiedFilename = filename;
-    const int extraPixels = 2;
 
+    Dataset* dataset = getDataset();
     if (selectedFilter == BIN_FILES) {
-        getDataset()->saveBIN(filename);
+        dataset->saveBIN(filename);
     } else if (selectedFilter == SPATIAL_TIFF_FILES
             || selectedFilter == RAW_TIFF_FILES
             || selectedFilter == RAW_TIFF16_FILES
@@ -1176,51 +1176,50 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
 
         //! This is a shitty way of doing it but whatever the disk is still the bottleneck... maybe fix it later
 
-        QList<int> thresholds = getDataset()->getThresholds();
-        for (int i = 0; i < thresholds.length(); i++) {
+        foreach (int key, dataset->getThresholds()) {
             QString tmpFilename = unmodifiedFilename;
             Canvas frame;
 
             if (selectedFilter == SPATIAL_TIFF_FILES) {
-                frame = getDataset()->makeFrameForSaving(i, true, true);
-                tmpFilename = tmpFilename.replace("_spatialCorrected.tiff", QString("-th"+ QString::number(thresholds[i]) +"_spatialCorrected.tiff"));
+                frame = dataset->makeFrameForSaving(key, true, true);
+                tmpFilename = tmpFilename.replace("_spatialCorrected.tiff", QString("-th"+ QString::number(key) +"_spatialCorrected.tiff"));
 
             } else if (selectedFilter == RAW_TIFF_FILES) {
-                frame = getDataset()->getFullImageAsArrayWithLayout(i, 4);
-                tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
+                frame = dataset->getFullImageAsArrayWithLayout(key, 4);
+                tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(key) +"_raw.tiff"));
 
             } else if (selectedFilter == RAW_TIFF16_FILES) {
-                frame = getDataset()->getFullImageAsArrayWithLayout(i, 2);
-                tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
+                frame = dataset->getFullImageAsArrayWithLayout(key, 2);
+                tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(key) +"_raw.tiff"));
 
             } else if (selectedFilter == PGM16_FILES) {
-                frame = getDataset()->getFullImageAsArrayWithLayout(i, 2);
-                tmpFilename = tmpFilename.replace("_raw.pgm", QString("-th"+ QString::number(thresholds[i]) +"_raw.pgm"));
+                frame = dataset->getFullImageAsArrayWithLayout(key, 2);
+                tmpFilename = tmpFilename.replace("_raw.pgm", QString("-th"+ QString::number(key) +"_raw.pgm"));
                 QtConcurrent::run( dataControllerThread, &DataControllerThread::savePGMParallel, tmpFilename, frame);
                 continue;
 
             } else if (selectedFilter == TIFF_FILES) {
-                frame = getDataset()->makeFrameForSaving(i);
-                tmpFilename = tmpFilename.replace(".tiff", QString("-th"+ QString::number(thresholds[i]) +".tiff"));
+                frame = dataset->makeFrameForSaving(key);
+                tmpFilename = tmpFilename.replace(".tiff", QString("-th"+ QString::number(key) +".tiff"));
 
             } else if (selectedFilter == BOTH_TIFF_FILES) {
-                frame = getDataset()->getFullImageAsArrayWithLayout(i, 4);
-                tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
+                frame = dataset->getFullImageAsArrayWithLayout(key, 4);
+                tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(key) +"_raw.tiff"));
                 QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, tmpFilename, frame);
 
                 tmpFilename = unmodifiedFilename;
 
-                frame = getDataset()->makeFrameForSaving(i);
-                tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(thresholds[i]) +".tiff"));
+                frame = dataset->makeFrameForSaving(key);
+                tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(key) +".tiff"));
             }
 
             //tmpFilename = "/dev/null";
             QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, tmpFilename, frame);
         }
     } else if (selectedFilter == ASCII_FILES) {
-        getDataset()->toASCII(filename);
+        dataset->toASCII(filename);
     } else {
-        getDataset()->toTIFF(filename, false);
+        dataset->toTIFF(filename, false);
     }
 
     if (!requestPath){
