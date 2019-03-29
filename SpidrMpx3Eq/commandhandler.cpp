@@ -590,7 +590,9 @@ void CommandHandler::getImage()
 {
 
     /* TODO Pretty sure this is wrong... You connect a new signal every time this function is called? */
-    connect(QCstmGLVisualization::getInstance()->getDataConsumerThread(), SIGNAL(doneWithOneFrame(int)), this, SLOT(on_doneWithOneFrame(int)));
+    connect(QCstmGLVisualization::getInstance()->getDataConsumerThread(), SIGNAL(doneWithOneFrame(int)),
+            this, SLOT(on_doneWithOneFrame(int)),
+            Qt::DirectConnection);
 
 //    int nFrames = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
 //    int frameCounter = 0;
