@@ -97,7 +97,7 @@ void TcpConnecton::on_imageIsReady(QByteArray header, Canvas image)
    // qDebug()<<"Image size:"<<image.size();
     mutex.lock();
     int sndSize = m_socket->write(header);
-    sndSize = m_socket->write((const char*) image.image, image.size);
+    sndSize = m_socket->write((const char*) image.image.get(), image.size);
     m_socket->flush();
     //m_socket->waitForBytesWritten();
     mutex.unlock();

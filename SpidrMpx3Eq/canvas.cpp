@@ -5,22 +5,10 @@
 #include <utility>
 #include <atomic>
 
-uint8_t* allocateBuffer(size_t size) {
-    // OK this is a quick hack, create a nicer version later
-    const int poolSize = 32;
-    static std::pair<uint8_t*, size_t> pool[poolSize] = {std::pair<uint8_t*,size_t>(nullptr, (size_t) 0)};
-    static atomic_int bufferCounter;
-    int buffIndex = (bufferCounter++) & (poolSize-1);
-    std::pair<uint8_t*, size_t> item = pool[buffIndex];
-    if (item.first == nullptr || item.second < size)
-        pool[buffIndex] = item = std::pair<uint8_t*,size_t>(new uint8_t[size], size);
-    return item.first;
-}
-
 Canvas::Canvas() {}
 
 template <typename INTTYPE> void fill(Canvas* canvas, int gap, Dataset *ds, int* layer) {
-    INTTYPE* img = (INTTYPE*) canvas->image;
+    INTTYPE* img = (INTTYPE*) canvas->image.get();
     int imgWidth = canvas->width;
 
     auto positions = ds->getLayoutVector();
@@ -78,7 +66,7 @@ Canvas::Canvas(Dataset *ds, int key, int gap, int bytesPerPixel)
 
     pixelStride = bytesPerPixel;
     size = (ds->getWidth() + gap) * (ds->getHeight() + gap) * bytesPerPixel;
-    image = allocateBuffer(size_t (size));
+    image = std::shared_ptr<uint8_t>(new uint8_t[size], std::default_delete<uint8_t[]>());
 
     if (bytesPerPixel == 2) {
         fill<uint16_t>(this, gap, ds, layer);
@@ -107,7 +95,7 @@ bool Canvas::saveToTiff(const char* filePath)
         TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH,      width);                  // set the width of the image
         TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     height);                 // set the height of the image
 
-        uint8_t* img = image;
+        uint8_t* img = image.get();
         for (uint y=0; y < height; y++) {
             TIFFWriteScanline(m_pTiff, img, y, 0);
             img += rowStride;
@@ -133,7 +121,7 @@ bool Canvas::saveToPGM16(const char* filePath) {
     fprintf(f, "P5\n%d %d\n%d\n", width, height, 4095);
     const int bufsiz = 16384;
     uint16_t buf[bufsiz];
-    uint16_t* img = (uint16_t*) image;
+    uint16_t* img = (uint16_t*) image.get();
     int n = size/2;
     while (n > 0) {
         int n2 = n > bufsiz ? bufsiz : n;

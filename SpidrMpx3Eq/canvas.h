@@ -1,5 +1,6 @@
 #ifndef CANVAS_H
 #define CANVAS_H
+#include <memory>
 #include <cstddef>
 #include <cstdint>
 
@@ -14,7 +15,7 @@ public:
     size_t pixelStride = 0;
     size_t rowStride = 0;
     size_t size = 0;
-    uint8_t* image = nullptr;
+    std::shared_ptr<uint8_t> image = nullptr;
 
     bool saveToTiff(const char* filePath);
     bool saveToPGM16(const char* filePath);

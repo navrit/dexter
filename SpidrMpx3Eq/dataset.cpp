@@ -230,7 +230,7 @@ Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
 
     int gap = 2 * extraPixels;
     Canvas canvas(this, thresholds[threshold], gap, 4);
-    int * imageCorrected = (int*) (canvas.image);
+    int * imageCorrected = (int*) (canvas.image.get());
 
     //! Phase 2
     //! Loop for cross
