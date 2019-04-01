@@ -75,9 +75,11 @@ Canvas::Canvas(Dataset *ds, int key, int gap, int bytesPerPixel)
     }
 }
 
+QMutex Canvas::_mutex;
+
 bool Canvas::saveToTiff(const char* filePath)
 {
-
+    QMutexLocker locker( &_mutex );
     //! Open the TIFF file, write mode
     TIFF * m_pTiff = TIFFOpen(filePath, "w");
 

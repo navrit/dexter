@@ -3,6 +3,7 @@
 #include <memory>
 #include <cstddef>
 #include <cstdint>
+#include <QMutex>
 
 class Dataset;
 
@@ -16,6 +17,7 @@ public:
     size_t rowStride = 0;
     size_t size = 0;
     std::shared_ptr<uint8_t> image = nullptr;
+    static QMutex _mutex;
 
     bool saveToTiff(const char* filePath);
     bool saveToPGM16(const char* filePath);
