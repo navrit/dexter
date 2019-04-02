@@ -1,6 +1,5 @@
 #include "datacontrollerthread.h"
 #include <QDebug>
-#include "TiffFile.h"
 
 DataControllerThread::DataControllerThread(Mpx3GUI *, QObject *parent) : QThread(parent)
 { }
@@ -8,11 +7,17 @@ DataControllerThread::DataControllerThread(Mpx3GUI *, QObject *parent) : QThread
 DataControllerThread::~DataControllerThread()
 { }
 
-void DataControllerThread::saveTIFFParallel(QString filename, const uint imageWidth, const int *pixels)
+void DataControllerThread::saveTIFFParallel(QString filename, Canvas pixels)
 {
-//    qDebug() << "[INFO]\tSaving in parallel - TIFF" << filename << imageWidth;
-    if (!TiffFile::saveToTiff32(filename.toUtf8().data(), pixels, imageWidth, imageWidth)) {
-        qDebug() << "[ERROR]\tFailed to save TIFF:" << filename;
+    if (!pixels.saveToTiff(filename.toUtf8().data())) {
+        qDebug() << "[ERROR] Failed to save TIFF:" << filename;
+    }
+}
+
+void DataControllerThread::savePGMParallel(QString filename, Canvas pixels)
+{
+    if (!pixels.saveToPGM16(filename.toUtf8().data())) {
+        qDebug() << "[ERROR] Failed to save PGM16:" << filename;
     }
 }
 

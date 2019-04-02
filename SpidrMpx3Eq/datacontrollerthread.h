@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QThread>
+#include "canvas.h"
 
 class Mpx3GUI;
 
@@ -13,7 +14,8 @@ class DataControllerThread : public QThread
 public:
     explicit DataControllerThread(Mpx3GUI *, QObject * parent = nullptr);
     virtual ~DataControllerThread() override;
-    void saveTIFFParallel(QString filename, const uint imageWidth, const int * pixels);
+    void saveTIFFParallel(QString filename, Canvas pixels);
+    void savePGMParallel(QString filename, Canvas pixels);
 
 protected:
     void run() Q_DECL_OVERRIDE;

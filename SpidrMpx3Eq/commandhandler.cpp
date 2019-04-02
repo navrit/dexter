@@ -772,8 +772,8 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     FrameHeaderDataStruct frameHeader(getGui());
     auto dataset = getGui()->getDataset();
     for (int threshold = 0; threshold < 8; threshold++) {
-        std::pair<const char*, int> frame = dataset->toCanvas(threshold);
-        auto size = frame.second;
+        Canvas frame = dataset->toCanvas(threshold);
+        auto size = frame.size;
         if (size == 0) continue;
 
         frameHeader.counter = threshold;

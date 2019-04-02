@@ -6,6 +6,7 @@
 #include <QVector>
 #include "MerlinInterface.h"
 #include "ServerStatus.h"
+#include "canvas.h"
 
 
 class CommandHandler;
@@ -81,7 +82,7 @@ public:
     QHash<QString,cmd_struct> cmdTable;
 
 signals:
-    void imageIsReady(QByteArray,std::pair<const char*,int>);
+    void imageIsReady(QByteArray,Canvas);
     void requestForDataTaking(bool);
     void requestForInfDataTracking(bool);
     void requestForSnap(void);

@@ -81,7 +81,6 @@ SOURCES += main.cpp \
     barchart.cpp \
     ThlScan.cpp \
     DataTakingThread.cpp \
-    TiffFile.cpp \
     datacontrollerthread.cpp \
     zmqcontroller.cpp \
     qcstmBHWindow.cpp \
@@ -97,7 +96,8 @@ SOURCES += main.cpp \
     GeneralSettings.cpp \
     EnergyCalibrator.cpp \
     RemoteThresholdDlg.cpp \
-    tcpconnection.cpp
+    tcpconnection.cpp \
+    canvas.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -127,7 +127,6 @@ HEADERS += mpx3gui.h \
     barchart.h  \
     ThlScan.h \
     DataTakingThread.h \
-    TiffFile.h \
     datacontrollerthread.h \
     zmqcontroller.h \
     qcstmBHWindow.h \
@@ -146,7 +145,8 @@ HEADERS += mpx3gui.h \
     EnergyCalibrator.h \
     RemoteThresholdDlg.h \
     ServerStatus.h \
-    tcpconnection.h
+    tcpconnection.h \
+    canvas.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

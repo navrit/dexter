@@ -8,6 +8,7 @@
 #include <QMap>
 #include <QReadWriteLock>
 #include "tcpconnection.h"
+#include "canvas.h"
 
 
 class TcpConnections : public QObject
@@ -31,7 +32,7 @@ signals:
     // Pass the response to tcpconnection
     void responseIsReady(QString);
     // Pass the image to tcpconnection
-    void imageIsReady(QByteArray,std::pair<const char*,int>);
+    void imageIsReady(QByteArray, Canvas);
 
 protected slots:
     void disconnected();
@@ -47,7 +48,7 @@ public slots:
     //get response from tcpserver
     void on_responseIsReady(QString);
     //get image from tcpserver
-    void on_imageIsReady(QByteArray,std::pair<const char*,int>);
+    void on_imageIsReady(QByteArray, Canvas);
 };
 
 #endif // TCPCONNECTIONS_H

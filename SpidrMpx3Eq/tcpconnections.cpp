@@ -146,7 +146,7 @@ void TcpConnections::on_responseIsReady(QString response)
     emit responseIsReady(response);
 }
 
-void TcpConnections::on_imageIsReady(QByteArray header,std::pair<const char*,int> image)
+void TcpConnections::on_imageIsReady(QByteArray header, Canvas image)
 {
      //qDebug() << "Image received at the tcpconnections, size: " << image.size();
      //emit imageIsReady(header,image);

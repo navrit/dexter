@@ -8,7 +8,7 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
     commandHandler = new CommandHandler(parent);
     merlinInterface = new MerlinInterface;
     connect(commandHandler,SIGNAL(requestForDataTaking(bool)),this,SLOT(on_requestForDataTaking(bool)));
-    connect(commandHandler,SIGNAL(imageIsReady(QByteArray,std::pair<const char*,int>)),this,SLOT(on_ImageIsReady(QByteArray,std::pair<const char*,int>)));
+    connect(commandHandler,SIGNAL(imageIsReady(QByteArray,Canvas)),this,SLOT(on_ImageIsReady(QByteArray,Canvas)));
     connect(QCstmGLVisualization::getInstance(),SIGNAL(busy(SERVER_BUSY_TYPE)),this,SLOT(on_serverStatusChanged(SERVER_BUSY_TYPE)));
     connect(thresholdScan::getInstance(),SIGNAL(busy(SERVER_BUSY_TYPE)),this,SLOT(on_serverStatusChanged(SERVER_BUSY_TYPE)));
     connect(QCstmDacs::getInstance(),SIGNAL(busy(SERVER_BUSY_TYPE)),this,SLOT(on_serverStatusChanged(SERVER_BUSY_TYPE)));
@@ -39,11 +39,11 @@ void CommandHandlerWrapper::on_requestForDataTaking(bool)
 {
     QString acqHeader = commandHandler->getAcquisitionHeader();
     const char* dummy="";
-    emit imageIsReady(acqHeader.toLatin1(), std::pair<const char*,int>(dummy,0));
+    emit imageIsReady(acqHeader.toLatin1(), Canvas());
     commandHandler->getImage();
 }
 
-void CommandHandlerWrapper::on_ImageIsReady(QByteArray header,std::pair<const char*,int> image)
+void CommandHandlerWrapper::on_ImageIsReady(QByteArray header, Canvas image)
 {
     emit imageIsReady(header,image);
 }

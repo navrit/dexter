@@ -15,8 +15,6 @@
 #include <vector>
 #include <fstream>      // std::ofstream
 
-#include "TiffFile.h"
-
 using namespace std;
 
 Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
@@ -168,68 +166,10 @@ QByteArray Dataset::toByteArray() {
     return ret;
 }
 
-template <typename TYPE> TYPE* allocateBuffer(size_t size) {
-    // OK this is a quick hack, create a nicer version later
-    const int poolSize = 32;
-    static pair<void*, size_t> pool[poolSize] = {pair<void*,size_t>(nullptr, (size_t) 0)};
-    static atomic_int bufferCounter;
-    int buffIndex = (bufferCounter++) & (poolSize-1);
-    size_t scaledSize = size * sizeof(TYPE);
-    pair<void*, size_t> item = pool[buffIndex];
-    if (item.first == nullptr || item.second < scaledSize)
-        pool[buffIndex] = item = pair<void*,size_t>(new TYPE[size], scaledSize);
-    return (TYPE*) item.first;
-}
-
-template <typename INTTYPE> pair<const char*, int> toCanvas2(Dataset *ds, int key, int gap) {
-
-    int * layer = ds->getLayer(key);
-    if (layer == nullptr)
-        return pair<const char*,int>(nullptr, 0);
-
-    const int dim = 256;
-    int imgDim = 2 * dim + gap;
-
-    INTTYPE* image = allocateBuffer<INTTYPE>((size_t) imgDim * imgDim);
-
-    auto positions = ds->getLayoutVector();
-    auto orientations = ds->getOrientationVector();
-    int nChips = ds->getFrameCount();
-    for (int chip = 0; chip < nChips; chip++) {
-        int posx = positions[chip].x();
-        int posy = positions[chip].y(); // NB: bottom to top
-        int base = (1 - posy) * (dim + gap) * imgDim + posx * (dim + gap);
-
-        imgOrientation io = orientation[orientations[chip]];
-
-        int cs = io.fast.ix - imgDim * io.fast.iy,
-            rs = io.slow.ix - imgDim * io.slow.iy;
-        if (cs < 0) base += (dim-1)*imgDim;
-        if (rs < 0) base += dim-1;
-
-        for (int i = 0; i < dim; i++) {
-            int ix = base;
-            int j = dim;
-            switch (cs) {
-            case  1: while (j--) image[ix++] = *(layer++); break;
-            case -1: while (j--) image[ix--] = *(layer++); break;
-            default: while (j--) {
-                    image[ix] = *(layer++);
-                    ix += cs;
-                }
-            }
-            base += rs;
-        }
-    }
-
-    return
-        pair<const char*,int>((const char*)image, (int) imgDim * imgDim * sizeof(INTTYPE));
-}
-
-pair<const char*, int> Dataset::toCanvas(int threshold) {
+Canvas Dataset::toCanvas(int threshold) {
     return (m_pixelDepthBits == 24)
-            ? toCanvas2<uint32_t>(this, threshold, 0)
-            : toCanvas2<uint16_t>(this, threshold, 0);
+            ? Canvas(this, threshold, 0, 4)
+            : Canvas(this, threshold, 0, 2);
 }
 
 /**
@@ -265,7 +205,7 @@ void Dataset::saveBIN(QString filename)
     saveFile.close();
 }
 
-int * Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
+Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
     //----------------------------------------------------
     const int extraPixels       = 2;
     int width                   = getWidth()+2*extraPixels;  // Should always be 512 or 256 for a quad without spatial correction
@@ -289,7 +229,8 @@ int * Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
     //! Do spatial correction on quadrants, move to respective corners
 
     int gap = 2 * extraPixels;
-    int * imageCorrected = (int*) toCanvas2<int>(this, thresholds[threshold], gap).first;
+    Canvas canvas(this, thresholds[threshold], gap, 4);
+    int * imageCorrected = (int*) (canvas.image.get());
 
     //! Phase 2
     //! Loop for cross
@@ -370,7 +311,7 @@ int * Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
                 at(i, j) = val;
         }
     }
-    return imageCorrected;
+    return canvas;
 }
 
 /*!
@@ -402,26 +343,29 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
 
         //! Default mode - do cross and spatial corrections
         if (crossCorrection){
-            const int extraPixels       = 2;
-            int width  = getWidth()+2*extraPixels;  // Should always be 512 or 256 for a quad without spatial correction
-            int height = getHeight()+2*extraPixels; // ""
-            int * imageCorrected = createCorrectedImage(i, spatialOnly);
-            TiffFile::saveToTiff32(tmpFilename.toUtf8().data(), (const int*) imageCorrected, width, height);
+            Canvas imageCorrected = createCorrectedImage(i, spatialOnly);
+            imageCorrected.saveToTiff(tmpFilename.toUtf8().data());
         } else {
-            int * image = getFullImageAsArrayWithLayout(i);
-            TiffFile::saveToTiff32(tmpFilename.toUtf8().data(), (const int*) image, getWidth(), getHeight());
+            Canvas image = getFullImageAsArrayWithLayout(i, 4);
+            image.saveToTiff(tmpFilename.toUtf8().data());
         }
     }
 }
 
-//! Cheaper than expected
-int * Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spatialOnly) {
+/**
+ * @brief Dataset::makeFrameForSaving
+ * @param threshold
+ * @param crossCorrection
+ * @param spatialOnly
+ * @return the Canvas with the frame in 4 bytes per pixel
+ */
+Canvas Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spatialOnly) {
     //----------------------------------------------------
 
     if (crossCorrection) {
         return createCorrectedImage(threshold, spatialOnly);
     } else {
-        return getFullImageAsArrayWithLayout(threshold);
+        return getFullImageAsArrayWithLayout(threshold, 4);
     }
 }
 
@@ -1939,6 +1883,12 @@ int * Dataset::getLayer(int threshold){
     return m_layers[layerIndex];
 }
 
-int * Dataset::getFullImageAsArrayWithLayout(int threshold) {
-    return (int*) toCanvas2<int32_t>(this, m_thresholdsToIndices[threshold], 0).first;
+/**
+ * @brief Dataset::getFullImageAsArrayWithLayout
+ * @param threshold the number of the threshold
+ * @param bpp 2 or 4 bytes per pixel
+ * @return Canvas with the image
+ */
+Canvas Dataset::getFullImageAsArrayWithLayout(int threshold, int bpp) {
+    return Canvas(this, threshold, 0, bpp);
 }
