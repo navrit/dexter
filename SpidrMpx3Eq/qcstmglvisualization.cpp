@@ -2187,6 +2187,49 @@ void QCstmGLVisualization::on_saveLineEdit_editingFinished()
     }
 }
 
+void QCstmGLVisualization::on_saveLineEdit_textEdited()
+{
+    const QString path = ui->saveLineEdit->text();
+    const QDir dir(path);
+    const QFileInfo dir_info(path);
+
+
+    if (dir.exists()) {
+
+        // Exists and is writable --> white
+        if (dir_info.isWritable()) {
+            ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 255, 255); selection-background-color: rgb(0, 80, 80); }");
+            return;
+
+        // Exists and is not writable --> red
+        } else {
+            const QString msg = "Path exists but is not writable: " + path;
+            emit sig_statusBarAppend(msg, "red");
+            qDebug().noquote() << "[INFO]\t" << msg;
+
+            ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 128, 128); selection-background-color: rgb(255, 0, 0); }");
+        }
+
+    } else {
+        // Does not exist and is writable --> green
+        if (!dir_info.isWritable()) {
+            const QString msg = "Path does not exist but is writable: " + path;
+            emit sig_statusBarAppend(msg, "black");
+            qDebug().noquote() << "[INFO]\t" << msg;
+
+            ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(150, 240, 150); selection-background-color: rgb(50, 150, 50); }");
+
+        // Does not exist and is not writable --> red
+        } else {
+            const QString msg = "Path does not exist and is not writable (yet): " + path;
+            emit sig_statusBarAppend(msg, "red");
+            qDebug().noquote() << "[INFO]\t" << msg;
+
+            ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 128, 128); selection-background-color: rgb(255, 0, 0); }");
+        }
+    }
+}
+
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 {
     /* So that the equalisation won't save the mask file to the wrong folder during equalisation */
@@ -2215,7 +2258,7 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
 {
     /* Check the path exists, try to create it, otherwise set it to the home directory. */
 
-    QDir dir(path);
+    const QDir dir(path);
 
     if (!dir.exists()) {
         if (dir.mkpath(".")) {
@@ -2226,7 +2269,7 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
     }
 
     path = ui->saveLineEdit->text();
-    QFileInfo dir_info(path);
+    const QFileInfo dir_info(path);
 
     if (!dir_info.isWritable()) {
         ui->saveLineEdit->setText(QDir::homePath());
@@ -2235,6 +2278,8 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
         emit sig_statusBarAppend(msg, "black");
         qDebug().noquote() << "[INFO]\t" << msg;
     }
+
+    ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 255, 255); selection-background-color: rgb(0, 80, 80); }");
 
     return true;
 }

@@ -256,6 +256,7 @@ private slots:
     void on_testBtn_clicked();
 
     void on_saveLineEdit_editingFinished();
+    void on_saveLineEdit_textEdited();
 
     void onEqualizationPathExported(QString path);
 
