@@ -2219,7 +2219,7 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
 
     if (!dir.exists()) {
         if (dir.mkpath(".")) {
-            const QString msg = "Folder did not exist, successfully created the requested folder";
+            const QString msg = "Folder did not exist, created folder: " + path;
             emit sig_statusBarAppend(msg, "black");
             qDebug().noquote() << "[INFO]\t" << msg;
         }
@@ -2231,7 +2231,7 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
     if (!dir_info.isWritable()) {
         ui->saveLineEdit->setText(QDir::homePath());
 
-        const QString msg = "Path was not writable, set autosave path to your home directory";
+        const QString msg = "Path was not writable, setting autosave path to home directory";
         emit sig_statusBarAppend(msg, "black");
         qDebug().noquote() << "[INFO]\t" << msg;
     }
