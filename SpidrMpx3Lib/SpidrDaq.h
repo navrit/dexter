@@ -50,6 +50,7 @@ class MY_LIB_API SpidrDaq
   //bool openFile                 ( std::string filename,
   //                                bool overwrite = false );
   //bool closeFile                ( );
+  int chipMask;
 
   // Acquisition
   void setBothCounters(bool b) { frameSetManager->setBothCounters(b); }

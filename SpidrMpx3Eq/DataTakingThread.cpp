@@ -130,7 +130,6 @@ void DataTakingThread::run() {
     unsigned long timeOutTime = 0;
     int contRWFreq = 0;
     QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
-    int nChips = activeDevices.size();
     int opMode = Mpx3Config::__operationMode_SequentialRW;
 
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
@@ -175,6 +174,8 @@ void DataTakingThread::run() {
 
         _mpx3gui->clear_data(false);
         _mutex.unlock();
+
+        int chipMask = spidrdaq->chipMask;
 
         // Reset
         spidrcontrol->resetCounters();
@@ -262,9 +263,9 @@ void DataTakingThread::run() {
                     qDebug() << "[ERROR]\tFrameSet should have both counters but it hasn't";
                 }
 
-                if (fs->isComplete() && ! (fs->pixelsLost() > 0 && _vis->getDropFrames())) {
+                if (fs->isComplete(chipMask) && ! (fs->pixelsLost() > 0 && _vis->getDropFrames())) {
 
-                    for ( int i = 0 ; i < nChips ; i++ ) {
+                    foreach (int i, activeDevices) {
                         // retreive data for a given chip
                         //clearToCopy = true;
                         _consumer->freeFrames->acquire(); //! < 0.1% time
@@ -272,7 +273,7 @@ void DataTakingThread::run() {
                         _consumer->usedFrames->release(); //! < 0.1% time
                     }
                     if (bothCounters)
-                        for ( int i = 0 ; i < nChips ; i++ ) {
+                        foreach (int i, activeDevices) {
                             // retreive data for a given chip
                             //clearToCopy = true;
                             _consumer->freeFrames->acquire(); //! < 0.1% time

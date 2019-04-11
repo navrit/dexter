@@ -85,7 +85,7 @@ void FrameSetManager::putChipFrameB(int chipIndex, ChipFrame* cf) {
     dest->putChipFrame(chipIndex, cf);
     if (bothCounters && cf->omr.getMode() == 0)
         expectCounterH = true;
-    else if (dest->isComplete()) {
+    else if (dest->isComplete(chipMask)) {
         publish();
         expectCounterH = false;
         headState = 0;
@@ -117,7 +117,7 @@ void FrameSetManager::putChipFrame(int chipIndex, ChipFrame* cf, uint8_t frameId
     OMR omr = cf->omr;
     if (bothCounters && omr.getMode() == 0)
         expectCounterH = true;
-    else if (dest->isComplete()) {
+    else if (dest->isComplete(chipMask)) {
         publish();
         expectCounterH = false;
         headState = 0;

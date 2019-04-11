@@ -15,7 +15,7 @@ public:
     bool hasBothCounters() { return counters == 2; }
     ChipFrame* takeChipFrame(int chipIndex, bool counterH);
     void putChipFrame(int chipIndex, ChipFrame * cf);
-    bool isComplete();
+    bool isComplete(int chipMask);
     void copyTo32(int chipIndex, bool counterH, uint32_t *dest);
     int pixelsLost();
 

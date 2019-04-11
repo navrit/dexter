@@ -26,6 +26,8 @@ public:
     FrameSet *getFrameSet();
     void releaseFrameSet(FrameSet *);
 
+    int chipMask = 0;
+
     // Statistics
     int     _framesReceived = 0;
     int     _framesLost = 0;

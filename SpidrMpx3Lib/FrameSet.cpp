@@ -35,12 +35,14 @@ void FrameSet::clear() {
 
 /**
  * @brief FrameSet::isComplete checks if all ChipFrames are present
+ * @param chipMask the mask indicating which chips are present
  * @return
  */
-bool FrameSet::isComplete() {
+bool FrameSet::isComplete(int chipMask) {
     for (int j = 0; j < counters; j++)
         for (int i = 0; i < number_of_chips; i++)
-            if (frame[j][i] == nullptr) return false;
+            if (((chipMask >> i) & 1) && frame[j][i] == nullptr)
+                return false;
 
     return true;
 }
@@ -88,6 +90,8 @@ void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
 void FrameSet::copyTo32(int chipIndex, bool counterH, uint32_t *dest) {
     ChipFrame *f0 = frame[0][chipIndex];
     ChipFrame *f1 = frame[1][chipIndex];
+    if (f0 == nullptr)
+        return; // sorry, chip is not there
     bool mode24 = f0->omr.getCountL() == 3;
     int n = MPX_PIXELS;
     if (mode24 && f1 != nullptr) {
@@ -109,9 +113,9 @@ int FrameSet::pixelsLost() {
     int count = 0;
     for (int j = 0; j < counters; j++)
         for (int i = 0; i < number_of_chips; i++)
-            if (frame[j][i] == nullptr)
-                count += MPX_PIXELS;
-            else
+            if (frame[j][i] != nullptr)
+                //count += MPX_PIXELS;		// it's not there
+            //else
                 count += frame[j][i]->pixelsLost;
 
     return count;

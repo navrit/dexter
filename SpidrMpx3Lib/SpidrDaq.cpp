@@ -76,11 +76,14 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
       if( spidrctrl->getAcqEnable(&device_mask) && device_mask != readout_mask )
         spidrctrl->setAcqEnable( readout_mask );
 
-        int fwVersion;
-        spidrctrl->getFirmwVersion(&fwVersion);
-        udpReceiver = new UdpReceiver(addr, ports[0], fwVersion < 0x18100100);
-        th = udpReceiver->spawn();
-        frameSetManager = udpReceiver->getFrameSetManager();
+      chipMask = readout_mask;
+
+      int fwVersion;
+      spidrctrl->getFirmwVersion(&fwVersion);
+      udpReceiver = new UdpReceiver(addr, ports[0], fwVersion < 0x18100100);
+      th = udpReceiver->spawn();
+      frameSetManager = udpReceiver->getFrameSetManager();
+      frameSetManager->chipMask = readout_mask;
     }
 }
 
