@@ -81,7 +81,7 @@ class hdmiConfig;
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "ASI Dexter";
-const static QString _softwareVersion = "1.9.8 - c5c0ccf";
+const static QString _softwareVersion = QString("v1.9.9 - " + QString(GIT_CURRENT_SHA1));
 
 const static int tcpCommandPort = 6351;            //! Diamond - Merlin interface
 const static int tcpDataPort = 6352;               //! Diamond - Merlin interface
