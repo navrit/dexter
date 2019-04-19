@@ -169,7 +169,7 @@ public:
     uint64_t getTriggerDowntime_64(){return TriggerDowntime_us_64;}
     uint64_t getTriggerPeriod() { return TriggerLength_us_64 + TriggerDowntime_us_64; }
     uint64_t getTriggerPeriod_ms() { return getTriggerPeriod()/1000; }
-    int getTriggerFreq_mHz() { return int(1000. / getTriggerPeriod()); }
+    int getTriggerFreq_mHz() { return int(1e9 / getTriggerPeriod()); }
     int getNTriggers(){ return nTriggers; }
 
     bool getStepperUseCalib() { return stepperUseCalib; }

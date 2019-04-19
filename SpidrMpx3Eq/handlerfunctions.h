@@ -481,7 +481,7 @@ void getShutterPeriodHandler(CommandHandler* ch, Command* cmd){
     if (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW) {
         cmd->setData(QString::number(1000.0 / config->getContRWFreq())); //ms
     } else {
-        cmd->setData(QString::number(config->getTriggerPeriod_ms()); //ms
+        cmd->setData(QString::number(config->getTriggerPeriod_ms())); //ms
     }
     cmd->setError(NO_ERROR);
 }

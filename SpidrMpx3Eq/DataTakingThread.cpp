@@ -80,6 +80,31 @@ void DataTakingThread::ConnectToHardware() {
 
 }
 
+void protectTriggerMode(SpidrController *spidrController, Mpx3Config *config)
+{
+    //_currentTriggerMode = ui->triggerModeCombo->currentIndex();
+    //ui->triggerModeCombo->setCurrentIndex(0); //set it to auto
+    spidrController->stopAutoTrigger();
+    //spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
+    spidrController->setShutterTriggerConfig(SHUTTERMODE_AUTO,
+        config->getTriggerLength_64(),
+        config->getTriggerFreq_mHz(),
+        config->getNTriggers(),
+        0);
+
+    // TODO KIA: Is this delay really necessary?
+    usleep(100000);
+}
+
+void setTriggerMode(SpidrController *spidrController, Mpx3Config *config)
+{
+    spidrController->setShutterTriggerConfig(config->getTriggerMode(),
+        config->getTriggerLength_64(),
+        config->getTriggerFreq_mHz(),
+        config->getNTriggers(),
+        0);
+}
+
 void DataTakingThread::run() {
 
     //typedef std::chrono::high_resolution_clock Time;
@@ -129,7 +154,8 @@ void DataTakingThread::run() {
 
     unsigned long timeOutTime = 0;
     int contRWFreq = 0;
-    QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+    auto config = _mpx3gui->getConfig();
+    QVector<int> activeDevices = config->getActiveDevices();
     int opMode = Mpx3Config::__operationMode_SequentialRW;
 
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
@@ -144,7 +170,7 @@ void DataTakingThread::run() {
     ///////////////////////////////////////////////////////////////////////////////////
 
     forever {
-        _mpx3gui->getConfigMonitoring()->returnLastTriggerMode2(spidrcontrol);
+        setTriggerMode(spidrcontrol, config);
         // When abort execution. Triggered as the destructor is called.
         if ( _abort ) return;
 
@@ -152,8 +178,8 @@ void DataTakingThread::run() {
         // After a start or restart
         _mutex.lock();
         datataking_score_info score = _score;
-        opMode = _mpx3gui->getConfig()->getOperationMode();
-        contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
+        opMode = config->getOperationMode();
+        contRWFreq = config->getContRWFreq();
 
         //! May wish to use 10000 for trigger mode testing
      //   int overhead = 200; // ms
@@ -183,14 +209,13 @@ void DataTakingThread::run() {
         nFramesReceived = 0; nFramesKept = 0; lostFrames = 0; lostPackets = 0;
         emergencyStop = false;
         reachLimitStop = false;
-
         spidrdaq->releaseAll();
 
         bool stopTimers = true;
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
             stopTimers = false;
-        } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (_mpx3gui->getConfig()->getTriggerLength_ms_64() + _mpx3gui->getConfig()->getTriggerDowntime_ms_64() <= LONG_PERIOD_MS)&&!_isExternalTrigger){
+        } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (config->getTriggerPeriod_ms() <= LONG_PERIOD_MS)&&!_isExternalTrigger){
             spidrcontrol->startAutoTrigger();
             stopTimers = false;
         }
@@ -207,7 +232,7 @@ void DataTakingThread::run() {
                 if ( _stop ||  _restart  ) {
                     _break = true;
                     if(_isExternalTrigger){
-                        _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+                        protectTriggerMode(spidrcontrol, config);
                         break;
                     }
 
@@ -354,8 +379,8 @@ void DataTakingThread::run() {
                                      0										// Data misaligned?
                                      );
 
-                    if (externalCnt >= _mpx3gui->getConfig()->getNTriggers() && _mpx3gui->getConfig()->getNTriggers() != 0 ){
-                        _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+                    if (externalCnt >= config->getNTriggers() && config->getNTriggers() != 0 ){
+                        protectTriggerMode(spidrcontrol, config);
                         _break = true;
                         break;
                     }
@@ -368,7 +393,7 @@ void DataTakingThread::run() {
             qDebug() << "[INFO]\tSoftware triggering stopped";
         }
 
-        _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+        protectTriggerMode(spidrcontrol, config);
         _consumer->consume();
 
         if ( ! _restart ) {  emit dataTakingFinished();}

@@ -46,15 +46,6 @@ public:
 
     void setReadoutFrequency(int frequency);
 
-    void protectTriggerMode(SpidrController* spidrController); //this function firstreturn the current trigger mode and then set trigger mode to auto
-    //the purpose is to prevent the power drop after setting the dac when the trigger mode is external. after setting the dac(e.g. threshold)one
-    //has to set the trigger mode to the return value of this function
-
-    void returnLastTriggerMode(SpidrController *spidrController);  //call after u set the dac , input should be the output of protetTriggerMode() function.
-    void returnLastTriggerMode2(SpidrController *spidrController); //this function set the trigger mode to the one that user set either locally or remotely.
-    //the mode is set by user, is saved in TriggerMode  field of Mpx3Config class and is read from this field in this function to send it to device
-
-
 public slots:
 
     void OperationModeSwitched(int indx);
