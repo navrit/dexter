@@ -75,10 +75,9 @@ private:
     QString Zmq_Pub_address; // Not using QHostAddress because I need more flexibility, eg. using *, tcp://, inproc://, ipc:// etc.
     QString Zmq_Sub_address;
     uint16_t port;
-    int _trigPeriod_ms;
     //Operation stuff
     bool colourMode = false, decodeFrames = false, readBothCounters = false, Polarity = true;
-    int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, ContRWFreq = -1, TriggerMode =-1, TriggerLength_us = -1, TriggerDowntime_us = -1, nTriggers = -1;
+    int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, ContRWFreq = -1, TriggerMode =-1, nTriggers = -1;
     int LogLevel = -1;
     uint64_t TriggerLength_us_64 = 0, TriggerDowntime_us_64 = 0;
     // The following are static characteristics read from the SPIDR, not configurable.
@@ -126,7 +125,6 @@ public:
     QString getDeviceWaferId(int id){return _deviceWaferIdMap.at(id); }
     int getIndexFromID(int id){return _activeChips.indexOf(id);}
     int getSystemClock() { return SystemClock; }
-    int getTriggerPeriodMS();//{//return _trigPeriod_ms;}
     double getBiasVoltage() { return biasVolt; }
 
     void checkChipResponse(int devIndx, detector_response dr);
@@ -165,14 +163,13 @@ public:
     int getLogLevel(){return LogLevel;}
 
     int getContRWFreq(){return ContRWFreq;}
-    int getTriggerLength(){return TriggerLength_us;}
-    int getTriggerLength_ms(){return (TriggerLength_us/1000);}
     uint64_t getTriggerLength_ms_64(){return (TriggerLength_us_64/1000);}
     uint64_t getTriggerLength_64(){return (TriggerLength_us_64);}
-    int getTriggerDowntime(){return TriggerDowntime_us;}
-    int getTriggerDowntime_ms(){return TriggerDowntime_us/1000;}
     uint64_t getTriggerDowntime_ms_64(){return TriggerDowntime_us_64/1000;}
-     uint64_t getTriggerDowntime_64(){return TriggerDowntime_us_64;}
+    uint64_t getTriggerDowntime_64(){return TriggerDowntime_us_64;}
+    uint64_t getTriggerPeriod() { return TriggerLength_us_64 + TriggerDowntime_us_64; }
+    uint64_t getTriggerPeriod_ms() { return getTriggerPeriod()/1000; }
+    int getTriggerFreq_mHz() { return int(1000. / getTriggerPeriod()); }
     int getNTriggers(){ return nTriggers; }
 
     bool getStepperUseCalib() { return stepperUseCalib; }
@@ -341,9 +338,9 @@ public slots:
     }
 
     void setTriggerLength(double newVal){
-        if(newVal*1000 != TriggerLength_us){
-            TriggerLength_us = newVal*1000;
-            TriggerLength_us_64 =  newVal *1000;
+        uint64_t newVal_us = uint64_t(1000*newVal);
+        if(newVal_us != TriggerLength_us_64){
+            TriggerLength_us_64 =  newVal_us;
             emit TriggerLengthChanged(newVal);
             SendConfiguration( __triggerLength );
         }
@@ -354,9 +351,9 @@ public slots:
 
     // Units for newVal are now ms, hence the *1000
     void setTriggerDowntime(double newVal) {
-        if ( newVal*1000 != TriggerDowntime_us ){
-            TriggerDowntime_us = newVal*1000;
-            TriggerDowntime_us_64 = newVal*1000;
+        uint64_t newVal_us = uint64_t(1000*newVal);
+        if (newVal_us != TriggerDowntime_us_64){
+            TriggerDowntime_us_64 = newVal_us;
             emit TriggerDowntimeChanged(newVal);
             SendConfiguration( __triggerDowntime );
         }

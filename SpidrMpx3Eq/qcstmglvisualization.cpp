@@ -283,8 +283,8 @@ void QCstmGLVisualization::ConfigureGUIForIdling() {
 void QCstmGLVisualization::CalcETA() {
 
     if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
-        _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
-    if( _mpx3gui->getConfig()->getTriggerPeriodMS() < LONG_PERIOD_MS )
+        _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriod_ms() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
+    if( _mpx3gui->getConfig()->getTriggerPeriod_ms() < LONG_PERIOD_MS )
         _estimatedETA += _estimatedETA * __overhead; // add 1% overhead
     } else {
         double period_ms =  (1. / double((_mpx3gui->getConfig()->getContRWFreq()))) * 1000;
@@ -1009,7 +1009,7 @@ void QCstmGLVisualization::OperationModeSwitched(int indx)
     if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
 
         ui->triggerLengthSpinBoxLabel->setText( "Length (ms)" );
-        ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getTriggerLength_ms() );
+        ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getTriggerLength_ms_64() );
 
         ui->triggerLengthSpinBoxLabel->setToolTip( tr("Trigger length") );
         ui->triggerLengthSpinBox->setToolTip( tr("Trigger length") );

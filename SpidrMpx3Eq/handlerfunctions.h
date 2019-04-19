@@ -481,7 +481,7 @@ void getShutterPeriodHandler(CommandHandler* ch, Command* cmd){
     if (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW) {
         cmd->setData(QString::number(1000.0 / config->getContRWFreq())); //ms
     } else {
-        cmd->setData(QString::number((config->getTriggerDowntime() + config->getTriggerLength()) * 0.001)); //ms
+        cmd->setData(QString::number(config->getTriggerPeriod_ms()); //ms
     }
     cmd->setError(NO_ERROR);
 }
@@ -497,13 +497,13 @@ void getShutterLengthHandler(CommandHandler* ch, Command* cmd){
     bool cont = (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW);
     if(openOrClose == "open"){
        double trig = cont ? 1000.0 / config->getContRWFreq()
-               : config->getTriggerLength() * 0.001; //ms
+               : config->getTriggerLength_ms_64(); //ms
        cmd->setData(QString::number(trig));
        cmd->setError(NO_ERROR);
     }
     else if(openOrClose == "down"){
         double trig = cont ? 0.0
-               : config->getTriggerDowntime() * 0.001; //ms
+               : config->getTriggerDowntime_ms_64(); //ms
         cmd->setData(QString::number(trig));
         cmd->setError(NO_ERROR);
     }

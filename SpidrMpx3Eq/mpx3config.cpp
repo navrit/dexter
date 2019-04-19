@@ -22,7 +22,6 @@ Mpx3Config::Mpx3Config()
     // number of devices connected
     _devicePresenceLayout.clear();
     _nDevicesPresent = 0;
-    _trigPeriod_ms = 0;
 
     _controller = nullptr;
 }
@@ -182,11 +181,8 @@ void Mpx3Config::SendConfiguration( config_items item ) {
 
         // Trigger config
         int trig_mode      = getTriggerMode();       // Auto-trigger mode = 4
-        int trig_length_us = getTriggerLength();     // This time shouldn't be longer than the period defined by trig_freq_hz
-        int trig_deadtime_us = getTriggerDowntime();
-        int trig_freq_mhz   = (int) 1000 * ( 1. / ((double)( trig_length_us + trig_deadtime_us )/1000000) );
-        // Get the trigger period for information.  This is NOT the trigger length !
-        _trigPeriod_ms = (int) (1E6 * (1./(double)trig_freq_mhz));
+        int trig_length_us = getTriggerLength_64();     // This time shouldn't be longer than the period defined by trig_freq_hz
+        int trig_freq_mhz   = getTriggerFreq_mHz();
         int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
 
         spidrcontrol->setShutterTriggerConfig (
@@ -196,8 +192,8 @@ void Mpx3Config::SendConfiguration( config_items item ) {
                     nr_of_triggers
                     );
         qDebug() << "[INFO]\ttrig_mode:" << trig_mode
-                 << "| trig_length_us:" << getTriggerLength_64()
-                 << "| trig_deadtime_us: " << trig_deadtime_us
+                 << "| trig_length_us:" << trig_length_us
+                 << "| trig_deadtime_us: " << TriggerDowntime_us_64
                  << "| trig_freq_mhz:" <<  trig_freq_mhz
                  << "| nr_of_triggers:" << nr_of_triggers;
     }
@@ -385,15 +381,12 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
     // Trigger config
     int trig_mode      = getTriggerMode();     // Auto-trigger mode = 4
-    int trig_length_us = getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
+    int trig_length_us = getTriggerLength_64();  // This time shouldn't be longer than the period defined by trig_freq_hz
 
     //int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
-    int trig_freq_mhz   = int(1000 * ( 1. / (1.1*(double(trig_length_us/1000000)))));   // Make the period double the trig_len
+    int trig_freq_mhz   = getTriggerFreq_mHz();   // Make the period double the trig_len
     //int trig_freq_hz   = (int) ( 1. / (1.1*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
 
-    // Get the trigger period for information.  This is NOT the trigger length !
-    _trigPeriod_ms = int((1E6 * (1./double(trig_freq_mhz))));
-    //_trigPeriod_ms /= 1000;
     //int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
 
 
@@ -407,7 +400,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
         qDebug() << "[CONF] id:" << deviceIndex
                  << "| trig_mode:" << trig_mode
-                 << "| trig_length_us:" << getTriggerLength_64()
+                 << "| trig_length_us:" << trig_length_us
                  << "| trig_freq_mhz:" <<  trig_freq_mhz
                  << "| nr_of_triggers:" << extrapars.nTriggers;
     }
@@ -595,12 +588,6 @@ int Mpx3Config::getDataBufferId(int devIndx) {
 
     return -1;
 }
-
-int Mpx3Config::getTriggerPeriodMS()
-{
-    return getTriggerDowntime_ms_64() + getTriggerLength_ms_64();
-}
-
 
 void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 

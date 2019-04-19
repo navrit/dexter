@@ -483,7 +483,7 @@ FrameHeaderDataStruct::FrameHeaderDataStruct(Mpx3GUI *gui)
     for (int i = 0; i < numberOfChips; ++i) {
         chipSelect |= 1 << i;
     }
-    shutterOpen = double(gui->getConfig()-> getTriggerLength_ms() / double(1000));
+    shutterOpen = double(gui->getConfig()-> getTriggerLength_64() * 1e-6);
     QPoint pnt = gui->getDataset()->getSize();
     xDim = uint32_t(pnt.x()*2);
     yDim = uint32_t(pnt.y()*2);

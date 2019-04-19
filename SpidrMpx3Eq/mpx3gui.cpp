@@ -1765,19 +1765,20 @@ void Mpx3GUI::shutterCloseTimer_timeout() {
     shutterOpenTimer->stop();
     return;
   }
+  auto config = getConfig();
   GetSpidrController()->setShutterTriggerConfig(
       SHUTTERMODE_AUTO, 0,
-      int(((1. / double(getConfig()->getTriggerPeriodMS())) * 1000000)),
-      getConfig()->getNTriggers(), 0);
+      config->getTriggerFreq_mHz(),
+      config->getNTriggers(), 0);
   GetSpidrController()->startAutoTrigger(); // Open shutter
 
-  shutterOpenTimer->start(int(getConfig()->getTriggerLength_ms_64()));
+  shutterOpenTimer->start(int(config->getTriggerLength_ms_64()));
   //! NOTE 1. This loses precision (uint64_t to int)
   //!      2. The maximum value will be not as intended, it will be clipped if
   //!      over 2^32-1
   //! Suboptimal solution: For clarity - cast as an int here, it is cast as
   //! an int later anyway...
-  if (getConfig()->getTriggerDowntime_ms_64() >= INT_MAX) {
+  if (config->getTriggerDowntime_ms_64() >= INT_MAX) {
       qDebug() << "[WARNING]\tShutter open timer argument has lost precision and the maximum value has been limited to" << INT_MAX;
   }
 
