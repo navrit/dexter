@@ -293,17 +293,15 @@ void Mpx3GUI::onEqualizationPathExported(QString path)
 
 void Mpx3GUI::sendingShutter()
 {
-    if(getConfig()->getTriggerDowntime_64() + getConfig()->getTriggerLength_64() > LONG_PERIOD_US){
-        qDebug() << "ShutterOpen_us  : " << getConfig()->getTriggerLength_64();
-        qDebug() << "ShutterClose_us : " << getConfig()->getTriggerDowntime_64();
-        //GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
-        //GetSpidrController()->startAutoTrigger(); //openshutter
-        connect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
-        connect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
-        _timerStop = false;
-        shutterCloseTimer_timeout();
-        qDebug() << "_timerStop on_sending: " << _timerStop;
-    }
+    qDebug() << "ShutterOpen_us  : " << getConfig()->getTriggerLength_64();
+    qDebug() << "ShutterClose_us : " << getConfig()->getTriggerDowntime_64();
+    //GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
+    //GetSpidrController()->startAutoTrigger(); //openshutter
+    connect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
+    connect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
+    _timerStop = false;
+    shutterCloseTimer_timeout();
+    qDebug() << "_timerStop on_sending: " << _timerStop;
 }
 
 bool Mpx3GUI::equalizationLoaded(){
@@ -1769,10 +1767,6 @@ void Mpx3GUI::shutterCloseTimer_timeout() {
     return;
   }
   auto config = getConfig();
-  GetSpidrController()->setShutterTriggerConfig(
-      SHUTTERMODE_AUTO, 0,
-      config->getTriggerFreq_mHz(),
-      config->getNTriggers(), 0);
   GetSpidrController()->startAutoTrigger(); // Open shutter
 
   shutterOpenTimer->start(int(config->getTriggerLength_ms_64()));

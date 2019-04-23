@@ -284,7 +284,7 @@ void QCstmGLVisualization::CalcETA() {
 
     if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
         _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriod_ms() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
-    if( _mpx3gui->getConfig()->getTriggerPeriod_ms() < LONG_PERIOD_MS )
+    if( _mpx3gui->getConfig()->getTriggerPeriod() < LONG_PERIOD_US )
         _estimatedETA += _estimatedETA * __overhead; // add 1% overhead
     } else {
         double period_ms =  (1. / double((_mpx3gui->getConfig()->getContRWFreq()))) * 1000;
@@ -346,7 +346,8 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
         _dataTakingThread->ConnectToHardware();
     }
 
-    if (_mpx3gui->getConfig()->getTriggerMode() == SHUTTERMODE_AUTO) { //if is Auto, it is internal otherwise is external
+    int triggerMode = _mpx3gui->getConfig()->getTriggerMode();
+    if (triggerMode == SHUTTERMODE_AUTO || triggerMode == SHUTTERMODE_SOFTWARE) { //if is Auto, it is internal otherwise is external
         _dataTakingThread->setExternalTrigger(false);
     //todo : disable/enable  ui->triggerLengthSpinBox->setReadOnly(false);
     } else {

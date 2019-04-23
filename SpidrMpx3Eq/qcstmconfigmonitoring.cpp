@@ -58,14 +58,14 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     __triggerModeMap.push_back( SHUTTERMODE_NEG_EXT );
     __triggerModeMap.push_back( SHUTTERMODE_POS_EXT_TIMER );
     __triggerModeMap.push_back( SHUTTERMODE_NEG_EXT_TIMER );
-    __triggerModeMap.push_back( SHUTTERTRIG_POS_EXT_CNTR );
+    __triggerModeMap.push_back( SHUTTERMODE_SOFTWARE );
 
     ui->triggerModeCombo->addItem( "Auto" );
     ui->triggerModeCombo->addItem( "Positive Ext" );
     ui->triggerModeCombo->addItem( "Negative Ext" );
     ui->triggerModeCombo->addItem( "Positive Ext Timer" );
     ui->triggerModeCombo->addItem( "Negative Ext Timer" );
-    ui->triggerModeCombo->addItem( "Positive Ext Counter" );
+    ui->triggerModeCombo->addItem( "Software" );
 
     ui->triggerModeCombo->setCurrentIndex( 0 );
 
@@ -718,7 +718,7 @@ void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {
         _mpx3gui->getConfig()->setTriggerMode(SHUTTERMODE_NEG_EXT_TIMER);
         break;
     case 5:
-        _mpx3gui->getConfig()->setTriggerMode(SHUTTERTRIG_POS_EXT_CNTR);
+        _mpx3gui->getConfig()->setTriggerMode(SHUTTERMODE_SOFTWARE);
         break;
     default:
         break;

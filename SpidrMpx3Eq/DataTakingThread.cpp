@@ -170,7 +170,6 @@ void DataTakingThread::run() {
     ///////////////////////////////////////////////////////////////////////////////////
 
     forever {
-        setTriggerMode(spidrcontrol, config);
         // When abort execution. Triggered as the destructor is called.
         if ( _abort ) return;
 
@@ -213,17 +212,25 @@ void DataTakingThread::run() {
 
         bool stopTimers = true;
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+            setTriggerMode(spidrcontrol, config);
             spidrcontrol->startContReadout( contRWFreq );
             stopTimers = false;
-        } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (config->getTriggerPeriod_ms() <= LONG_PERIOD_MS)&&!_isExternalTrigger){
-            spidrcontrol->startAutoTrigger();
-            stopTimers = false;
+        } else if (opMode == Mpx3Config::__operationMode_SequentialRW && !_isExternalTrigger) {
+            if (config->getTriggerMode() == SHUTTERMODE_SOFTWARE
+            || (config->getTriggerPeriod() > LONG_PERIOD_US)) {
+                // software trigger
+                spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO, 0, 1, 1, 0);
+                emit sendingShutter();
+            } else {
+                setTriggerMode(spidrcontrol, config);
+                spidrcontrol->startAutoTrigger();
+                stopTimers = false;
+            }
         }
 
         bool _break = false;
         timeOutTime = 500;
-        if(opMode == Mpx3Config::__operationMode_SequentialRW)
-            emit sendingShutter();
+
         while(!_break && !_stop){
         // Ask SpidrDaq for frames
             while ( spidrdaq->hasFrame(timeOutTime)) {

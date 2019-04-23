@@ -177,27 +177,6 @@ void Mpx3Config::SendConfiguration( config_items item ) {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     if ( spidrcontrol == nullptr ) return;
 
-    if ( RequiredOnGlobalConfig( item ) && getOperationMode() == __operationMode_SequentialRW ) {
-
-        // Trigger config
-        int trig_mode      = getTriggerMode();       // Auto-trigger mode = 4
-        int trig_length_us = getTriggerLength_64();     // This time shouldn't be longer than the period defined by trig_freq_hz
-        int trig_freq_mhz   = getTriggerFreq_mHz();
-        int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
-
-        spidrcontrol->setShutterTriggerConfig (
-                    SHUTTERMODE_AUTO,
-                    trig_length_us,
-                    trig_freq_mhz,
-                    nr_of_triggers
-                    );
-        qDebug() << "[INFO]\ttrig_mode:" << trig_mode
-                 << "| trig_length_us:" << trig_length_us
-                 << "| trig_deadtime_us: " << TriggerDowntime_us_64
-                 << "| trig_freq_mhz:" <<  trig_freq_mhz
-                 << "| nr_of_triggers:" << nr_of_triggers;
-    }
-
     // Log level
     if ( item == __logLevel ) {
         spidrcontrol->setLogLevel( getLogLevel() );

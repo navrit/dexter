@@ -77,7 +77,6 @@ class hdmiConfig;
 #define BOTH_TIFF_FILES "Corrected and uncorrected TIFFs (*.tiff)"
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"
-#define LONG_PERIOD_MS 100000
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "ASI Dexter";

@@ -25,7 +25,7 @@
 #define SHUTTERMODE_POS_EXT_TIMER  2
 #define SHUTTERMODE_NEG_EXT_TIMER  3
 #define SHUTTERMODE_AUTO           4
-#define SHUTTERTRIG_POS_EXT_CNTR   5
+#define SHUTTERMODE_SOFTWARE       5
 
 class QTcpSocket;
 
