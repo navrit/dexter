@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1042</width>
+    <width>1400</width>
     <height>682</height>
    </rect>
   </property>
@@ -1144,6 +1144,12 @@
            </property>
            <property name="keyboardTracking">
             <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
            </property>
           </widget>
          </item>

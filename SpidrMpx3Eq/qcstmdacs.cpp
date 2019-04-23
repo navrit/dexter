@@ -732,13 +732,17 @@ void QCstmDacs::ChangeDeviceIndex( int index )
 
 void QCstmDacs::ChangeNSamples( int index )
 {
-    if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
+    if ( index < 0 ) return; // can't really happen cause the SpinBox has been limited
+
+    if ( _nSamples < 2 ) {
+        _nSamples = 2;
+    }
     _nSamples = index;
 }
 
 void QCstmDacs::ChangeScanStep( int index )
 {
-    if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
+    if ( index < 0 ) return; // can't really happen cause the SpinBox has been limited
     _scanStep = index;
 }
 
@@ -810,8 +814,16 @@ int QCstmDacs::GetDACIndex(int dac_code) {
     return -1;
 }
 
+int QCstmDacs::GetNSamples() {
+    if (_nSamples > 1) {
+        return _nSamples;
+    } else {
+        ChangeNSamples(2); //! The first sample is always wrong, do 2 minimum
+    }
+}
+
 void QCstmDacs::slideAndSpin(int i, int val) {
-    // // Temporarily disconnect the signal that triggers the message to the hardware
+    // Temporarily disconnect the signal that triggers the message to the hardware
     QObject::disconnect( _signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) );
 
     // Slide n' Spin
@@ -998,7 +1010,6 @@ void UpdateDACsThread::run(){
             disconnect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
         }
     }
-   // Mpx3GUI::getInstance()->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
     delete spidrcontrol;
 }
 

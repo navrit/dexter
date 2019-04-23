@@ -75,7 +75,7 @@ public:
     QLabel ** GetLabelsList() { return _dacVLabels ; }
     QCheckBox ** GetCheckBoxList() { return _dacCheckBoxes; }
     int GetDeviceIndex() { return _deviceIndex; }
-    int GetNSamples() { return _nSamples; }
+    int GetNSamples();
     int GetScanStep() { return _scanStep; }
     QCPGraph * GetGraph(int idx);
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
