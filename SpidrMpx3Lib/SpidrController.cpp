@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x17080100; // setPixelDepth(): softw double-cntr read,
+const int   VERSION_ID = 0x19042311; // lots of improvements!
+//const int   VERSION_ID = 0x17080100; // setPixelDepth(): softw double-cntr read,
                                      // Bug fix: initialize _pixelDepth,
                                      // setTpSwitch() -> setTpFrequency()
 //const int VERSION_ID = 0x17020800; // Remove getAdc(int, int *)
