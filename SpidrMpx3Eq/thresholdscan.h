@@ -100,6 +100,10 @@ private slots:
 
     void slot_colourModeChanged(bool);
 
+    void on_lineEdit_path_editingFinished();
+
+    void on_lineEdit_path_textEdited(const QString &path);
+
 signals:
     void slideAndSpin(int, int);
     void scanIsDone(void);

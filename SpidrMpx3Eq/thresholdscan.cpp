@@ -102,7 +102,7 @@ void thresholdScan::startScan()
     framesPerStep = uint(ui->spinBox_framesPerStep->value()); /* Minimum of 0 is enforced in the ui code */
     activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
 
-    newPath = ui->textEdit_path->toPlainText();
+    newPath = ui->lineEdit_path->text();
     if(newPath.isEmpty() || newPath == ""){
         newPath = QDir::homePath();
     }
@@ -383,19 +383,15 @@ void thresholdScan::on_button_startStop_clicked()
     if (_running) {
         ui->button_startStop->setText("Start");
         stopScan();
-        _mpx3gui->getConfig()->setTriggerDowntime(_shutterDownMem);
     } else {
         ui->button_startStop->setText("Stop");
-        _shutterDownMem = (double)_mpx3gui->getConfig()->getTriggerDowntime_64()/1000.0;
-        if(_shutterDownMem < 5.0)
-            _mpx3gui->getConfig()->setTriggerDowntime(5.0);
         startScan();
     }
 }
 
 void thresholdScan::on_pushButton_setPath_clicked()
 {
-    ui->textEdit_path->setText(getPath("Choose a folder to save the files to."));
+    ui->lineEdit_path->setText(getPath("Choose a folder to save the files to."));
 }
 
 void thresholdScan::on_spinBox_minimum_valueChanged(int val)
@@ -443,4 +439,66 @@ void thresholdScan::slot_colourModeChanged(bool)
 
     ui->comboBox_thresholdToScan->addItems(items);
     ui->comboBox_thresholdToScan->setCurrentIndex(0);
+}
+
+void thresholdScan::on_lineEdit_path_editingFinished()
+{
+    bool success = _mpx3gui->getVisualization()->requestToSetSavePath(ui->lineEdit_path->text());
+    Q_UNUSED(success);
+
+    if (ui->lineEdit_path->text().isEmpty()) {
+        ui->lineEdit_path->setText(QDir::homePath());
+    }
+
+    on_lineEdit_path_textEdited(ui->lineEdit_path->text());
+}
+
+void thresholdScan::on_lineEdit_path_textEdited(const QString &path)
+{
+    const QDir dir(path);
+    const QFileInfo dir_info(path);
+
+
+    if (dir.exists()) {
+
+        // Exists and is writable --> white
+        if (dir_info.isWritable()) {
+            ui->lineEdit_path->setStyleSheet("QLineEdit { background: rgb(255, 255, 255); selection-background-color: rgb(0, 80, 80); }");
+            return;
+
+        // Exists and is not writable --> red
+        } else {
+            const QString msg = "Path exists but is not writable: " + path;
+            //emit sig_statusBarAppend(msg, "red");
+            qDebug().noquote() << "[INFO]\t" << msg;
+
+            ui->lineEdit_path->setStyleSheet("QLineEdit { background: rgb(255, 128, 128); selection-background-color: rgb(255, 0, 0); }");
+
+            ui->lineEdit_path->clear();
+        }
+
+    } else {
+        // Does not exist and is writable --> green
+        if (!dir_info.isWritable()) {
+            const QString msg = "Path does not exist but is writable: " + path;
+            //emit sig_statusBarAppend(msg, "black");
+            qDebug().noquote() << "[INFO]\t" << msg;
+
+            ui->lineEdit_path->setStyleSheet("QLineEdit { background: rgb(150, 240, 150); selection-background-color: rgb(50, 150, 50); }");
+
+        // Does not exist and is not writable --> red
+        } else {
+            const QString msg = "Path does not exist and is not writable (yet): " + path;
+            //emit sig_statusBarAppend(msg, "red");
+            qDebug().noquote() << "[INFO]\t" << msg;
+
+            ui->lineEdit_path->setStyleSheet("QLineEdit { background: rgb(255, 128, 128); selection-background-color: rgb(255, 0, 0); }");
+
+            ui->lineEdit_path->clear();
+        }
+    }
+
+    if (path.isEmpty() || path == "") {
+        ui->lineEdit_path->setStyleSheet("QLineEdit { background: rgb(255, 255, 255); selection-background-color: rgb(0, 80, 80); }");
+    }
 }

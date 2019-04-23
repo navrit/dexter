@@ -2208,6 +2208,8 @@ void QCstmGLVisualization::on_saveLineEdit_textEdited()
             qDebug().noquote() << "[INFO]\t" << msg;
 
             ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 128, 128); selection-background-color: rgb(255, 0, 0); }");
+
+            ui->saveLineEdit->clear();
         }
 
     } else {
@@ -2226,6 +2228,8 @@ void QCstmGLVisualization::on_saveLineEdit_textEdited()
             qDebug().noquote() << "[INFO]\t" << msg;
 
             ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 128, 128); selection-background-color: rgb(255, 0, 0); }");
+
+            ui->saveLineEdit->clear();
         }
     }
 }

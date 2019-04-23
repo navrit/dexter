@@ -394,7 +394,7 @@ int CommandHandler::setScanPath(QString path)
     QFileInfo outputDir(path);
     if(!outputDir.exists())
         return UNKNOWN_COMMAND;
-    thresholdScan::getInstance()->GetUI()->textEdit_path->setText(path);
+    thresholdScan::getInstance()->GetUI()->lineEdit_path->setText(path);
     return NO_ERROR;
 
 }
@@ -426,7 +426,7 @@ int CommandHandler::getFramesPerScan()
 
 QString CommandHandler::getScanPath()
 {
-    return thresholdScan::getInstance()->GetUI()->textEdit_path->toPlainText();
+    return thresholdScan::getInstance()->GetUI()->lineEdit_path->text();
 }
 
 void CommandHandler::startScan()
