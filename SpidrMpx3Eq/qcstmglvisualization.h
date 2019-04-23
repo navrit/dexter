@@ -172,7 +172,7 @@ private:
 
     MASK_OPERATION _maskOpration = MASK;
     bool _maskingRequestFromServer = false;
-    int _thresholdsVector [NUMBER_OF_CHIPS][8];
+    int _thresholdsVector [NUMBER_OF_CHIPS][8] = {{0}}; //! TODO: KIA? Refactor the hardcoded 8 from this?
     void _loadFromThresholdsVector(void);
 
     typedef struct {

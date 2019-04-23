@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 address = "127.0.0.1"
-port = 6000
+port = 6351
 rcv_buffer_size = 4096
 sleep_time = 0.005
 
@@ -34,11 +34,14 @@ skipped = 0
 
 # Define test functions
 def hello_test():
-    sock.send(b"Hello;\n")
+    sock.send(b"MPX,0000000015,GET,THRESHOLD0")
     msg, ancdata, flags, addr = sock.recvmsg(rcv_buffer_size)
-    assert "Hello From Dexter Server" in str(msg)
-    global done
-    done += 1
+    try:    
+        print(msg)
+        global done
+        done += 1
+    except Exception as e:
+        print('{}: {}'.format(e, msg))
 
 
 def bye_test():
@@ -569,7 +572,7 @@ try:
     print("\nI need an isConnected call because some of these depend on\
  knowing that\n")
     hello_test()
-    bye_test()
+    '''bye_test()
     open_test()   # Incomplete
     close_test()  # Incomplete
     start_test()  # Incomplete
@@ -579,17 +582,17 @@ try:
     snap_test()            # Incomplete
     autosave_test()        # Incomplete server code
     record_path_test()     # Incomplete server code
-    record_format_test()   # Incomplete server code x3
+    record_format_test()   # Incomplete server code x3'''
 #    ''' I had to add 1ms sleeps here otherwise it hasn't updated it time
 #     it reports the previous value '''
-    gain_mode_test()
+    '''gain_mode_test()
     get_image_test()       # Incomplete
     polarity_test()
     continuous_RW_frequency_test()
     shutter_length_test()
     both_counter_test()
     colour_mode_test()
-    lut_table_test()
+    lut_table_test()'''
 
 except BrokenPipeError:
     print("\nBroken Pipe error")

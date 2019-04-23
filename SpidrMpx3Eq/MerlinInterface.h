@@ -19,7 +19,7 @@ public:
     uint32_t yDim = 0;
     QString pixelDepth = "U32";
     const QString sensorLayout = "   2x2"; //! The whitespaces intentional
-    uint8_t chipSelect = 0x00; //! could be just 0 instead...
+    uint8_t chipSelect = 0;
     QString timeStamp;
     double shutterOpen = 0.0;
     uint8_t counter = 0;
