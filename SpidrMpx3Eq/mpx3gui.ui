@@ -43,6 +43,7 @@
       <widget class="QCstmCT" name="ctTab"/>
       <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
       <widget class="thresholdScan" name="THScan"/>
+      <widget class="hdmiConfig" name="hdmiConfigTab"/>
      </widget>
     </item>
    </layout>
@@ -53,7 +54,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>24</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -156,8 +157,9 @@
    <addaction name="actionDACs"/>
    <addaction name="actionEqualization"/>
    <addaction name="actionThreshold_Scan"/>
-   <addaction name="separator"/>
    <addaction name="actionDefibrillator"/>
+   <addaction name="actionHDMI_Config"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionExit">
@@ -445,6 +447,15 @@ adj_* and mask_*</string>
     <string>Threshold Scan (Ctrl+5)</string>
    </property>
   </action>
+  <action name="actionHDMI_Config">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/hdmi.png</normaloff>:/icons/hdmi.png</iconset>
+   </property>
+   <property name="text">
+    <string>HDMI Config</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -497,6 +508,12 @@ adj_* and mask_*</string>
    <class>thresholdScan</class>
    <extends>QWidget</extends>
    <header>thresholdscan.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>hdmiConfig</class>
+   <extends>QWidget</extends>
+   <header>hdmiConfig.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

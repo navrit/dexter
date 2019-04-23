@@ -97,7 +97,8 @@ SOURCES += main.cpp \
     EnergyCalibrator.cpp \
     RemoteThresholdDlg.cpp \
     tcpconnection.cpp \
-    canvas.cpp
+    canvas.cpp \
+    hdmiConfig.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -146,7 +147,8 @@ HEADERS += mpx3gui.h \
     RemoteThresholdDlg.h \
     ServerStatus.h \
     tcpconnection.h \
-    canvas.h
+    canvas.h \
+    hdmiConfig.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
@@ -168,7 +170,8 @@ FORMS    += mpx3gui.ui \
     thresholdscan.ui \
     qcstmct.ui \
     testpulseequalisation.ui \
-    RemoteThresholdDlg.ui
+    RemoteThresholdDlg.ui \
+    hdmiConfig.ui
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/\" &
     first.depends = $(first) copydata

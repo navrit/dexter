@@ -115,6 +115,21 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
     return doc;
 }
 
+void Mpx3Config::onSetInhibitShutterRegisterOffset(int offset)
+{
+    _inhibitShutterRegisterOffset = offset;
+}
+
+bool Mpx3Config::isInhibitShutterSelected()
+{
+    return _isInhibitShutterSelected;
+}
+
+void Mpx3Config::setHdmiRegisterValue(int value)
+{
+    _hdmiregisterValue = value;
+}
+
 void Mpx3Config::PickupStaticConfigurationFigures() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -987,17 +1002,40 @@ void  Mpx3Config::setStepperConfigCalib(QStandardItem * item) {
 
 void Mpx3Config::setInhibitShutter(bool turnOn)
 {
+    if(_inhibitShutterRegisterOffset == -1)
+    {
+        qDebug() << "First configure the HDMI pins for inhibit shutter please.";
+        QCstmConfigMonitoring::getInstance()->getUI()->inhibitShutterCheckBox->setChecked(false);
+        return;
+    }
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     int val = 0;
     spidrcontrol->getSpidrReg(0x0810,&val);
     qDebug().noquote() << "[INFO]\tOld HDMI config : " << QString::number(val, 2);
 
-    uint8_t inhibitShutterVal = (turnOn ? 0x8 : 0xF) << 4;
-    val = (val & 0xFFFFFF0F) | inhibitShutterVal;
+   // uint8_t inhibitShutterVal = (turnOn ? 0x8 : 0xF) << 4;// inhibitShutterOffset
+    uint8_t inhibitShutterVal = (turnOn ? 0x8 : 0xF) << _inhibitShutterRegisterOffset;// inhibitShutterOffset
+    uint32_t mask = 0;
+    int i = 0;
+    while(i<=20)
+    {
+        int temp = 0;
+        if(i == _inhibitShutterRegisterOffset)
+            temp = 0;
+        else
+            temp = 0xF;
 
-    spidrcontrol->setSpidrReg(0x0810, val, true);
+        mask |=  (temp << i);
+        i = i + 4;
+    }
+
+    //val = (val & 0xFFFFFF0F) | inhibitShutterVal;
+   // val = (mask) | inhibitShutterVal;
+    _hdmiregisterValue &= (mask);
+    _hdmiregisterValue |= inhibitShutterVal;
+    spidrcontrol->setSpidrReg(0x0810, _hdmiregisterValue, true);
     spidrcontrol->getSpidrReg(0x0810,&val);
     qDebug().noquote() << "[INFO]\tNew HDMI config : " << QString::number(val, 2);
-
+    _isInhibitShutterSelected = turnOn;
     emit inhibitShutterchanged(turnOn);
 }

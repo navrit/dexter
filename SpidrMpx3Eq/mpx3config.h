@@ -187,6 +187,9 @@ public:
     bool RequiredOnGlobalConfig(config_items item);
 
     QJsonDocument buildConfigJSON(bool includeDacs);
+    void onSetInhibitShutterRegisterOffset(int offset);
+    bool isInhibitShutterSelected();
+    void setHdmiRegisterValue(int value);
 
 private:
 
@@ -196,6 +199,9 @@ private:
     QVector<QString> _deviceWaferIdMap;
     int _nDevicesPresent = -1;
     int _nDevicesSupported = -1;
+    int _inhibitShutterRegisterOffset = -1;
+    bool _isInhibitShutterSelected = false;
+    int _hdmiregisterValue = 0;
 
 signals:
     void IpAdressChanged(QString);
@@ -435,6 +441,7 @@ public slots:
     }
 
    void setInhibitShutter(bool turnOn); // Slot to config inhibit_shutter signal
+
 };
 
 

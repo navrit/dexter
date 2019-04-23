@@ -55,6 +55,7 @@ class thresholdScan;
 class DataControllerThread;
 class zmqController;
 class TcpServer;
+class hdmiConfig;
 
 // Change me when adding extra views
 #define __visualization_page_Id     0
@@ -65,6 +66,7 @@ class TcpServer;
 #define __ct_page_Id                5
 #define __stepperMotor_page_Id      6
 #define __thresholdScan_page_Id     7
+#define __hdmi_config_page_Id       8
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"
@@ -305,6 +307,8 @@ private slots:
     void on_actionAbout_triggered(bool checked);
     void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered();
+    void on_actionHDMI_Config_triggered();
+
     void autoConnectToDetector();
     void shutterOpenTimer_timeout();
     void shutterCloseTimer_timeout();

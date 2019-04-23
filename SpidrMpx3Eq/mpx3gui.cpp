@@ -21,6 +21,7 @@
 #include "dataset.h"
 #include "mpx3config.h"
 #include "datacontrollerthread.h"
+#include "hdmiConfig.h"
 
 #include <QMessageBox>
 #include <QDebug>
@@ -1501,6 +1502,7 @@ QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; 
 QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
 QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
 thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
+//hdmiConfig * Mpx3GUI::getHdmiConfig(){return _ui->
 
 void Mpx3GUI::on_actionExit_triggered()
 {
@@ -1538,6 +1540,7 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionEqualization->setChecked(0);
     _ui->actionThreshold_Scan->setChecked(0);
     _ui->actionStepper_Motor->setChecked(0);
+    _ui->actionHDMI_Config->setChecked(0);
     // _ui-> NEW ACTION ->setChecked(0);
 }
 
@@ -1734,6 +1737,13 @@ void Mpx3GUI::on_actionThreshold_Scan_triggered()
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
     _ui->actionThreshold_Scan->setChecked(1);
+}
+
+void Mpx3GUI::on_actionHDMI_Config_triggered()
+{
+    uncheckAllToolbarButtons();
+    _ui->stackedWidget->setCurrentIndex( __hdmi_config_page_Id );
+    _ui->actionHDMI_Config->setChecked(1);
 }
 
 void Mpx3GUI::autoConnectToDetector() {
