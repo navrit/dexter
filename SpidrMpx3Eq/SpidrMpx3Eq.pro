@@ -51,7 +51,7 @@ unix {
     LIBS += -ltiff
 
     message([RELEASE NOTE] Must run qmake in order to update the version/hash number. Do this before a release otherwise the version/hash numbers will be incorrect.)
-    DEFINES += GIT_CURRENT_SHA1="\\\"$(shell git -C \""$$_PRO_FILE_PWD_"\" describe)\\\""
+    DEFINES += GIT_CURRENT_SHA1="\\\"$(shell git -C \""$$_PRO_FILE_PWD_"\" rev-parse --short HEAD)\\\""
 }
 
 LIBS += -lSpidrMpx3Lib -lphidget21 -lzmq
