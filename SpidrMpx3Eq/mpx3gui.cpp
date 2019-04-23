@@ -1217,13 +1217,16 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     return;
 }
 
-void Mpx3GUI::save_config(){
+void Mpx3GUI::save_config() {
     QString filename = QFileDialog::getSaveFileName(this, tr("Save config"), tr("."), tr("json files (*.json)"));
+    if (!filename.endsWith(".json", Qt::CaseInsensitive) ) {
+        filename.append(".json");
+    }
     config->toJsonFile(filename);
     return;
 }
 
-bool Mpx3GUI::load_config(){
+bool Mpx3GUI::load_config() {
 
     bool res = false;
     if(!_loadConfigRemotely){

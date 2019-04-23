@@ -938,7 +938,7 @@ QString Mpx3Config::getIpZmqSubAddressPortString()
     return Zmq_Sub_address;
 }
 
-bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
+bool Mpx3Config::toJsonFile(QString filename, bool includeDacs) {
     QFile loadFile(filename);
     if(!loadFile.open(QIODevice::WriteOnly)){
         printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
