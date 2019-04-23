@@ -399,11 +399,6 @@ void thresholdScan::on_spinBox_minimum_valueChanged(int val)
     _mpx3gui->getDACs()->GetUI()->dac0SpinBox->setValue(val);
 }
 
-void thresholdScan::on_spinBox_maximum_valueChanged(int val)
-{
-    _mpx3gui->getDACs()->GetUI()->dac1SpinBox->setValue(val);
-}
-
 void thresholdScan::on_spinBox_framesPerStep_valueChanged(int val)
 {
     if(!_mpx3gui->getVisualization()->GetUI()->infDataTakingCheckBox->isChecked())

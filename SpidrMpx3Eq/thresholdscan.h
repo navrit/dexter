@@ -92,8 +92,6 @@ private slots:
 
     void on_spinBox_minimum_valueChanged(int val);
 
-    void on_spinBox_maximum_valueChanged(int val);
-
     void on_spinBox_framesPerStep_valueChanged(int val);
 
     void on_checkBox_incrementOtherThresholds_stateChanged();
