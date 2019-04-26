@@ -289,7 +289,6 @@ private:
     QTimer *shutterOpenTimer; //used for periods longer than 100 seconds
     QTimer *shutterCloseTimer; //used for periods longer than 100 seconds
     bool _timerStop = false;
-    void prepareDetectorForDataTaking();
 
     QString _lastTriedIPAddress = "";
 
