@@ -210,21 +210,24 @@ void DataTakingThread::run() {
         reachLimitStop = false;
         spidrdaq->releaseAll();
 
-        bool stopTimers = true;
+        bool stopTimers = false;
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-            setTriggerMode(spidrcontrol, config);
             spidrcontrol->startContReadout( contRWFreq );
-            stopTimers = false;
-        } else if (opMode == Mpx3Config::__operationMode_SequentialRW && !_isExternalTrigger) {
-            if (config->getTriggerMode() == SHUTTERMODE_SOFTWARE
-            || (config->getTriggerPeriod() > LONG_PERIOD_US)) {
-                // software trigger
-                spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO, 0, 1, 1, 0);
-                emit sendingShutter();
-            } else {
+        } else if (opMode == Mpx3Config::__operationMode_SequentialRW) {
+            if (_isExternalTrigger) {
                 setTriggerMode(spidrcontrol, config);
                 spidrcontrol->startAutoTrigger();
-                stopTimers = false;
+            } else {
+                if (config->getTriggerMode() == SHUTTERMODE_SOFTWARE
+                || (config->getTriggerPeriod() > LONG_PERIOD_US)) {
+                    // software trigger
+                    spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO, 0, 1, 1, 0);
+                    stopTimers = true;
+                    emit sendingShutter();
+                } else {
+                    setTriggerMode(spidrcontrol, config);
+                    spidrcontrol->startAutoTrigger();
+                }
             }
         }
 
