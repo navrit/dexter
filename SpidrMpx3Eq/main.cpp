@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QtGui/QOpenGLFunctions>
 #include <QLoggingCategory>
+#include "canvas.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,6 +12,7 @@ int main(int argc, char *argv[])
     qputenv("QT_SCALE_FACTOR", "1"); // Must be >=1
 
     QApplication a(argc, argv);
+    qRegisterMetaType<Canvas>("Canvas");
 
     QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
 
