@@ -7,35 +7,31 @@
 #ifndef MPX3GUI_H
 #define MPX3GUI_H
 
-#include <QMainWindow>
-
-#include <QVector>
+#include <stdio.h>
 #include <iostream>
 #include <vector>
+
+#include <QCoreApplication>
+#include <QTimer>
+#include <QMainWindow>
+#include <QVector>
 #include <QScrollBar>
 #include <QShortcut>
 
 #include <qcustomplot.h>
-
-using namespace std;
-
 #include "dataset.h"
 #include "gradient.h"
 #include "histogram.h"
 #include "mpx3eq_common.h"
 #include "mpx3config.h"
+
 #include "qcstmsteppermotor.h"
 #include "qcstmct.h"
 #include "thresholdscan.h"
 #include "datacontrollerthread.h"
 #include "zmqcontroller.h"
-//server
 #include "tcpserver.h"
 #include "commandhandlerwrapper.h"
-
-#include <stdio.h>
-#include <QCoreApplication>
-#include <QTimer>
 #include "GeneralSettings.h"
 #include "EnergyCalibrator.h"
 
@@ -43,12 +39,13 @@ class Mpx3Config;
 class QCustomPlot;
 class SpidrController;
 class SpidrDaq;
-class QCstmDacs;
 class ThlScan;
+
 // Change me when adding extra views
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
+class QCstmDacs;
 class QCstmStepperMotor;
 class QCstmCT;
 class thresholdScan;

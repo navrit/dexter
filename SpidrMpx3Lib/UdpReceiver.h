@@ -15,7 +15,6 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 
-#include "FrameAssembler.h"
 #include "PacketContainer.h"
 #include "configs.h"
 
@@ -25,6 +24,7 @@ using steady_clock = std::chrono::steady_clock;
 using us = std::chrono::microseconds;
 using ns = std::chrono::nanoseconds;
 
+class FrameSetManager;
 class FrameAssembler;
 
 struct peer_t {
@@ -51,11 +51,7 @@ public:
 
   bool isFinished() { return finished; }
 
-  constexpr static int max_packet_size = 9000;
-  // constexpr static int max_buffer_size =
-  //    (11 * max_packet_size) +
-  //    7560; //! [bytes] You can check this on Wireshark,
-  //          //! by triggering 1 frame readout
+  constexpr static int max_packet_size = 9000; //! This is the MTU
 
   uint64_t packets = 0, frames = 0;
 
@@ -81,10 +77,10 @@ private:
   peer_t peers[Config::number_of_chips];
   const int kNumberOfPollEvents = 32;
 
-  FrameSetManager *fsm = new FrameSetManager();
+  FrameSetManager *fsm = nullptr;
   PacketContainer inputQueues[Config::number_of_chips];
   PacketContainer timeOut[Config::number_of_chips];
-  FrameAssembler *frameAssembler[Config::number_of_chips];
+  FrameAssembler *frameAssembler[Config::number_of_chips] = {nullptr};
 
 };
 #endif // RECEIVEUDPTHREAD_H

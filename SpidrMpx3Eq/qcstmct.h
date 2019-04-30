@@ -2,13 +2,15 @@
 #define QCSTMCT_H
 
 #include <QWidget>
-#include "mpx3gui.h"
-#include "gradient.h"
 #include <QElapsedTimer>
 #include <QDir>
 
+#include "gradient.h"
+
+class Mpx3GUI;
+
 namespace Ui {
-class QCstmCT;
+    class QCstmCT;
 }
 
 class QCstmCT : public QWidget

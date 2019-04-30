@@ -2,14 +2,16 @@
 #define QCSTMSTEPPERMOTOR_H
 
 #include <QWidget>
-#include "mpx3gui.h"
+#include <QThread>
 #include <ui_qcstmsteppermotor.h>
+#include "mpx3eq_common.h"
 
+class Mpx3GUI;
 class StepperMotorController;
 class ConfigStepperThread; // defined in this file at the bottom
 
 namespace Ui {
-class QCstmStepperMotor;
+    class QCstmStepperMotor;
 }
 
 class QCstmStepperMotor : public QWidget
@@ -18,7 +20,7 @@ class QCstmStepperMotor : public QWidget
 
 public:
 
-    explicit QCstmStepperMotor(QWidget *parent = 0);
+    explicit QCstmStepperMotor(QWidget *parent = nullptr);
     ~QCstmStepperMotor();
     Ui::QCstmStepperMotor *GetUI(){ return ui; }
     void SetMpx3GUI(Mpx3GUI *p);
@@ -35,11 +37,11 @@ public:
 
 private:
 
-    Ui::QCstmStepperMotor *ui;
-    Mpx3GUI * _mpx3gui;
+    Ui::QCstmStepperMotor *ui = nullptr;
+    Mpx3GUI * _mpx3gui = nullptr;
 
-    StepperMotorController * _stepper;
-    ConfigStepperThread * _stepperThread;
+    StepperMotorController * _stepper = nullptr;
+    ConfigStepperThread * _stepperThread = nullptr;
 
     QVector<double> m_stepperTestSequence;
     int m_stepperTestCurrentStep = 0;
@@ -59,7 +61,6 @@ public slots:
     void on_stepperSetZeroPushButton_clicked();
     void on_stepperMotorCheckBox_toggled(bool checked);
     void on_motorGoToTargetButton_clicked();
-    //void ConfigCalibAngle1Changed(double);
 
     // Dial
     void motorDialReleased();
@@ -79,7 +80,7 @@ class ConfigStepperThread : public QThread {
     Q_OBJECT
 
 public:
-    explicit ConfigStepperThread(Mpx3GUI *, Ui::QCstmStepperMotor  *, QCstmStepperMotor *);
+    explicit ConfigStepperThread(Mpx3GUI *, Ui::QCstmStepperMotor *, QCstmStepperMotor *);
     void ConnectToHardware( );
 
     bool reachedTarget = false;
@@ -88,10 +89,9 @@ private:
 
     void run();
 
-    Mpx3GUI * _mpx3gui;
-    Ui::QCstmStepperMotor * _ui;
-    QCstmStepperMotor * _stepperController;
-
+    Mpx3GUI * _mpx3gui = nullptr;
+    Ui::QCstmStepperMotor * _ui = nullptr;
+    QCstmStepperMotor * _stepperController = nullptr;
 };
 
 #endif // QCSTMSTEPPERMOTOR_H

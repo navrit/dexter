@@ -5,9 +5,12 @@
 #include "../Qzmq/qzmqsocket.h"
 
 #include <QObject>
-#include "mpx3gui.h"
 #include <QTimer>
 #include <QQueue>
+#include <QJsonDocument>
+
+class Mpx3GUI;
+class Mpx3Config;
 
 //! Interface 'documentation' from XRE PDF: 'Acquila socket interface CWI.pdf'
 //!

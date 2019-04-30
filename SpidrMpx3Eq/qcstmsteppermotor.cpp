@@ -1,15 +1,15 @@
 #include "qcstmsteppermotor.h"
 #include "ui_qcstmsteppermotor.h"
 
+#include <QtWidgets>
+#include "qtableview.h"
+#include "qstandarditemmodel.h"
+
+#include "mpx3gui.h"
+#include "ui_mpx3gui.h"
 #include "mpx3config.h"
 #include "StepperMotorController.h"
 
-#include "ui_mpx3gui.h"
-
-#include <QtWidgets>
-
-#include "qtableview.h"
-#include "qstandarditemmodel.h"
 
 QCstmStepperMotor::QCstmStepperMotor(QWidget *parent) :
     QWidget(parent),

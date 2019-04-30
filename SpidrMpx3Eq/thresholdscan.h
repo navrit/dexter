@@ -2,11 +2,13 @@
 #define THRESHOLDSCAN_H
 
 #include <QWidget>
-#include <mpx3gui.h>
+#include <QElapsedTimer>
 #include "ServerStatus.h"
 
+class Mpx3GUI;
+
 namespace Ui {
-class thresholdScan;
+    class thresholdScan;
 }
 
 class thresholdScan : public QWidget
