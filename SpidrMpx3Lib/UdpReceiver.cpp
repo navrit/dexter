@@ -11,6 +11,8 @@ UdpReceiver::UdpReceiver(int ipaddr, int UDP_Port, bool lutBug) {
 
   initFileDescriptorsAndBindToPorts(UDP_Port);
 
+  fsm = new FrameSetManager();
+
   for (int i = 0; i < config.number_of_chips; ++i) {
     frameAssembler[i] = new FrameAssembler(i);
     frameAssembler[i]->setFrameSetManager(fsm);
