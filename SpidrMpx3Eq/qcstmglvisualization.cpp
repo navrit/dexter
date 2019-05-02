@@ -932,33 +932,6 @@ QString QCstmGLVisualization::getPath(QString msg)
     return path;
 }
 
-QPoint QCstmGLVisualization::previewIndexToChipIndex(QPoint previewPixel, int *chipId)
-{
-    const int COL_SIZE = 512 , ROW_SIZE = 512;
-    QPoint chipIndex;
-    if(previewPixel.x() >= COL_SIZE/2 && previewPixel.y() >= ROW_SIZE/2){
-        *chipId = 0;
-        chipIndex.setX(ROW_SIZE - 1 - previewPixel.y());
-        chipIndex.setY(COL_SIZE - 1 - previewPixel.x());
-    }
-    else if(previewPixel.x() >= COL_SIZE/2 && previewPixel.y() < ROW_SIZE/2){
-        *chipId = 1;
-        chipIndex.setX((ROW_SIZE/2) - 1 - previewPixel.y());
-        chipIndex.setY(COL_SIZE - 1 - previewPixel.x());
-    }
-    else if(previewPixel.x() < COL_SIZE/2 && previewPixel.y() < ROW_SIZE/2){
-        *chipId = 2;
-        chipIndex.setX(previewPixel.y());
-        chipIndex.setY(previewPixel.x());
-    }
-    else if(previewPixel.x() < COL_SIZE/2 && previewPixel.y() >= ROW_SIZE/2){
-        *chipId = 3;
-        chipIndex.setX(previewPixel.y() - (ROW_SIZE/2));
-        chipIndex.setY(previewPixel.x());
-    }
-    return chipIndex;
-}
-
 void QCstmGLVisualization::developerMode(bool enabled)
 {
     if (enabled){
@@ -1605,9 +1578,6 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
 //! TODO BUG The maths on this is incorrect, apparently opposing chips have pixels masked when they should not be...
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
-
-    int chipID;
-    QPoint chipIndex = previewIndexToChipIndex(pixel,&chipID);
 
     if(!_mpx3gui->getConfig()->isConnected())
         return;
