@@ -170,7 +170,7 @@ private:
     bool _saveLineEdit_isNotEmpty = false;
     QString _saveFileComboBox_text = "";
 
-    MASK_OPERATION _maskOpration = MASK;
+    MASK_OPERATION _maskOperation = MASK;
     bool _maskingRequestFromServer = false;
     int _thresholdsVector [NUMBER_OF_CHIPS][8] = {{0}}; //! TODO: KIA? Refactor the hardcoded 8 from this?
     void _loadFromThresholdsVector(void);
@@ -211,9 +211,6 @@ private:
 
     //! TCP server
     bool autosaveFromServer = false;
-
-    //! convert preview index to chip index
-    QPoint previewIndexToChipIndex(QPoint previewPixel,int *chipId);
 
 private slots:
     void ConnectionStatusChanged(bool connecting);
