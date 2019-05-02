@@ -1579,24 +1579,27 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 //! TODO BUG The maths on this is incorrect, apparently opposing chips have pixels masked when they should not be...
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
-    if(!_mpx3gui->getConfig()->isConnected())
+    if (!_mpx3gui->getConfig()->isConnected()) {
         return;
+    }
     int frameIndex = _mpx3gui->getDataset()->getContainingFrame(pixel);
-    if(frameIndex == -1)
+    if (frameIndex == -1) {
         return;
+    }
     QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates(pixel, frameIndex);
     int naturalFlatCoord = naturalCoords.y()*_mpx3gui->getDataset()->x()+naturalCoords.x();
-    if(_mpx3gui->getConfig()->getColourMode()) {
+    if (_mpx3gui->getConfig()->getColourMode()) {
         naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x();
     }
     int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
 
-    if(_maskingRequestFromServer)
-    {
-        _maskingRequestFromServer = false;
-    }
 
-    else{//for interactive use
+    if (_maskingRequestFromServer) {
+        _maskingRequestFromServer = false;
+
+    } else {
+        //! For interactive use
+
         QMenu contextMenu;
         QAction mask(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu),
                 unmask(QString("Unmask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu),
@@ -1608,25 +1611,24 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         contextMenu.addAction(&maskAllOverflow);
         contextMenu.addAction(&maskAllActive);
 
-
         QAction* selectedItem = contextMenu.exec(position);
-        if(!_mpx3gui->getConfig()->isConnected())
+        if (!_mpx3gui->getConfig()->isConnected()) {
             return;
+        }
         if (!_mpx3gui->equalizationLoaded()) {
             QMessageBox::information(nullptr, "Error", "An equalisation must be loaded in order to mask a pixel. Failed operation/");
             return;
         }
 
 
-        if(selectedItem == &mask) _maskOperation = MASK;
-        else if(selectedItem == &unmask) _maskOperation = UNMASK;
-        else if(selectedItem == &maskAllOverflow) _maskOperation = MASK_ALL_OVERFLOW;
-        else if(selectedItem == &maskAllActive) _maskOperation = MASK_ALL_ACTIVE;
+        if (selectedItem == &mask) _maskOperation = MASK;
+        else if (selectedItem == &unmask) _maskOperation = UNMASK;
+        else if (selectedItem == &maskAllOverflow) _maskOperation = MASK_ALL_OVERFLOW;
+        else if (selectedItem == &maskAllActive) _maskOperation = MASK_ALL_ACTIVE;
         else _maskOperation = NULL_MASK;
     }
 
-
-    if(_maskOperation == MASK) {
+    if (_maskOperation == MASK) {
         if ( _mpx3gui->getConfig()->getColourMode() ) {
 
             //qDebug() << "Nat[" << deviceID << "]:"
@@ -1636,39 +1638,25 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
             //       << naturalFlatCoord+1+_mpx3gui->getX()*2;
 
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
-
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1);
-
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+_mpx3gui->getX()*2);
-
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1+_mpx3gui->getX()*2);
-
-        }
-        else{
+        } else {
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
-        //_mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel2D(QPair<int,int>(chipIndex.x(),chipIndex.y()));
-
+            //_mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel2D(QPair<int,int>(chipIndex.x(),chipIndex.y()));
         }
-    }
-    else if(_maskOperation == UNMASK) {
-        if(_mpx3gui->getConfig()->getColourMode()){
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
+    } else if(_maskOperation == UNMASK) {
+        if (_mpx3gui->getConfig()->getColourMode()) {
 
+            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+1);
-
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+_mpx3gui->getX()*2);
-
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+1+_mpx3gui->getX()*2);
-
-
-        }
-        else{
+        } else {
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
-      //  _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel2D(QPair<int,int>(chipIndex.x(),chipIndex.y()));
-
+            //  _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel2D(QPair<int,int>(chipIndex.x(),chipIndex.y()));
         }
-    }
-    else if((_maskOperation == MASK_ALL_OVERFLOW) || (_maskOperation == MASK_ALL_ACTIVE)){
+    } else if ((_maskOperation == MASK_ALL_OVERFLOW) || (_maskOperation == MASK_ALL_ACTIVE)) {
 
         //! Find all pixels in overflow or active depending on what is selected
         int nx = _mpx3gui->getDataset()->x();
