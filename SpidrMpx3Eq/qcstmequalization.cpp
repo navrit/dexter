@@ -1697,7 +1697,11 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         return;
     }
 
+    // BORKED
+    //! Diamond masked pixel issue - this probably needs to be wiped after each chip iteration
     QSet<int> maskedPixels = _eqMap[chipIndex]->GetMaskedPixels();
+    // END BORKED
+
     int testBitsOn = 0;
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
         pix = XtoXY(i, __array_size_x);
@@ -1734,6 +1738,9 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     //!   to the test pulse code
 
     if ( applymask ) {
+
+        //! This masking scheme look like it makes more sense, why don't we use it?
+
         // Mask
         //        if(_eqMap[chipIndex]->GetNMaskedPixels2D() > 0){
         //            QSet<QPair<int,int>> tomask = _eqMap[chipIndex]->GetMaskedPixels2D();
@@ -1751,15 +1758,22 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             QSet<int>::iterator iE = tomask.end();
             pair<int, int> pix;
             qDebug() << "[INFO] Masking pixels :";
+
+            // BORKED
             resetMaskMatrix(chipIndex);
+            // END BORKED
+
             for ( ; i != iE ; i++ ) {
                 pix = XtoXY( (*i), __matrix_size_x );
                 int xToXy = XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
                 qDebug() << "     chipID:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << xToXy;
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+
+                // BORKED
                 QPoint previewIndx = chipIndexToPreviewIndex(QPoint(pix.first,pix.second),chipIndex);
                 if(previewIndx.x() >= 0 && previewIndx.x() < 512 && previewIndx.y() >= 0 && previewIndx.y() < 512)
                     maskMatrix[previewIndx.x()][previewIndx.y()] = true;
+                // END BORKED
             }
         } else {
             //! When the mask is empty go ahead and unmask all pixels
@@ -2306,6 +2320,7 @@ void QCstmEqualization::estimateEqualisationTarget()
     return;
 }
 
+// BORKED
 void QCstmEqualization::resetMaskMatrix(int chipid) {
 
     if(chipid == 0)
@@ -2340,9 +2355,10 @@ void QCstmEqualization::resetMaskMatrix(int chipid) {
             }
         }
     }
-
 }
+// END BORKED
 
+// BORKED
 QPoint QCstmEqualization::chipIndexToPreviewIndex(QPoint chipIndex, int chipId)
 {
     const int COL_SIZE = 512 , ROW_SIZE = 512;
@@ -2365,6 +2381,7 @@ QPoint QCstmEqualization::chipIndexToPreviewIndex(QPoint chipIndex, int chipId)
     }
     return previewIndex;
 }
+// END BORKED
 
 bool QCstmEqualization::makeTeaCoffeeDialog()
 {
