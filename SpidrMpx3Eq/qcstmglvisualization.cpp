@@ -1648,15 +1648,15 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         }
 
 
-        if(selectedItem == &mask) _maskOpration = MASK;
-        else if(selectedItem == &unmask) _maskOpration = UNMASK;
-        else if(selectedItem == &maskAllOverflow) _maskOpration = MASK_ALL_OVERFLOW;
-        else if(selectedItem == &maskAllActive) _maskOpration = MASK_ALL_ACTIVE;
-        else _maskOpration = NULL_MASK;
+        if(selectedItem == &mask) _maskOperation = MASK;
+        else if(selectedItem == &unmask) _maskOperation = UNMASK;
+        else if(selectedItem == &maskAllOverflow) _maskOperation = MASK_ALL_OVERFLOW;
+        else if(selectedItem == &maskAllActive) _maskOperation = MASK_ALL_ACTIVE;
+        else _maskOperation = NULL_MASK;
     }
 
 
-    if(_maskOpration == MASK) {
+    if(_maskOperation == MASK) {
         if ( _mpx3gui->getConfig()->getColourMode() ) {
 
             //qDebug() << "Nat[" << deviceID << "]:"
@@ -1680,7 +1680,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
         }
     }
-    else if(_maskOpration == UNMASK) {
+    else if(_maskOperation == UNMASK) {
         if(_mpx3gui->getConfig()->getColourMode()){
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
 
@@ -1698,7 +1698,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
         }
     }
-    else if((_maskOpration == MASK_ALL_OVERFLOW) || (_maskOpration == MASK_ALL_ACTIVE)){
+    else if((_maskOperation == MASK_ALL_OVERFLOW) || (_maskOperation == MASK_ALL_ACTIVE)){
 
         //! Find all pixels in overflow or active depending on what is selected
         int nx = _mpx3gui->getDataset()->x();
@@ -1712,11 +1712,11 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         QVector<QPoint> toMask;
         for ( int xi = 0 ; xi < nx*nChipsX ; xi++ ) {
             for ( int yi = 0 ; yi < ny*nChipsY ; yi++ ) {
-                if (_maskOpration == MASK_ALL_OVERFLOW) {
+                if (_maskOperation == MASK_ALL_OVERFLOW) {
                     if ( _mpx3gui->getDataset()->sample(xi, yi, activeThreshold) == overflowval ) {
                         toMask.push_back( QPoint(xi, yi) );
                     }
-                } else if (_maskOpration == MASK_ALL_ACTIVE) {
+                } else if (_maskOperation == MASK_ALL_ACTIVE) {
                     if ( _mpx3gui->getDataset()->sample(xi, yi, activeThreshold) > 0 ) {
                         toMask.push_back( QPoint(xi, yi) );
                     }
@@ -1768,7 +1768,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     }
 
-    if (_maskOpration == NULL_MASK) {
+    if (_maskOperation == NULL_MASK) {
         return;
     }
 
@@ -2328,7 +2328,7 @@ void QCstmGLVisualization::onEqualizationPathExported(QString path)
 void QCstmGLVisualization::onRequestToMaskPixelRemotely(int x , int y)
 {
     _maskingRequestFromServer = true;
-    _maskOpration = MASK;
+    _maskOperation = MASK;
 
     pixel_selected(QPoint(x,y),QPoint());
 }
@@ -2336,7 +2336,7 @@ void QCstmGLVisualization::onRequestToMaskPixelRemotely(int x , int y)
 void QCstmGLVisualization::onRequestToUnmaskPixelRemotely(int x, int y)
 {
     _maskingRequestFromServer = true;
-    _maskOpration = UNMASK;
+    _maskOperation = UNMASK;
     pixel_selected(QPoint(x,y),QPoint());
 }
 
