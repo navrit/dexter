@@ -1697,10 +1697,8 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         return;
     }
 
-    // BORKED
-    //! Diamond masked pixel issue - this probably needs to be wiped after each chip iteration
+    spidrcontrol->resetPixelConfig();
     QSet<int> maskedPixels = _eqMap[chipIndex]->GetMaskedPixels();
-    // END BORKED
 
     int testBitsOn = 0;
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
@@ -1766,11 +1764,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
             }
         } else {
-            //! When the mask is empty go ahead and unmask all pixels
-            for ( int i = 0 ; i < __matrix_size ; i++ ) {
-                pix = XtoXY(i, __array_size_x);
-                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
-            }
+            // we did a resetPixelConfig already, no need to unmask pixels
         }
     }
 

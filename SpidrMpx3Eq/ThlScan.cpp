@@ -1938,6 +1938,8 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> rework
     ClearMask(spidrcontrol, false);
 
     int cntr = 0, pix = 0;
+    // TODO: this is stupid and inefficient; because all masks are cleaned already
+    // you can better just iterate over the reworkPixels directly
     for (int i = 0 ; i < __array_size_x ; i++) {
 
         for (int j = 0 ; j < __array_size_y ; j++) {
@@ -1967,15 +1969,10 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> rework
 void ThlScan::ClearMask(SpidrController * spidrcontrol, int devId, bool sendToChip){
 
     //! Unmask everything
-    for (int i = 0 ; i < __array_size_x ; i++) {
-        for (int j = 0 ; j < __array_size_y ; j++) {
-            spidrcontrol->setPixelMaskMpx3rx(i, j, false);
-        }
-    }
+    spidrcontrol->setPixelMaskMpx3rx(ALL_PIXELS, ALL_PIXELS, false);
 
     // And send the configuration if requested
     if ( sendToChip ) spidrcontrol->setPixelConfigMpx3rx( devId );
 
     _maskedSet.clear();
-
-};
+}

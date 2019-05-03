@@ -183,11 +183,7 @@ void QCstmThreshold::StartCalibration() {
 
         SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
-        for (int i = 0 ; i < __array_size_x ; i++) {
-            for (int j = 0 ; j < __array_size_y ; j++) {
-                spidrcontrol->setPixelMaskMpx3rx(i, j, false);
-            }
-        }
+        spidrcontrol->setPixelMaskMpx3rx(ALL_PIXELS, ALL_PIXELS, false);
         // And send the configuration
         spidrcontrol->setPixelConfigMpx3rx( ui->devIdSpinBox->value() );
     }
