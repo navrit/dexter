@@ -474,7 +474,7 @@ void QCstmGLVisualization::dataTakingFinished() {
     rewindScoring();
 
     //! Decide whether to save the file or not
-    consumerFinishedOneFrame(0);
+    //consumerFinishedOneFrame(0);
 
     _takingData = false;
 
