@@ -1037,7 +1037,13 @@ bool SpidrController::startAutoTrigger()
 
 bool SpidrController::stopAutoTrigger()
 {
-  return this->requestSetInt( CMD_AUTOTRIG_STOP, 0, 0 );
+    return this->requestSetInt( CMD_AUTOTRIG_STOP, 0, 0 );
+}
+
+bool SpidrController::startExternalTrigger(int n_trigger)
+{
+    this->setSpidrReg(0x294,n_trigger); //leon code doesnt update n_trigger if the mode is not Auto
+    startAutoTrigger();
 }
 
 // ----------------------------------------------------------------------------
