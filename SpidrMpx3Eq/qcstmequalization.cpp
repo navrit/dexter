@@ -1759,21 +1759,11 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             pair<int, int> pix;
             qDebug() << "[INFO] Masking pixels :";
 
-            // BORKED
-            resetMaskMatrix(chipIndex);
-            // END BORKED
-
             for ( ; i != iE ; i++ ) {
                 pix = XtoXY( (*i), __matrix_size_x );
                 int xToXy = XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
                 qDebug() << "     chipID:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << xToXy;
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
-
-                // BORKED
-                QPoint previewIndx = chipIndexToPreviewIndex(QPoint(pix.first,pix.second),chipIndex);
-                if(previewIndx.x() >= 0 && previewIndx.x() < 512 && previewIndx.y() >= 0 && previewIndx.y() < 512)
-                    maskMatrix[previewIndx.x()][previewIndx.y()] = true;
-                // END BORKED
             }
         } else {
             //! When the mask is empty go ahead and unmask all pixels
@@ -2319,69 +2309,6 @@ void QCstmEqualization::estimateEqualisationTarget()
 
     return;
 }
-
-// BORKED
-void QCstmEqualization::resetMaskMatrix(int chipid) {
-
-    if(chipid == 0)
-    {
-        for(int i = 256; i <512; i++){
-            for(int j = 256; j <512; j++){
-                maskMatrix[i][j] = false;
-            }
-        }
-    }
-    if(chipid == 1)
-    {
-        for(int i = 256; i <512; i++){
-            for(int j = 0; j <256; j++){
-                maskMatrix[i][j] = false;
-            }
-        }
-    }
-    if(chipid == 2)
-    {
-        for(int i = 0; i <256; i++){
-            for(int j =0 ; j <256; j++){
-                maskMatrix[i][j] = false;
-            }
-        }
-    }
-    if(chipid == 3)
-    {
-        for(int i = 0; i <256; i++){
-            for(int j = 256 ; j <512; j++){
-                maskMatrix[i][j] = false;
-            }
-        }
-    }
-}
-// END BORKED
-
-// BORKED
-QPoint QCstmEqualization::chipIndexToPreviewIndex(QPoint chipIndex, int chipId)
-{
-    const int COL_SIZE = 512 , ROW_SIZE = 512;
-    QPoint previewIndex;
-    if(chipId == 0){
-        previewIndex.setX(ROW_SIZE - 1 - chipIndex.y());
-        previewIndex.setY(COL_SIZE - 1 - chipIndex.x());
-    }
-    else if(chipId == 1){ //needto be fixed
-        previewIndex.setX((ROW_SIZE/2) - 1 - chipIndex.y());
-        previewIndex.setY(COL_SIZE - 1 - chipIndex.x());
-    }
-    else if(chipId == 2){
-        previewIndex.setX(chipIndex.y());
-        previewIndex.setY(chipIndex.x());
-    }
-    else if(chipId == 3){//needto be fixed
-        previewIndex.setX(chipIndex.x() + (ROW_SIZE/2));
-        previewIndex.setY(chipIndex.y());
-    }
-    return previewIndex;
-}
-// END BORKED
 
 bool QCstmEqualization::makeTeaCoffeeDialog()
 {

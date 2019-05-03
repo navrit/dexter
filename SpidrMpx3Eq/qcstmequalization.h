@@ -378,12 +378,6 @@ private:
     bool _scanDescendant;
     bool _stopEq = false;
 
-    // TODO. Use 'Dataset' information to make this of the right size on heap memory.
-    // Or simply use an instance of Dataset for this purpose.
-    bool maskMatrix[512][512] = {{false}};    //false = unmasked, true = masked
-    void resetMaskMatrix(int chipid); // BORKED
-    //convert chip index to preview index
-    QPoint chipIndexToPreviewIndex(QPoint chipIndex,int chipId); // BORKED
     bool makeTeaCoffeeDialog();
 
 public slots:
