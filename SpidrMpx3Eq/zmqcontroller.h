@@ -78,30 +78,30 @@ public:
     bool fileExists(QString path);
 
 private:
-    Mpx3GUI * _mpx3gui = nullptr;
-    Mpx3Config * config = nullptr;
+    Mpx3GUI *_mpx3gui = nullptr;
+    Mpx3Config *_config = nullptr;
 
-    QString PUB_addr = ""; //!tcp://127.0.0.1:50001"; //! Eg. "tcp://192.168.178.9:50001";
-    QString SUB_addr = ""; //! tcp://127.0.0.1:50000"; //! Eg. "tcp://192.168.178.9:50000";
+    QString _PUB_addr = ""; //!tcp://127.0.0.1:50001"; //! Eg. "tcp://192.168.178.9:50001";
+    QString _SUB_addr = ""; //! tcp://127.0.0.1:50000"; //! Eg. "tcp://192.168.178.9:50000";
 
-    QZmq::Context * QZmq_context;
-    QZmq::Socket * QZmq_PUB_socket;
-    QZmq::Socket * QZmq_SUB_socket;
+    QZmq::Context *_QZmq_context = nullptr;
+    QZmq::Socket *_QZmq_PUB_socket = nullptr;
+    QZmq::Socket *_QZmq_SUB_socket = nullptr;
 
-    QTimer *timer;
+    QTimer *_timer = nullptr;
 
-    QQueue<QJsonDocument> *eventQueue;
+    QQueue<QJsonDocument> *_eventQueue = nullptr;
 
-    QJsonDocument JsonDocument; //! Unique current JSON document
-    QString currentUUID = "";
+    QJsonDocument _JsonDocument; //! Unique current JSON document
+    QString _currentUUID = "";
 
     void initialiseJsonResponse();
 
     void processEvents();
-    bool processingEvents = false;
-    QTimer * eventProcessTimer;
+    bool _processingEvents = false;
+    QTimer *_eventProcessTimer = nullptr;
 
-    bool isConnectedToSPIDR = false;
+    bool _isConnectedToSPIDR = false;
 
     void takeImage(QJsonObject obj);
     void takeAndSaveImageSequence(QJsonObject obj);

@@ -1443,7 +1443,7 @@ void QCstmGLVisualization::onRequestForAutoSaveFromServer(bool val)
 void QCstmGLVisualization::onRequestForSettingPathFromServer(QString path)
 {
     bool success = requestToSetSavePath(path);
-    Q_UNUSED(success);
+    Q_UNUSED(success)
 }
 
 void QCstmGLVisualization::onRequestForSettingFormatFromServer(int idx)
@@ -1452,8 +1452,6 @@ void QCstmGLVisualization::onRequestForSettingFormatFromServer(int idx)
 }
 
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
-
-    int threshold = getActiveThreshold();
 
     QMenu contextMenu;
     QPoint pixel_begin_checked = pixel_begin;

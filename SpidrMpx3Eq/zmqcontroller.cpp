@@ -13,29 +13,29 @@
 zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 {
     SetMpx3GUI(p);
-    config = _mpx3gui->getConfig();
-    timer = new QTimer(this);
-    eventProcessTimer = new QTimer(this);
+    _config = _mpx3gui->getConfig();
+    _timer = new QTimer(this);
+    _eventProcessTimer = new QTimer(this);
 
-    QZmq_context = new QZmq::Context();
-    QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, QZmq_context, this);
-    QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, QZmq_context, this);
+    _QZmq_context = new QZmq::Context();
+    _QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, _QZmq_context, this);
+    _QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, _QZmq_context, this);
 
-    eventQueue = new QQueue<QJsonDocument>();
+    _eventQueue = new QQueue<QJsonDocument>();
 
 
     initialiseJsonResponse();
 
     // ---------------------- Internal class signals ---------------------
-    connect(config, SIGNAL(IpZmqPubAddressChanged(QString)), this, SLOT(addressChanged_PUB(QString)));
-    connect(config, SIGNAL(IpZmqSubAddressChanged(QString)), this, SLOT(addressChanged_SUB(QString)));
+    connect(_config, SIGNAL(IpZmqPubAddressChanged(QString)), this, SLOT(addressChanged_PUB(QString)));
+    connect(_config, SIGNAL(IpZmqSubAddressChanged(QString)), this, SLOT(addressChanged_SUB(QString)));
 
-    connect(QZmq_PUB_socket, SIGNAL(messagesWritten(int)), SLOT(sock_messagesWritten(int)));
-    connect(QZmq_SUB_socket, SIGNAL(readyRead()), SLOT(sock_readyRead()));
+    connect(_QZmq_PUB_socket, SIGNAL(messagesWritten(int)), SLOT(sock_messagesWritten(int)));
+    connect(_QZmq_SUB_socket, SIGNAL(readyRead()), SLOT(sock_readyRead()));
 
-    connect(timer, SIGNAL(timeout()), this, SLOT(tryToProcessEvents()));
+    connect(_timer, SIGNAL(timeout()), this, SLOT(tryToProcessEvents()));
     //! Don't need to connect the failed attempts to change the address here. That's taken care of elsewhere
-    connect(eventProcessTimer, SIGNAL(timeout()), this, SLOT(tryToSendFeedback()));
+    connect(_eventProcessTimer, SIGNAL(timeout()), this, SLOT(tryToSendFeedback()));
     // -------------------------------------------------------------------
 
 
@@ -65,61 +65,61 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 
 zmqController::~zmqController()
 {
-    timer->stop();
-    delete timer;
-    timer = nullptr;
+    _timer->stop();
+    delete _timer;
+    _timer = nullptr;
 
-    eventProcessTimer->stop();
-    delete eventProcessTimer;
-    eventProcessTimer = nullptr;
+    _eventProcessTimer->stop();
+    delete _eventProcessTimer;
+    _eventProcessTimer = nullptr;
 
-    delete eventQueue;
-    delete QZmq_PUB_socket;
-    QZmq_SUB_socket->unsubscribe(""); //! This may not be necessary
-    QZmq_SUB_socket->setTcpKeepAliveEnabled(false); //! This may not be necessary
-    delete QZmq_SUB_socket;
-    delete QZmq_context;
-    QZmq_context = nullptr;
-    QZmq_PUB_socket = nullptr;
-    QZmq_SUB_socket = nullptr;
-    eventQueue = nullptr;
+    delete _eventQueue;
+    delete _QZmq_PUB_socket;
+    _QZmq_SUB_socket->unsubscribe(""); //! This may not be necessary
+    _QZmq_SUB_socket->setTcpKeepAliveEnabled(false); //! This may not be necessary
+    delete _QZmq_SUB_socket;
+    delete _QZmq_context;
+    _QZmq_context = nullptr;
+    _QZmq_PUB_socket = nullptr;
+    _QZmq_SUB_socket = nullptr;
+    _eventQueue = nullptr;
 }
 
 void zmqController::addressChanged_PUB(QString addr)
 {
-    if ( addr == PUB_addr ) {
+    if ( addr == _PUB_addr ) {
         return;
     } else {
-        PUB_addr = addr;
+        _PUB_addr = addr;
 #ifdef QT_DEBUG
         qDebug() << "[INFO]\tZMQ PUB address set:" << addr;
 #endif
     }
 
-    QZmq_PUB_socket->connectToAddress(PUB_addr);
-    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
+    _QZmq_PUB_socket->connectToAddress(_PUB_addr);
+    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << _PUB_addr;
 
     initialiseJsonResponse();
 }
 
 void zmqController::addressChanged_SUB(QString addr)
 {
-    if ( addr == SUB_addr ) {
+    if ( addr == _SUB_addr ) {
         return;
     } else {
-        SUB_addr = addr;
+        _SUB_addr = addr;
 #ifdef QT_DEBUG
         qDebug() << "[INFO]\tZMQ SUB address set:" << addr;
 #endif
     }
 
-    if (QZmq_SUB_socket != nullptr) {
-        QZmq_SUB_socket->unsubscribe("");
+    if (_QZmq_SUB_socket != nullptr) {
+        _QZmq_SUB_socket->unsubscribe("");
     }
 
-    QZmq_SUB_socket->connectToAddress(SUB_addr);
-    QZmq_SUB_socket->subscribe("");
-    qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
+    _QZmq_SUB_socket->connectToAddress(_SUB_addr);
+    _QZmq_SUB_socket->subscribe("");
+    qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << _SUB_addr;
 
     initialiseJsonResponse();
 }
@@ -137,7 +137,7 @@ void zmqController::initialiseJsonResponse()
     root_obj.insert("reply type","");
     root_obj.insert("tick count",-1);
     root_obj.insert("UUID",-1);
-    JsonDocument = QJsonDocument(root_obj);
+    _JsonDocument = QJsonDocument(root_obj);
 }
 
 void zmqController::processEvents()
@@ -148,17 +148,17 @@ void zmqController::processEvents()
     //! Send REPLY event(s) in response to thats specific SEND event.
     //!    Do not process other events until the first is complete
 
-    JsonDocument = eventQueue->dequeue(); //! This is checked to have at least one event otherwise this event will not be called
-    QJsonObject root_obj = JsonDocument.object();
+    _JsonDocument = _eventQueue->dequeue(); //! This is checked to have at least one event otherwise this event will not be called
+    QJsonObject root_obj = _JsonDocument.object();
 
     //! 1. Received a SEND event from server
     if (root_obj["reply type"].toString() == "") {
 
-        processingEvents = true; //! Used as a controller level lock
+        _processingEvents = true; //! Used as a controller level lock
 
         //! 2. REPLY with RCV immediately
         root_obj["reply type"] = "RCV";
-        JsonDocument.setObject( root_obj );
+        _JsonDocument.setObject( root_obj );
         sendZmqMessage();
 
         //! If not connected to a SPIDR at this point, you should really connect
@@ -170,10 +170,10 @@ void zmqController::processEvents()
             } else {
                 qDebug() << "[ERROR]\tZMQ Failed to connect to a SPIDR via a remote command";
             }*/
-//            qDebug() << "[ERROR]\tZMQ Not connected to the SPIDR. Subsequent commands may or may not complete successfully.";
-            isConnectedToSPIDR = false;
+            // qDebug() << "[ERROR]\tZMQ Not connected to the SPIDR. Subsequent commands may or may not complete successfully.";
+            _isConnectedToSPIDR = false;
         } else {
-            isConnectedToSPIDR = true;
+            _isConnectedToSPIDR = true;
         }
 
         //! 3. If it's taking a while, REPLY with FDB events at least at 1Hz independently
@@ -225,7 +225,7 @@ void zmqController::processEvents()
             qDebug() << "[ERROR]\tZMQ Failed to parse command or something else... : " << root_obj["UUID"].toString() << root_obj["command"].toString() << "\targ1: " << root_obj["arg1"].toString();
 
             someCommandHasFailed();
-            processingEvents = false;
+            _processingEvents = false;
         }
     }
     //! 5. when it's processed, REPLY with a ACK event --> see the SLOT dataTakingFinishedAndSaved()
@@ -236,7 +236,7 @@ void zmqController::takeImage(QJsonObject obj)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ TAKE IMAGE : "  << obj["command"].toString();
 #endif
-    if (isConnectedToSPIDR) {
+    if (_isConnectedToSPIDR) {
         emit takeImage();
     } else {
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
@@ -250,7 +250,7 @@ void zmqController::takeAndSaveImageSequence(QJsonObject obj)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE : "  << obj["command"].toString();
 #endif
-    if (isConnectedToSPIDR) {
+    if (_isConnectedToSPIDR) {
         emit takeAndSaveImageSequence();
     } else {
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
@@ -264,7 +264,7 @@ void zmqController::saveImage(QJsonObject obj)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ SAVE IMAGE : "  << obj["command"].toString() << obj["arg1"].toString();
 #endif
-    if (isConnectedToSPIDR) {
+    if (_isConnectedToSPIDR) {
         emit saveImageSignal(obj["arg1"].toString());
     } else {
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
@@ -275,7 +275,7 @@ void zmqController::saveImage(QJsonObject obj)
 
 void zmqController::setExposure(QJsonObject obj)
 {
-    Q_UNUSED(obj);
+    Q_UNUSED(obj)
 #ifdef QT_DEBUG
 
     qDebug() << "[INFO]\tZMQ SET EXPOSURE : "  << obj["command"].toString() << obj["arg1"].toString().toInt();
@@ -287,7 +287,7 @@ void zmqController::setExposure(QJsonObject obj)
     //! 1 microsecond is the shortest exposure time that's reasonable
     if (ok && arg1 >= 1) {
         obj["reply"] = QString::number( arg1 );
-        JsonDocument = QJsonDocument(obj);
+        _JsonDocument = QJsonDocument(obj);
         emit setExposure(arg1);
     } else {
         someCommandHasFailed("DEXTER --> ACQUILA : Invalid exposure time requested" + QString::number(arg1));
@@ -382,11 +382,11 @@ void zmqController::setCsm(QJsonObject obj)
 
 void zmqController::loadDefaultEqualisation(QJsonObject obj)
 {
-    Q_UNUSED(obj);
+    Q_UNUSED(obj)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ LOAD DEFAULT EQUALISATION :"  << obj["command"].toString();
 #endif
-    if (isConnectedToSPIDR) {
+    if (_isConnectedToSPIDR) {
         emit loadDefaultEqualisation();
     } else {
         emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not load default equalisation, connect to the SPIDR!"));
@@ -400,7 +400,7 @@ void zmqController::loadEqualisationFromFolder(QJsonObject obj)
     qDebug() << "[INFO]\tZMQ LOAD EQUALISATION FROM FOLDER:"  << obj["command"].toString() << obj["arg1"].toString();
 #endif
 
-    if (isConnectedToSPIDR) {
+    if (_isConnectedToSPIDR) {
         QString arg1 = obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
 
         if ( folderExists(arg1) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "adj_0"))) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "mask_0"))) ) {
@@ -481,9 +481,9 @@ bool zmqController::fileExists(QString path)
 
 void zmqController::sendZmqMessage()
 {
-    QJsonObject root_obj = JsonDocument.object();
-    root_obj["UUID"] = currentUUID;
-    JsonDocument = QJsonDocument(root_obj);
+    QJsonObject root_obj = _JsonDocument.object();
+    root_obj["UUID"] = _currentUUID;
+    _JsonDocument = QJsonDocument(root_obj);
 
 #ifdef QT_DEBUG
 //    QString doc = QString(JsonDocument.toJson()).toLocal8Bit().replace("\n","").replace("    ","").replace(": ",":");
@@ -497,19 +497,19 @@ void zmqController::sendZmqMessage()
 #endif
 
     QRegExp rx("(\\\"UUID\\\":)\"(\\d+)\"");
-    QString response = QString(JsonDocument.toJson()).replace("\n","").replace("    ","").replace(": ",":").replace(rx,"\\1\\2");
+    QString response = QString(_JsonDocument.toJson()).replace("\n","").replace("    ","").replace(": ",":").replace(rx,"\\1\\2");
 
     //! This is just how you construct the QList of QByteArrays, super weird
     const QList<QByteArray> outList = QList<QByteArray>() << response.toLocal8Bit();
 
-    QZmq_PUB_socket->setWriteQueueEnabled(false); //! This probably isn't necessary
-    QZmq_PUB_socket->write(outList);
+    _QZmq_PUB_socket->setWriteQueueEnabled(false); //! This probably isn't necessary
+    _QZmq_PUB_socket->write(outList);
 }
 
 void zmqController::tryToProcessEvents()
 {
     //! Only try to process events if not already processing an event and if there are events to process
-    if (!processingEvents && !eventQueue->isEmpty()) {
+    if (!_processingEvents && !_eventQueue->isEmpty()) {
         processEvents();
     }
 }
@@ -517,11 +517,11 @@ void zmqController::tryToProcessEvents()
 void zmqController::tryToSendFeedback()
 {
     //! Doesn't matter if the eventQueue is empty
-    if(processingEvents) {
-        QJsonObject root_obj = JsonDocument.object();
+    if(_processingEvents) {
+        QJsonObject root_obj = _JsonDocument.object();
         root_obj["reply type"] = QString("FDB");
-        root_obj["UUID"] = currentUUID;
-        JsonDocument = QJsonDocument(root_obj);
+        root_obj["UUID"] = _currentUUID;
+        _JsonDocument = QJsonDocument(root_obj);
         sendZmqMessage();
 #ifdef QT_DEBUG
         qDebug() << "[INFO]\tZMQ Sent FDB";
@@ -535,7 +535,7 @@ void zmqController::sock_readyRead()
     //qDebug() << "[INFO]\tZMQ Reading a message from the ZMQ server";
 #endif
     //! This is just the format that you need to use with QZmq
-    const QList<QByteArray> msg = QZmq_SUB_socket->read();
+    const QList<QByteArray> msg = _QZmq_SUB_socket->read();
     if (msg.isEmpty()){
         qDebug() << "[ERROR]\tZMQ Received empty message\n";
         return;
@@ -570,23 +570,23 @@ void zmqController::sock_readyRead()
             qDebug() << "[INFO]\tZMQ SUCCESS \t Got the UUID :" << rx.cap(1) << "," << rx.cap(2);
         }
 #endif
-        currentUUID = rx.cap(2);
+        _currentUUID = rx.cap(2);
         pos += rx.matchedLength();
     }
 
-    tmp.object()["UUID"] = currentUUID;
-    eventQueue->push_back( tmp );
+    tmp.object()["UUID"] = _currentUUID;
+    _eventQueue->push_back( tmp );
 
-    if (!timer->isActive() && !eventProcessTimer->isActive()) {
-        timer->start(10); //! milliseconds
-        eventProcessTimer->start(1000); //! milliseconds
+    if (!_timer->isActive() && !_eventProcessTimer->isActive()) {
+        _timer->start(10); //! milliseconds
+        _eventProcessTimer->start(1000); //! milliseconds
     }
 
 }
 
 void zmqController::sock_messagesWritten(int count)
 {
-    Q_UNUSED(count);
+    Q_UNUSED(count)
 #ifdef QT_DEBUG
 //    qDebug() << "[INFO]\tZMQ Messages written:" << count << "\n";
 #endif
@@ -594,25 +594,25 @@ void zmqController::sock_messagesWritten(int count)
 
 void zmqController::someCommandHasFinished_Successfully()
 {
-    QJsonObject root_obj = JsonDocument.object();
+    QJsonObject root_obj = _JsonDocument.object();
     root_obj["reply type"] = QString("ACK");
-    root_obj["UUID"] = currentUUID;
-    JsonDocument = QJsonDocument(root_obj);
+    root_obj["UUID"] = _currentUUID;
+    _JsonDocument = QJsonDocument(root_obj);
     sendZmqMessage();
 #ifdef QT_DEBUG
 //    qDebug() << "[INFO]\tZMQ Sent ACK";
 #endif
-    processingEvents = false;
+    _processingEvents = false;
 }
 
 void zmqController::someCommandHasFailed(QString reply)
 {
-    QJsonObject root_obj = JsonDocument.object();
+    QJsonObject root_obj = _JsonDocument.object();
     root_obj["reply"] = reply;
     root_obj["reply type"] = QString("ERR");
-    root_obj["UUID"] = currentUUID;
-    JsonDocument = QJsonDocument(root_obj);
+    root_obj["UUID"] = _currentUUID;
+    _JsonDocument = QJsonDocument(root_obj);
     sendZmqMessage();
-    qDebug() << "[INFO]\tZMQ Sent ERR";
-    processingEvents = false;
+    qDebug() << "[INFO]\tZMQ Sent ERR. UUID =" << _currentUUID << " Reply =" << reply;
+    _processingEvents = false;
 }
