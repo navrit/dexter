@@ -300,7 +300,7 @@ void zmqController::setNumberOfFrames(QJsonObject obj)
     qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES : "  << obj["command"].toString() << obj["arg1"].toString();
 #endif
 
-    bool ok;
+    bool ok = false;
     int arg1 = obj["arg1"].toString().toInt(&ok);
     if (ok && arg1 >= 0) {
         emit setNumberOfFrames(arg1);
@@ -318,13 +318,20 @@ void zmqController::setThreshold(QJsonObject obj)
     //! Arg1: Which threshold to change
     //! Arg2: Threshold value (DAC units)
 
-    int arg1 = obj["arg1"].toInt(-1);
-    int arg2 = obj["arg2"].toInt(-1);
+    bool ok = false;
+    int arg1 = obj["arg1"].toString().toInt(&ok);
+
+    bool ok2 = false;
+    int arg2 = obj["arg2"].toString().toInt(&ok2);
+
+    if (!ok || !ok2) {
+        qDebug() << "[ERROR]\tZMQ Threshold arguments could not be parsed arg1:" << arg1 << " ok:" << ok << " arg2:" << arg2 << " ok2:" << ok2;
+    }
 
     //! May want to handle the failures better
 
-    if (arg1 >= 0 && arg1 <= 7) {
-        if (arg2 >= 0 && arg2 <= 511) {
+    if (arg1 >= 0 && arg1 < __max_colors) {
+        if (arg2 >= 0 && arg2 < __max_DAC_range) {
             //! SUCCESS, this is actually valid input
             emit setThreshold(arg1, arg2);
         } else {
@@ -433,9 +440,36 @@ void zmqController::setReadoutFrequency(QJsonObject obj)
     qDebug() << "[INFO]\tZMQ SET READOUT FREQUENCY :"  << obj["command"].toString();
 #endif
 
-    int arg1 = obj["arg1"].toInt(-1);
-    if (arg1 >= 0 && arg1 <= 2000) {
-        emit setReadoutFrequency(arg1);
+    bool ok = false;
+    int arg1 = obj["arg1"].toString().toInt(&ok);
+
+    if (ok && arg1 >= 0) {
+        int readout_mode = _mpx3gui->getConfig()->getPixelDepth();
+
+        switch (readout_mode) {
+        case 1:
+            if (arg1 < __maximumFPS_1_bit) {
+                emit setReadoutFrequency(arg1);
+            }
+            break;
+        case 6:
+            if (arg1 < __maximumFPS_6_bit) {
+                emit setReadoutFrequency(arg1);
+            }
+            break;
+        case 12:
+            if (arg1 < __maximumFPS_12_bit) {
+                emit setReadoutFrequency(arg1);
+            }
+            break;
+        case 24:
+            someCommandHasFailed( QString("DEXTER --> ACQUILA : Invalid readout frequency requested : " + QString::number(arg1)));
+            break;
+        default:
+            someCommandHasFailed( QString("DEXTER --> ACQUILA : Invalid readout frequency requested : " + QString::number(arg1)));
+            break;
+        }
+
     } else {
         someCommandHasFailed( QString("DEXTER --> ACQUILA : Invalid readout frequency requested : " + QString::number(arg1)));
     }
