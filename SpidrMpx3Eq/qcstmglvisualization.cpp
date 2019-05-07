@@ -304,15 +304,17 @@ QString QCstmGLVisualization::getStatsString_deviceId()
     return _statsString.devicesIdString;
 }
 
+/*! @brief Only used in CT currently (2019-05-07) */
 void QCstmGLVisualization::saveImage(QString filename)
 {
     if (filename == "") {
         filename = QDir::homePath();
     }
     _mpx3gui->getVisualization()->GetUI()->saveLineEdit->setText(filename);
-    _mpx3gui->save_data(true, 0, "TIFF");
+    _mpx3gui->save_data(true, 0, "Raw TIFF");
 }
 
+/*! @brief Only used in CT currently (2019-05-07) */
 void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
 {
     if (corrMethod == "Beam Hardening"){
@@ -1268,13 +1270,21 @@ void QCstmGLVisualization::takeAndSaveImageSequence()
 
     zmqRunning = true;
 
-    ui->saveCheckBox->setChecked(true);
-    ui->saveLineEdit->setText(QDir::homePath() + QDir::separator());
-    ui->saveAllCheckBox->setChecked(true);
-    _mpx3gui->zero_data();
-    StartDataTaking();
+    if (ui->saveLineEdit->text().isEmpty()) {
+        ui->saveLineEdit->setText(QDir::homePath() + QDir::separator());
+    }
+    //! Otherwise there's something there already,
+    //! validate in on_saveLineEdit_textEdited() and on_saveLineEdit_editingFinished()
 
+    onRequestForAutoSaveFromServer(true);
+    on_saveAllCheckBox_stateChanged();
+
+    on_saveLineEdit_textEdited();
+    on_saveLineEdit_editingFinished();
+
+    StartDataTaking();
     //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
+
 }
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
@@ -2138,7 +2148,7 @@ void QCstmGLVisualization::on_testBtn_clicked()
 void QCstmGLVisualization::on_saveLineEdit_editingFinished()
 {
     bool success = requestToSetSavePath(ui->saveLineEdit->text());
-    Q_UNUSED(success);
+    Q_UNUSED(success)
 
     if (!ui->saveLineEdit->text().isEmpty()) {
         _saveLineEdit_isNotEmpty = true;
