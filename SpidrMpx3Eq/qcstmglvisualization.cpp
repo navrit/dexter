@@ -1290,9 +1290,16 @@ void QCstmGLVisualization::takeAndSaveImageSequence()
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
     //! TODO More error checking here?
-    saveImage(filePath);
+    requestToSetSavePath(filePath);
+    onRequestForAutoSaveFromServer(true);
+    on_saveAllCheckBox_stateChanged();
+
+    on_saveLineEdit_textEdited();
+    on_saveLineEdit_editingFinished();
+    _mpx3gui->save_data(true, 0, "Raw TIFF16");
+
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;
+    qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff (16-bit) to :" << filePath;
 #endif
     emit someCommandHasFinished_Successfully();
 }
