@@ -2348,7 +2348,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
     //! Non-default path, get the folder from a QFileDialog
     if (getPath){
         //! Absolute folder path
-        if(remotely) {
+        if (remotely && !path.endsWith("/")) {
             path += "/";
         } else {
             path = QFileDialog::getExistingDirectory(

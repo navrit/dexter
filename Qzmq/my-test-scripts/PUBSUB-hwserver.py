@@ -34,14 +34,14 @@ try:
                 UUID = random.randint(1,123456789123456789123456789)
                 count += 1
                 if (count%2 == 0):
-                    arg1 = '/home/navrit' #random.randint(1,100)
+                    arg1 = '' #random.randint(1,100)
                     arg2 = count
                     #cmd = 'save image'
                 else:
                     arg1 = '' #random.randint(100,1000)
                     arg2 = count
                     #cmd = 'take image'
-                cmd = 'save image'
+                cmd = 'load default equalisation'
                 print(cmd, arg1, arg2)
                 rep = {'component':'medipix','comp_phys':'medipix','command':cmd,
 'arg1':str(arg1),'arg2':str(arg2),'reply':reply,'reply type':reply_type,'comp_type':'other','tick count':count,'UUID': UUID}

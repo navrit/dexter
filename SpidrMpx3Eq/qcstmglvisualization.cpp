@@ -1374,7 +1374,7 @@ void QCstmGLVisualization::setCSM(bool active)
 
 void QCstmGLVisualization::loadDefaultEqualisation()
 {
-    _mpx3gui->getEqualization()->LoadEqualization(false,false);
+    _mpx3gui->getEqualization()->LoadEqualization(false, true, "");
 
     emit someCommandHasFinished_Successfully();
 }
