@@ -75,4 +75,6 @@ const static int __maximumFPS_6_bit = 4069;
 const static int __maximumFPS_12_bit = 2034;
 const static int __maximumFPS_24_bit = __maximumFPS_12_bit/2; /* This needs to be confirmed... */
 
+const static int __minimumShutterDownTime_ms = 2; /* Units are milliseconds */
+
 #endif

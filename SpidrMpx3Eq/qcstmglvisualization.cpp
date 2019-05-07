@@ -1292,12 +1292,15 @@ void QCstmGLVisualization::setExposure(int microseconds)
     //! Switch to Sequential RW, then set open and closed time
     //!    Always 2ms for down time
     int index = -1;
+
+    //! This method looks stupid and is slower but it is more robust to changes in the GUI.
     index = ui->operationModeComboBox_Vis->findText("Sequential R/W");
+
     if (index >= 0) {
         ui->operationModeComboBox_Vis->setCurrentIndex(index);
-        _mpx3gui->getConfig()->setTriggerDowntime(2000);
+        _mpx3gui->getConfig()->setTriggerDowntime(__minimumShutterDownTime_ms);
 
-        ui->triggerLengthSpinBox->setValue(microseconds);
+        ui->triggerLengthSpinBox->setValue(microseconds/1000.);
         triggerLength_edit();
 
         emit someCommandHasFinished_Successfully();
