@@ -237,7 +237,7 @@ void DataTakingThread::run() {
 
         while(!_break && !_stop){
         // Ask SpidrDaq for frames
-            while ( spidrdaq->hasFrame(timeOutTime)) {
+            while ( spidrdaq->hasFrame(timeOutTime) && !_stop) {
 
                 // 2) User stop condition
                 if ( _stop ||  _restart  ) {
