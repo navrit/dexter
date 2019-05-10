@@ -15,7 +15,7 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x19042311; // lots of improvements!
+const int   VERSION_ID = 0x19051016; // lots of improvements!
 //const int   VERSION_ID = 0x17080100; // setPixelDepth(): softw double-cntr read,
                                      // Bug fix: initialize _pixelDepth,
                                      // setTpSwitch() -> setTpFrequency()
@@ -47,6 +47,7 @@ const int   VERSION_ID = 0x19042311; // lots of improvements!
 
 // SPIDR register addresses (some of them) and register bits
 #define SPIDR_SHUTTERTRIG_CTRL_I        0x0290
+#define SPIDR_SHUTTERTRIG_CNT_I         0x0294
 #define SPIDR_EXT_SHUTTER_CNTR_I        0x02A0
 #define SPIDR_SHUTTER_CNTR_I            0x02A4
 #define SPIDR_ENA_SHUTTER1_CNTRSEL_BIT  9
@@ -1003,7 +1004,10 @@ bool SpidrController::setShutterTriggerConfig( int trigger_mode,
   datawords[2] = trigger_freq_mhz;
   datawords[3] = nr_of_triggers;
   datawords[4] = trigger_pulse_count;
-  return this->requestSetInts( CMD_SET_TRIGCONFIG, 0, 5, datawords );
+  return requestSetInts(CMD_SET_TRIGCONFIG, 0, 5, datawords)
+          && (trigger_mode == SHUTTERMODE_AUTO
+              || setSpidrReg(SPIDR_SHUTTERTRIG_CNT_I, nr_of_triggers));
+          //leon code doesnt update nr_of_triggers if the mode is not Auto
 }
 
 // ----------------------------------------------------------------------------
@@ -1038,12 +1042,6 @@ bool SpidrController::startAutoTrigger()
 bool SpidrController::stopAutoTrigger()
 {
     return this->requestSetInt( CMD_AUTOTRIG_STOP, 0, 0 );
-}
-
-bool SpidrController::startExternalTrigger(int n_trigger)
-{
-    this->setSpidrReg(0x294,n_trigger); //leon code doesnt update n_trigger if the mode is not Auto
-    startAutoTrigger();
 }
 
 // ----------------------------------------------------------------------------

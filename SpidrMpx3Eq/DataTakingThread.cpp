@@ -216,8 +216,7 @@ void DataTakingThread::run() {
         } else if (opMode == Mpx3Config::__operationMode_SequentialRW) {
             if (_isExternalTrigger) {
                 setTriggerMode(spidrcontrol, config);
-                //spidrcontrol->startAutoTrigger();
-                spidrcontrol->startExternalTrigger(config->getNTriggers());
+                spidrcontrol->startAutoTrigger();
             } else {
                 if (config->getTriggerMode() == SHUTTERMODE_SOFTWARE
                 || (config->getTriggerPeriod() > LONG_PERIOD_US)) {
