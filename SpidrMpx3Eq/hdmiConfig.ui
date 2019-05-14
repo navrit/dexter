@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
+    <width>924</width>
     <height>480</height>
    </rect>
   </property>
@@ -18,488 +18,350 @@
     <rect>
      <x>20</x>
      <y>100</y>
-     <width>271</width>
-     <height>251</height>
+     <width>361</width>
+     <height>231</height>
     </rect>
    </property>
    <property name="title">
     <string>HDMI_1</string>
    </property>
-   <widget class="QLabel" name="label_7">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>50</y>
-      <width>59</width>
-      <height>14</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_1:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_8">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>110</y>
-      <width>59</width>
-      <height>14</height>
+      <width>306</width>
+      <height>24</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Pin_2:</string>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Pin_2:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="hdmi1Pin2ComboBox">
+       <item>
+        <property name="text">
+         <string>Select</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>External_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inhibit_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_Out [Output]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_AND_Inhibit_Shutter [Output] </string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Couter_Select [Output]</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
    </widget>
-   <widget class="QLabel" name="label_9">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>180</y>
-      <width>59</width>
-      <height>14</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_3:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_4">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>80</y>
-      <width>113</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_5">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>140</y>
-      <width>113</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_6">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>200</y>
-      <width>113</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_10">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>80</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_1_current:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_11">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>140</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_2_current:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_12">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>200</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_3_current:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="hdmi1Pin1ComboBox">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>50</y>
-      <width>111</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Select</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>External_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Inhibit_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_Out [Output]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_AND_Inhibit_Shutter [Output] </string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Couter_Select [Output]</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QComboBox" name="hdmi1Pin2ComboBox">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>110</y>
-      <width>111</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Select</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>External_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Inhibit_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_Out [Output]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_AND_Inhibit_Shutter [Output] </string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Couter_Select [Output]</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QComboBox" name="hdmi1Pin3ComboBox">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
       <y>170</y>
-      <width>111</width>
-      <height>22</height>
+      <width>306</width>
+      <height>24</height>
      </rect>
     </property>
-    <item>
-     <property name="text">
-      <string>Select</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>External_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Inhibit_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_Out [Output]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_AND_Inhibit_Shutter [Output] </string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Couter_Select [Output]</string>
-     </property>
-    </item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Pin_3:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="hdmi1Pin3ComboBox">
+       <item>
+        <property name="text">
+         <string>Select</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>External_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inhibit_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_Out [Output]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_AND_Inhibit_Shutter [Output] </string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Couter_Select [Output]</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>50</y>
+      <width>306</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Pin_1:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="hdmi1Pin1ComboBox">
+       <item>
+        <property name="text">
+         <string>Select</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>External_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inhibit_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_Out [Output]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_AND_Inhibit_Shutter [Output] </string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Couter_Select [Output]</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_4">
    <property name="geometry">
     <rect>
-     <x>340</x>
+     <x>500</x>
      <y>100</y>
-     <width>271</width>
-     <height>251</height>
+     <width>361</width>
+     <height>231</height>
     </rect>
    </property>
    <property name="title">
     <string>HDMI_2</string>
    </property>
-   <widget class="QComboBox" name="hdmi2Pin1ComboBox">
-    <property name="geometry">
-     <rect>
-      <x>138</x>
-      <y>50</y>
-      <width>111</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Select</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>External_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Inhibit_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_Out [Output]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_AND_Inhibit_Shutter [Output] </string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Couter_Select [Output]</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QLabel" name="label_19">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>50</y>
-      <width>59</width>
-      <height>14</height>
+      <width>306</width>
+      <height>24</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Pin_1:</string>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_19">
+       <property name="text">
+        <string>Pin_1:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="hdmi2Pin1ComboBox">
+       <item>
+        <property name="text">
+         <string>Select</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>External_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inhibit_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_Out [Output]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_AND_Inhibit_Shutter [Output] </string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Couter_Select [Output]</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
    </widget>
-   <widget class="QLabel" name="label_20">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>110</y>
-      <width>59</width>
-      <height>14</height>
+      <width>306</width>
+      <height>24</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Pin_2:</string>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QLabel" name="label_20">
+       <property name="text">
+        <string>Pin_2:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="hdmi2Pin2ComboBox">
+       <item>
+        <property name="text">
+         <string>Select</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>External_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inhibit_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_Out [Output]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_AND_Inhibit_Shutter [Output] </string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Couter_Select [Output]</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
    </widget>
-   <widget class="QLabel" name="label_21">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>180</y>
-      <width>59</width>
-      <height>14</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_3:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_10">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>80</y>
-      <width>113</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_11">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>140</y>
-      <width>113</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_12">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>200</y>
-      <width>113</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_22">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>80</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_1_current:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_23">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>140</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_2_current:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_24">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>200</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Pin_3_current:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="hdmi2Pin2ComboBox">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>110</y>
-      <width>111</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Select</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>External_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Inhibit_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_Out [Output]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_AND_Inhibit_Shutter [Output] </string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Couter_Select [Output]</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QComboBox" name="hdmi2Pin3ComboBox">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
       <y>170</y>
-      <width>111</width>
-      <height>22</height>
+      <width>306</width>
+      <height>24</height>
      </rect>
     </property>
-    <item>
-     <property name="text">
-      <string>Select</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>External_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Inhibit_Shutter [Input]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_Out [Output]</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Shutter_AND_Inhibit_Shutter [Output] </string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Couter_Select [Output]</string>
-     </property>
-    </item>
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="QLabel" name="label_21">
+       <property name="text">
+        <string>Pin_3:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="hdmi2Pin3ComboBox">
+       <item>
+        <property name="text">
+         <string>Select</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>External_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inhibit_Shutter [Input]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_Out [Output]</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shutter_AND_Inhibit_Shutter [Output] </string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Couter_Select [Output]</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QPushButton" name="submitPb">
    <property name="geometry">
     <rect>
-     <x>240</x>
-     <y>400</y>
+     <x>370</x>
+     <y>390</y>
      <width>141</width>
      <height>51</height>
     </rect>
