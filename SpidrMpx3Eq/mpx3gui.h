@@ -128,6 +128,7 @@ public:
     QCstmStepperMotor * getStepperMotor();
     QCstmCT * getCT();
     thresholdScan * getTHScan();
+    hdmiConfig * getHdmiConfig();
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }

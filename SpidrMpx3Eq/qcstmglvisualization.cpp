@@ -260,6 +260,7 @@ void QCstmGLVisualization::ConfigureGUIForDataTaking() {
 
     // Don't let the user change DACs while taking data
     _mpx3gui->getDACs()->setEnabled( false );
+    _mpx3gui->getHdmiConfig()->setEnabled( false );
 }
 
 void QCstmGLVisualization::ConfigureGUIForIdling() {
@@ -278,6 +279,7 @@ void QCstmGLVisualization::ConfigureGUIForIdling() {
     ui->groupBoxConfigAndStats->setEnabled( true );
 
     _mpx3gui->getDACs()->setEnabled( true );
+    _mpx3gui->getHdmiConfig()->setEnabled( true );
 }
 
 void QCstmGLVisualization::CalcETA() {

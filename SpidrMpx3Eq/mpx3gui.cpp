@@ -423,6 +423,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget , SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
+    connect(this,SIGNAL(ConnectionStatusChanged(bool)),_ui->hdmiConfigTab,SLOT(ConnectionStatusChanged(bool)));
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
     connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
@@ -1480,7 +1481,7 @@ QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; 
 QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
 QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
 thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
-//hdmiConfig * Mpx3GUI::getHdmiConfig(){return _ui->
+hdmiConfig * Mpx3GUI::getHdmiConfig() { return _ui->hdmiConfigTab; }
 
 void Mpx3GUI::on_actionExit_triggered()
 {

@@ -33,6 +33,8 @@ private slots:
 
     void on_submitPb_released();
 
+    void ConnectionStatusChanged(bool con);
+
 private:
     Ui::hdmiConfig *ui;
     QVector <QComboBox*> _comboBoxes;

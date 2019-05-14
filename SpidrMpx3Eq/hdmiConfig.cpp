@@ -186,3 +186,9 @@ void hdmiConfig::on_submitPb_released()
     Mpx3GUI::getInstance()->GetSpidrController()->setSpidrReg(0x0810,_hdmiRegister, true);
     Mpx3GUI::getInstance()->getConfig()->setHdmiRegisterValue(_hdmiRegister);
 }
+
+void hdmiConfig::ConnectionStatusChanged(bool con)
+{
+
+    this->setEnabled(con);
+}
