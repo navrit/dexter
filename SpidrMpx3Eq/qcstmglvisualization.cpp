@@ -1097,18 +1097,15 @@ void QCstmGLVisualization::on_scoring(int nFramesReceived,
                                       int nFramesKept,
                                       int lostFrames,
                                       int lostPackets,
-                                      int framesCount,
-                                      int mpx3clock_stops,
-                                      bool dataMisaligned) {
+                                      int framesCount) {
 
     _score.nFramesReceived = nFramesReceived;
     _score.nFramesKept = nFramesKept;
     _score.lostFrames = lostFrames;
     _score.lostPackets = lostPackets;
     _score.framesCount = framesCount;
-    _score.mpx3clock_stops = mpx3clock_stops;
-    _score.dataMisaligned = dataMisaligned;
-
+    _score.mpx3clock_stops = 0;
+    _score.dataMisaligned = false;
 }
 
 void QCstmGLVisualization::progress_signal(int framecntr) {

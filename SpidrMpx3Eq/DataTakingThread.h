@@ -61,10 +61,10 @@ private:
     QMutex _mutex;
     QWaitCondition _condition;
     DataConsumerThread * _consumer;
-    bool _restart;
-    bool _abort;
-    bool _idling;
-    bool _stop;
+    bool _restart;  // start is requested while running, so stop & start again
+    bool _abort;   // destructor called, abort everything
+    bool _idling; // waiting for a new run to start
+    bool _stop;  // stop is requested for the current run
 
     Mpx3GUI * _mpx3gui = nullptr;
     QCstmGLVisualization * _vis = nullptr;
@@ -75,6 +75,8 @@ private:
 
     bool _isExternalTrigger = false;
 
+    void stopReadout(int opMode, SpidrController* spidrcontrol);
+
 public slots:
     void on_stop_data_taking_thread();
 
@@ -84,7 +86,7 @@ signals:
     void bufferFull(int);
 
     void scoring_sig(int nFramesReceived, int nFramesKept, int lost_frames,
-                     int lost_packets, int frames_count, int mpx3clock_stops, bool misaligned);
+                     int lost_packets, int frames_count);
 
     void sendingShutter();
 };
