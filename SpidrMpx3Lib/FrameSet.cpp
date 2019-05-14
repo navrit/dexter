@@ -77,7 +77,10 @@ void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
     int hi = (counters == 2 && cf->omr.getMode() == 4) ? 1 : 0;
     assert (hi == 0 || counters == 2);
     ChipFrame **spot = &(frame[hi][chipIndex]);
-    if (*spot != nullptr) delete *spot;
+    if (*spot != nullptr) {
+        std::cerr << "Drop a Frame" << std::endl;
+        delete *spot;
+    }
     *spot = cf;
 }
 
