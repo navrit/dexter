@@ -164,7 +164,6 @@ void DataTakingThread::run() {
 
         // dropFrames --> will use --> _vis->getDropFrames();
         //  since the user may want to activate/deactivate during data taking.
-        uint halfSemaphoreSize = uint(_consumer->getSemaphoreSize()/2.);
         bool bothCounters = config->getReadBothCounters();
 
         _mpx3gui->clear_data(false);
@@ -176,7 +175,7 @@ void DataTakingThread::run() {
         spidrcontrol->resetCounters();
         spidrdaq->resetLostCount();
         int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
-        bool emergencyStop = false;
+
         bool reachLimitStop = false;
         spidrdaq->releaseAll();
 
@@ -228,21 +227,8 @@ void DataTakingThread::run() {
                 // 3) Restart
                 if ( reachLimitStop || _stop || _restart ) {
                     spidrdaq->releaseFrame();
-                    _consumer->consume();
                     _break = true;
                     continue;
-                }
-
-                // An emergency stop when the consumer thread can't keep up
-                if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
-                    qDebug() << "[WARNING]\tConsumer trying to stop ";
-                    if ( !emergencyStop ) {
-                        emit bufferFull( 0 );
-                        stopReadout(opMode, spidrcontrol);
-                        _consumer->consume();
-                    }
-                    emergencyStop = true;
-                    _break = true;
                 }
 
                 // Read data
@@ -275,15 +261,15 @@ void DataTakingThread::run() {
                         }
                     // Keep a track of frames actually kept
                     nFramesKept++;
+
+                    // Awake the consumer thread
+                    _consumer->consume();
                 }
 
                 lostPackets += fs->pixelsLost();
 
                 // Release frame
                 spidrdaq->releaseFrame(fs);
-
-                // Awake the consumer thread
-                _consumer->consume();
 
                 // Keep a local count of number of frames
                 nFramesReceived++;
@@ -333,15 +319,8 @@ void DataTakingThread::run() {
         }
 
         protectTriggerMode(spidrcontrol, config);
-        _consumer->consume();
 
         if ( ! _restart ) {  emit dataTakingFinished();}
-
-        // If this was an emergency stop
-        // Have the consumer free resources
-        if ( emergencyStop ) {
-            _consumer->freeResources();
-        }
 
         _mutex.lock();
         if ( !_restart ) {
