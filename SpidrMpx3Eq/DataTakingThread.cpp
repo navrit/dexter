@@ -73,22 +73,6 @@ void DataTakingThread::ConnectToHardware() {
 
 }
 
-void protectTriggerMode(SpidrController *spidrController, Mpx3Config *config)
-{
-    //_currentTriggerMode = ui->triggerModeCombo->currentIndex();
-    //ui->triggerModeCombo->setCurrentIndex(0); //set it to auto
-    spidrController->stopAutoTrigger();
-    //spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
-    spidrController->setShutterTriggerConfig(SHUTTERMODE_AUTO,
-        config->getTriggerLength_64(),
-        config->getTriggerFreq_mHz(),
-        config->getNTriggers(),
-        0);
-
-    // TODO KIA: Is this delay really necessary?
-    usleep(100000);
-}
-
 void setTriggerMode(SpidrController *spidrController, Mpx3Config *config)
 {
     spidrController->setShutterTriggerConfig(config->getTriggerMode(),
@@ -98,12 +82,22 @@ void setTriggerMode(SpidrController *spidrController, Mpx3Config *config)
         0);
 }
 
-void DataTakingThread::stopReadout(int opMode, SpidrController* spidrcontrol)
-{
-    if (opMode == Mpx3Config::__operationMode_ContinuousRW) {
+void DataTakingThread::stopReadout(SpidrController* spidrcontrol, Mpx3Config *config) {
+    if (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW) {
         spidrcontrol->stopContReadout();
     } else {
         spidrcontrol->stopAutoTrigger();
+        if (_isExternalTrigger) {
+            spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO,
+                config->getTriggerLength_64(),
+                config->getTriggerFreq_mHz(),
+                config->getNTriggers(),
+                0);
+        }
+        if (_isSoftwareTrigger) {
+            _mpx3gui->stopTriggerTimers();
+            qDebug() << "[INFO]\tSoftware triggering stopped";
+        }
     }
 }
 
@@ -213,12 +207,10 @@ void DataTakingThread::run() {
                 // 2) User stop condition
                 if ( _stop ||  _restart  ) {
                     _break = true;
+                    stopReadout(spidrcontrol, config);
                     if(_isExternalTrigger){
-                        protectTriggerMode(spidrcontrol, config);
                         break;
                     }
-
-                    stopReadout(opMode, spidrcontrol);
                 }
 
                 // Three stopping conditions where I still need to let the SpidrDaq::hasFrame loop to finish
@@ -283,7 +275,7 @@ void DataTakingThread::run() {
                 //  note than score.framesRequested=0 when asking for infinite frames
                 if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 && !_isExternalTrigger ) {
                     _break = true;
-                    stopReadout(opMode, spidrcontrol);
+                    stopReadout(spidrcontrol, config);
                     reachLimitStop = true;
                 }
 
@@ -292,13 +284,13 @@ void DataTakingThread::run() {
                     spidrcontrol->getExtShutterCounter(&externalCnt);
                     //Debug() << "[Debug] ext count : " << externalCnt;
                     emit scoring_sig(externalCnt,
-                                     externalCnt,
+                                     nFramesKept,
                                      lostFrames,                  //
                                      lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
                                      spidrdaq->framesCount());
 
                     if (externalCnt >= config->getNTriggers() && config->getNTriggers() != 0 ){
-                        protectTriggerMode(spidrcontrol, config);
+                        stopReadout(spidrcontrol, config);
                         _break = true;
                         break;
                     }
@@ -312,13 +304,7 @@ void DataTakingThread::run() {
 
             }
         }
-        if (_isSoftwareTrigger){
-            stopReadout(opMode, spidrcontrol);
-            _mpx3gui->stopTriggerTimers();
-            qDebug() << "[INFO]\tSoftware triggering stopped";
-        }
-
-        protectTriggerMode(spidrcontrol, config);
+        stopReadout(spidrcontrol, config);
 
         if ( ! _restart ) {  emit dataTakingFinished();}
 

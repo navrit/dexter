@@ -74,7 +74,7 @@ private:
     bool _isExternalTrigger = false;
     bool _isSoftwareTrigger = false;
 
-    void stopReadout(int opMode, SpidrController* spidrcontrol);
+    void stopReadout(SpidrController* spidrcontrol, Mpx3Config *config);
 
 public slots:
     void on_stop_data_taking_thread();
