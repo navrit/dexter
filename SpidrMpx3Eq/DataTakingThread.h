@@ -50,8 +50,6 @@ public:
 
     void takedata();
 
-    void setExternalTrigger(bool external);
-
 protected:
 
     void run() Q_DECL_OVERRIDE;
@@ -74,6 +72,7 @@ private:
     int _srcAddr;
 
     bool _isExternalTrigger = false;
+    bool _isSoftwareTrigger = false;
 
     void stopReadout(int opMode, SpidrController* spidrcontrol);
 

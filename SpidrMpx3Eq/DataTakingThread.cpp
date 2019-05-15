@@ -62,11 +62,6 @@ void DataTakingThread::takedata() {
 
 }
 
-void DataTakingThread::setExternalTrigger(bool external)
-{
-    _isExternalTrigger = external;
-}
-
 void DataTakingThread::ConnectToHardware() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -185,24 +180,26 @@ void DataTakingThread::run() {
         bool reachLimitStop = false;
         spidrdaq->releaseAll();
 
-        bool stopTimers = false;  // whether to stop the software timers after the run
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
         } else if (opMode == Mpx3Config::__operationMode_SequentialRW) {
-            if (_isExternalTrigger) {
-                setTriggerMode(spidrcontrol, config);
-                spidrcontrol->startAutoTrigger();
-            } else {
-                if (config->getTriggerMode() == SHUTTERMODE_SOFTWARE
-                || (config->getTriggerPeriod() > LONG_PERIOD_US)) {
-                    // software trigger
-                    spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO, 0, 1, 1, 0);
-                    stopTimers = true;
-                    emit sendingShutter();
-                } else {
+            switch (config->getTriggerMode()) {
+            case SHUTTERMODE_AUTO:
+                if (config->getTriggerPeriod() < LONG_PERIOD_US) {
                     setTriggerMode(spidrcontrol, config);
                     spidrcontrol->startAutoTrigger();
+                    break;
                 }
+            case SHUTTERMODE_SOFTWARE:
+                // software trigger
+                _isSoftwareTrigger = true;
+                spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO, 0, 1, 1, 0);
+                emit sendingShutter();
+                break;
+            default:
+                _isExternalTrigger = true;
+                setTriggerMode(spidrcontrol, config);
+                spidrcontrol->startAutoTrigger();
             }
         }
 
@@ -329,7 +326,7 @@ void DataTakingThread::run() {
 
             }
         }
-        if (stopTimers){
+        if (_isSoftwareTrigger){
             stopReadout(opMode, spidrcontrol);
             _mpx3gui->stopTriggerTimers();
             qDebug() << "[INFO]\tSoftware triggering stopped";
