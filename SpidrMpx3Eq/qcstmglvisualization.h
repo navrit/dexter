@@ -299,7 +299,7 @@ public slots:
     void user_accepted_profile(); //! Deleting profile dialog
     void OperationModeSwitched(int);
 
-    void on_scoring(int, int, int, int, int, int, bool);
+    void on_scoring(int, int, int, int, int);
 
     void bufferOccupancySlot(int);
     void consumerFinishedOneFrame(int frameId);
