@@ -166,7 +166,8 @@ void QCstmDacs::StartDACScan() {
 
 void QCstmDacs::changeDAC(int threshold, int value)
 {
-    slideAndSpin(threshold, value);
+    slideAndSpin(threshold, value); //! Just change the sliders
+    FromSpinBoxUpdateSlider(threshold); //! Actually propagate the change in hardware and internally
 }
 
 void QCstmDacs::setRemoteRequestForSettingThreshold(bool val)
@@ -612,39 +613,31 @@ void QCstmDacs::setValueDAC(int i) {
 
 void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
 
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+    SpidrController *spidrcontrol = _mpx3gui->GetSpidrController();
 
-    // Set the value
-    int val = _dacSpinBoxes[i]->value();
-    // Set the slider according to the new value in the Spin Box
-    _dacSliders[i]->setValue( val );
-    // Set DAC
-    // If the setting is global apply it
-    //_mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+    int val = _dacSpinBoxes[i]->value(); // Set the value
+    _dacSliders[i]->setValue(val); // Set the slider according to the new value in the Spin Box
 
-    if ( _dacsSimultaneous ) {
+    // Set DAC, if the setting is global apply it
+    if (_dacsSimultaneous) {
 
         for( uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNDevicesSupported()); chip++) {
             // Check if the device is alive
-            if ( ! _mpx3gui->getConfig()->detectorResponds(int(chip))) {
+            if (!_mpx3gui->getConfig()->detectorResponds(int(chip))) {
                 qDebug() << "[ERROR]\tDevice " << chip << " not responding.";
                 continue;
             }
-            spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[ i ].code, val );
-            //_mpx3gui->setDacWrapper(spidrcontrol,int(chip), MPX3RX_DAC_TABLE[ i ].code, val);
-            QCstmGLVisualization::getInstance()->setThresholdsVector(chip,i,val);
-            // Now I need to change it in the local data base
-            SetDACValueLocalConfig( chip, i, val);
+            spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[i].code, val );
+            _mpx3gui->getVisualization()->setThresholdsVector(int(chip), i, val);
+            SetDACValueLocalConfig(chip, i, val); // Change it in the local database
         }
-
     } else {
          spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
-        //_mpx3gui->setDacWrapper(spidrcontrol,int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val);
-         QCstmGLVisualization::getInstance()->setThresholdsVector(int(_deviceIndex),i,val);
-        // Now I need to chage it in the local data base
-        SetDACValueLocalConfig( _deviceIndex, i, val);
+         _mpx3gui->getVisualization()->setThresholdsVector(int(_deviceIndex), i, val);
+
+        SetDACValueLocalConfig( _deviceIndex, i, val); // Change it in the local database
     }
-   // _mpx3gui->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
+
     GetLabelsList()[i]->setText("");
 }
 
@@ -655,7 +648,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 
     // Set DAC
     // If the setting is global apply it
-   // _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+
     if ( _dacsSimultaneous ) {
         for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
             // Check if the device is alive
