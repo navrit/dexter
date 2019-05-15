@@ -149,7 +149,6 @@ void DataTakingThread::run() {
         // Fetch new parameters
         // After a start or restart
         _mutex.lock();
-        datataking_score_info score = _score;
         int opMode = config->getOperationMode();
         int contRWFreq = config->getContRWFreq();
 
@@ -169,8 +168,6 @@ void DataTakingThread::run() {
         spidrcontrol->resetCounters();
         spidrdaq->resetLostCount();
         int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
-
-        bool reachLimitStop = false;
         spidrdaq->releaseAll();
 
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
@@ -183,6 +180,7 @@ void DataTakingThread::run() {
                     spidrcontrol->startAutoTrigger();
                     break;
                 }
+                [[fallthrough]];
             case SHUTTERMODE_SOFTWARE:
                 // software trigger
                 _isSoftwareTrigger = true;
@@ -196,32 +194,27 @@ void DataTakingThread::run() {
             }
         }
 
-        bool _break = false;
+        int framesRequested = config->getNTriggers();
+        if (framesRequested == 0) framesRequested = INT_MAX;
+
         // TODO: refine the time out
         unsigned long timeOutTime_ms = 500;
 
-        while(!_break && !_stop){
-        // Ask SpidrDaq for frames
-            while ( spidrdaq->hasFrame(timeOutTime_ms) && !_stop) {
+        bool daqRunning = true;
+        while (nFramesKept < framesRequested) {
 
-                // 2) User stop condition
-                if ( _stop ||  _restart  ) {
-                    _break = true;
-                    stopReadout(spidrcontrol, config);
-                    if(_isExternalTrigger){
-                        break;
-                    }
-                }
+            // 2) User stop condition
+            if (_stop || _restart) {
+                break;
+            }
 
-                // Three stopping conditions where I still need to let the SpidrDaq::hasFrame loop to finish
-                // 1) If trying to stop a ContRW
-                // 2) User stop
-                // 3) Restart
-                if ( reachLimitStop || _stop || _restart ) {
-                    spidrdaq->releaseFrame();
-                    _break = true;
-                    continue;
-                }
+            if (daqRunning && (framesRequested - nFramesKept < spidrdaq->framesAvailable() - 5)) {
+                // there's enough in the queue, stop acquisition
+                stopReadout(spidrcontrol, config);
+                daqRunning = false;
+            }
+
+            if (spidrdaq->hasFrame(timeOutTime_ms)) {
 
                 // Read data
                 FrameSet *fs = spidrdaq->getFrameSet();
@@ -270,15 +263,6 @@ void DataTakingThread::run() {
 
                 spidrdaq->resetLostCount();
 
-                // How to stop in ContRW
-                // 1) See Note 1 at the bottom
-                //  note than score.framesRequested=0 when asking for infinite frames
-                if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 && !_isExternalTrigger ) {
-                    _break = true;
-                    stopReadout(spidrcontrol, config);
-                    reachLimitStop = true;
-                }
-
                 if( _isExternalTrigger ) {
                     int externalCnt = 0;
                     spidrcontrol->getExtShutterCounter(&externalCnt);
@@ -288,12 +272,6 @@ void DataTakingThread::run() {
                                      lostFrames,                  //
                                      lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
                                      spidrdaq->framesCount());
-
-                    if (externalCnt >= config->getNTriggers() && config->getNTriggers() != 0 ){
-                        stopReadout(spidrcontrol, config);
-                        _break = true;
-                        break;
-                    }
                 } else {
                     emit scoring_sig(nFramesReceived,
                                      nFramesKept,
@@ -301,10 +279,13 @@ void DataTakingThread::run() {
                                      lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
                                      spidrdaq->framesCount());
                 }
-
             }
         }
-        stopReadout(spidrcontrol, config);
+        if (daqRunning) {
+            stopReadout(spidrcontrol, config);
+        }
+        msleep(50);
+        spidrdaq->releaseAll();
 
         if ( ! _restart ) {  emit dataTakingFinished();}
 
@@ -322,8 +303,8 @@ void DataTakingThread::run() {
 
     ///////////////////////////////////////////////////////////////////////////////////
 
-    disconnect(this, SIGNAL(scoring_sig(int,int,int,int,int,int,bool)),
-               _vis,   SLOT( on_scoring(int,int,int,int,int,int,bool)) );
+    disconnect(this, SIGNAL(scoring_sig(int,int,int,int,int)),
+               _vis,   SLOT( on_scoring(int,int,int,int,int)) );
 
     disconnect(this, SIGNAL(dataTakingFinished()), _vis, SLOT(dataTakingFinished()));
     disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis

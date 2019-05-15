@@ -154,8 +154,6 @@ void QCstmGLVisualization::rewindScoring()
     _score.lostFrames = 0;
     _score.lostPackets = 0;
     _score.framesCount = 0;
-    _score.mpx3clock_stops = 0;
-    _score.dataMisaligned = false;
 }
 
 void QCstmGLVisualization::rewindHistoLimits() {
@@ -1096,8 +1094,6 @@ void QCstmGLVisualization::on_scoring(int nFramesReceived,
     _score.lostFrames = lostFrames;
     _score.lostPackets = lostPackets;
     _score.framesCount = framesCount;
-    _score.mpx3clock_stops = 0;
-    _score.dataMisaligned = false;
 }
 
 void QCstmGLVisualization::progress_signal(int framecntr) {
