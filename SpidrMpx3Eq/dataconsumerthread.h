@@ -19,7 +19,6 @@ public:
     explicit DataConsumerThread(Mpx3GUI *, QObject * parent = nullptr);
     virtual ~DataConsumerThread();
     void copydata(FrameSet * source, int chipIndex, bool counterH);
-    void freeResources();
     uint getSemaphoreSize(){return _semaphoreSize;}
     void dataTakingSaysIFinished();
 
@@ -32,9 +31,6 @@ public:
 
     QSemaphore * freeFrames;
     QSemaphore * usedFrames;
-    uint32_t * buffer = nullptr;
-    uint descriptor = 0;
-    uint readdescriptor = 0;
 
 protected:
 
@@ -57,7 +53,7 @@ private:
 
     Mpx3GUI * _mpx3gui;
 
-    const uint _nFramesBuffer = 4096;
+    const uint _nFramesBuffer = 8;
     uint _semaphoreSize;
     uint _nChips;
     bool _bothCounters;
@@ -66,6 +62,10 @@ private:
 
     uint _bufferSizeOneFrame;
 
+    void inc(uint& var, uint increase);
+    uint32_t * buffer = nullptr;
+    uint descriptor = 0;
+    uint readdescriptor = 0;
     int ** _colordata = nullptr;
 
 };

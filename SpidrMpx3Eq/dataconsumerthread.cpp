@@ -67,6 +67,7 @@ DataConsumerThread::~DataConsumerThread() {
     // Color structure
     for (int i = 0 ; i < __max_colors ; i++) delete [] _colordata[i];
     delete [] _colordata;
+    delete [] buffer;
 
     qDebug() << "[DEBUG]\tDataConsumerThread finished";
 }
@@ -99,57 +100,26 @@ void DataConsumerThread::consume()
     }
 }
 
+void DataConsumerThread::inc(uint& var, uint increase) {
+    var += increase;
+    assert (var <= _bufferSize);
+    if (var == _bufferSize) var = 0;
+}
+
 void DataConsumerThread::copydata(FrameSet * source, int chipIndex, bool counterH)
 {
 
     size_t num = 4 * 256 * 256;
     source->copyTo32(chipIndex, counterH, buffer + descriptor);
 
-    descriptor += num/4;            // 4 bytes per integer
-
-    // rewind descriptor -- circular buffer
-    if ( descriptor >= _bufferSize ) {
-        descriptor = 0;
-        //qDebug() << " ... circ buffer ... ";
-    }
+    inc(descriptor, num/4);            // 4 bytes per integer
 }
-
-void DataConsumerThread::freeResources() {
-
-    // Force the thread to abort and go to sleep
-    _mutex.lock();
-    _stop = true;          // will stop run as soon as possible
-    _mutex.unlock();
-
-    // Now see where we stand and rewind
-    //qDebug() << "free: " << freeFrames->available();
-    //qDebug() << "used: " << usedFrames->available();
-    while ( freeFrames->available() < _semaphoreSize ) {
-        freeFrames->release();
-    }
-    while ( usedFrames->available() > 0 ) {
-        usedFrames->acquire();
-    }
-    // rewind descriptors
-    descriptor = 0;
-    readdescriptor = 0;
-    //qDebug() << "free: " << freeFrames->available();
-    //qDebug() << "used: " << usedFrames->available();
-
-    // don't stop next time it wakes up
-    _mutex.lock();
-    _stop = false;
-    _mutex.unlock();
-
-}
-
 
 void DataConsumerThread::run()
 {
 
     int bothCountersMod = 1;
     int delvrCounters = 1;
-    uint descriptorDistance = 0;
 
     forever {
 
@@ -165,35 +135,6 @@ void DataConsumerThread::run()
         // Go chasing the producer
         while ( readdescriptor != descriptor ) {
 
-            // Report how far are we from reaching the descriptor
-            if ( descriptor >= readdescriptor) {
-                descriptorDistance = descriptor - readdescriptor;
-
-                // If the distance is not a full frame, the consumer needs to wait until
-                //  the producer wakes him up again.  It could be that the consumer is running
-                //  too fast.
-                // Or less than 4 chips have been produced in this loop...
-                // Maybe it shouldn't be triggered until a whole frame has been made???
-                uint8_t chipID = uint8_t(descriptorDistance >> 16);
-                if ( chipID == 1 || chipID == 2 || chipID == 3) {
-                    break;
-                }
-
-                if ( descriptorDistance < _bufferSizeOneFrame ) {
-                    qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance;
-                    break;
-                }
-            }
-            //
-            else {  // This should only happen when we went around the circ buffer
-                descriptorDistance = _bufferSize - readdescriptor + descriptor;
-                /*if ( descriptorDistance != 262144 ) {
-                    qDebug() << "[DEBUG] Went around ring buffer, dist:" << descriptorDistance;
-                }*/
-            }
-
-
-
             // Check single or both counters
             if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
                 bothCountersMod = 2;
@@ -202,13 +143,6 @@ void DataConsumerThread::run()
                 bothCountersMod = 1;
                 delvrCounters = 2; // do 0,2,4,6
             }
-
-            // Move the reading descriptor
-            // or rewind
-            if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
-
-            // Too loaded
-            //if ( descriptorDistance >= _bufferSizeHalf ) emit bufferFull( 0 );
 
             /////////////////
             // Colour Mode //
@@ -225,8 +159,7 @@ void DataConsumerThread::run()
                             freeFrames->release();
                         }
                         // Move the reading descriptor
-                        readdescriptor += _bufferSizeOneFrame;
-
+                        inc(readdescriptor, _bufferSizeOneFrame);
                     }
                 } else {
                     // SeparateThresholds -> I can do it on a chip per chip basis
@@ -238,7 +171,7 @@ void DataConsumerThread::run()
                         freeFrames->release();
                     }
                     // Move the reading descriptor
-                    readdescriptor += _bufferSizeOneFrame;
+                    inc(readdescriptor, _bufferSizeOneFrame);
                 }
 
                 // Add the corresponding layers
@@ -260,7 +193,7 @@ void DataConsumerThread::run()
                     // Now I can work on the layer
                     _mpx3gui->addLayer(reinterpret_cast<int*>(buffer + readdescriptor), i );
                     // Move the reading descriptor
-                    readdescriptor += _bufferSizeOneFrame;
+                    inc(readdescriptor, _bufferSizeOneFrame);
                     // Then I can release
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) freeFrames->release();
                 }
@@ -269,15 +202,6 @@ void DataConsumerThread::run()
 
             // Fraction
             emit bufferOccupancySig( (int)(100*(usedFrames->available()/ (double)(_semaphoreSize) ) ) );
-
-            /*
-            qDebug() << "   Position : "
-                     << 100.0*(descriptor/(double)_bufferSize)
-                     << "\% | readdescriptor --> " << readdescriptor
-                     << " | descriptor : " << descriptor
-                     << " | dist : " << descriptorDistance
-                     << " | buffer : " << _bufferSize;
-            */
 
             emit doneWithOneFrame( _frameId++ );
 
