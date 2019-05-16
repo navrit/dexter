@@ -83,6 +83,7 @@ Dataset::Dataset( const Dataset& other ):
             m_layers[i][j] = other.m_layers[i][j];
     }
     obCorrection = nullptr;
+    computeBoundingBox();
 }
 
 /*!
@@ -112,6 +113,7 @@ Dataset& Dataset::operator=( const Dataset& tocopy){
         setPixelDepthBits(copy.getPixelDepthBits());
         //*this->obCorrection = *tocopy.obCorrection;
 
+        computeBoundingBox();
     }
 
     return *this;
@@ -1021,7 +1023,7 @@ void Dataset::applyHighPixelsInterpolation(double meanMultiplier, QMap<int, doub
     QList<int> keys = m_thresholdsToIndices.keys();
     // computeBoundingBox().size().width() 	--> gives the number of chips
     // this->x() 							--> gives the number of pixels per chip
-    QSize isize = QSize( computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y() );
+    QSize isize = QSize( m_boundingBox.width()*this->x(), m_boundingBox.height()*this->y() );
 
     for(int i = 0; i < keys.length(); i++) {
 
@@ -1064,7 +1066,7 @@ void Dataset::applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, doub
     // The keys are the thresholds
     QList<int> keys = m_thresholdsToIndices.keys();
 
-    QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
+    QSize isize = QSize(m_boundingBox.width()*this->x(), m_boundingBox.height()*this->y());
 
     for(int i = 0; i < keys.length(); i++) {
 
@@ -1302,7 +1304,7 @@ QMap<int, double> Dataset::GetPadMean() {
     QMap<int, double> meanvals;
 
     QList<int> keys = m_thresholdsToIndices.keys();
-    QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
+    QSize isize = QSize(m_boundingBox.width()*this->x(), m_boundingBox.height()*this->y());
     for ( int i = 0; i < keys.length(); i++ ) {
         meanvals[keys[i]] = calcPadMean(keys[i], isize); // this function is CPU consuming and this scope is blocking !
     }
@@ -1593,6 +1595,7 @@ void Dataset::fromByteArray(QByteArray serialized){
             this->setFrame(frameBuffer.data(), j, keys[i]);
         }
     }
+    computeBoundingBox();
 }
 
 void Dataset::fromASCIIMatrixGetSizeAndLayers(QFile * file, int *x, int *y, int *framesPerLayer)
@@ -1693,13 +1696,11 @@ void Dataset::resize(int nx, int ny, bool connected){
 }
 
 int Dataset::getNChipsX() {
-    QRectF cb = computeBoundingBox();
-    return (int)cb.width();
+    return (int)m_boundingBox.width();
 }
 
 int Dataset::getNChipsY() {
-    QRectF cb = computeBoundingBox();
-    return (int)cb.height();
+    return (int)m_boundingBox.height();
 }
 
 QRectF Dataset::computeBoundingBox(){
@@ -1717,6 +1718,11 @@ QRectF Dataset::computeBoundingBox(){
     }
     m_boundingBox.setRect(min_x,min_y, max_x+1, max_y+1);
 
+    return m_boundingBox;
+}
+
+QRectF Dataset::getBoundingBox(){
+    if (m_boundingBox.height() == 0) computeBoundingBox();
     return m_boundingBox;
 }
 

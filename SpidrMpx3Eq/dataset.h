@@ -160,6 +160,7 @@ public:
 
     int getContainingFrame(QPoint pixel);//!< Returns the frame-index of the frame which contains the specified point. Returns -1 if no frame contains the point.
     QRectF computeBoundingBox(); //!< Computes the minimum bounding box of the set of chips. Returns coordinates and sizes in units of "chips", so e.g. (0,2)x(0,2) instead of (0,512)x(0,512) for a quad.
+    QRectF getBoundingBox();     //!< Gets the minimum bounding box of the set of chips. Returns coordinates and sizes in units of "chips", so e.g. (0,2)x(0,2) instead of (0,512)x(0,512) for a quad.
     int getNChipsX();
     int getNChipsY();
 
