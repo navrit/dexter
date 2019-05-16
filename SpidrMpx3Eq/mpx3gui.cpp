@@ -84,16 +84,18 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.
-    getDataset()->setOrientation(0, _MPX3RX_ORIENTATION[0]);
-    getDataset()->setOrientation(1, _MPX3RX_ORIENTATION[1]);
-    getDataset()->setOrientation(2, _MPX3RX_ORIENTATION[2]);
-    getDataset()->setOrientation(3, _MPX3RX_ORIENTATION[3]);
+    auto ds = getDataset();
+    ds->setOrientation(0, _MPX3RX_ORIENTATION[0]);
+    ds->setOrientation(1, _MPX3RX_ORIENTATION[1]);
+    ds->setOrientation(2, _MPX3RX_ORIENTATION[2]);
+    ds->setOrientation(3, _MPX3RX_ORIENTATION[3]);
 
     // The layout is the position of the chip in the assembly.
-    getDataset()->setLayout(0,  _MPX3RX_LAYOUT[0]);
-    getDataset()->setLayout(1,  _MPX3RX_LAYOUT[1]);
-    getDataset()->setLayout(2,  _MPX3RX_LAYOUT[2]);
-    getDataset()->setLayout(3,  _MPX3RX_LAYOUT[3]);
+    ds->setLayout(0,  _MPX3RX_LAYOUT[0]);
+    ds->setLayout(1,  _MPX3RX_LAYOUT[1]);
+    ds->setLayout(2,  _MPX3RX_LAYOUT[2]);
+    ds->setLayout(3,  _MPX3RX_LAYOUT[3]);
+    ds->computeBoundingBox();
 
     QString heatmapsFile = "./config/heatmaps.json";
     gradients = Gradient::fromJsonFile( heatmapsFile );
@@ -250,7 +252,7 @@ Mpx3GUI::~Mpx3GUI()
 
 void Mpx3GUI::resize(int x, int y) {
     getDataset()->resize(x, y, getConfig()->isConnected());
-    QRectF bbox = getDataset()->computeBoundingBox();
+    QRectF bbox = getDataset()->getBoundingBox();
     emit sizeChanged(int(bbox.width() * x), int(bbox.height() * y)); // goes to qcstmglplot
 }
 
@@ -514,6 +516,7 @@ void Mpx3GUI::rebuildCurrentSets(int x, int y, int framesPerLayer)
     workingSet = new Dataset(x, y, framesPerLayer);
     workingSet->setOrientation(0, _MPX3RX_ORIENTATION[0]);
     workingSet->setLayout(0,  _MPX3RX_LAYOUT[0]);
+    workingSet->computeBoundingBox();
     delete originalSet;
     originalSet = new Dataset(x, y, framesPerLayer);
 }
@@ -698,9 +701,10 @@ bool Mpx3GUI::establish_connection() {
     QVector<int> activeDevices = config->getActiveDevices();
 
     for ( int i = 0 ; i < activeDevices.size(); i++ ) {
-        getDataset()->setLayout(i, _MPX3RX_LAYOUT[std::size_t(activeDevices[i])]);
-        getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[std::size_t(activeDevices[i])]);
+        workingSet->setLayout(i, _MPX3RX_LAYOUT[std::size_t(activeDevices[i])]);
+        workingSet->setOrientation(i, _MPX3RX_ORIENTATION[std::size_t(activeDevices[i])]);
     }
+    workingSet->computeBoundingBox();
 
     return true;
 }
@@ -1324,7 +1328,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
     //QList<int> thresholds = getDataset()->getThresholds();
 
     // required signals
-    QRectF bbox = getDataset()->computeBoundingBox();
+    QRectF bbox = getDataset()->getBoundingBox();
     emit sizeChanged(int(bbox.width() * getDataset()->x()), int(bbox.height() * getDataset()->y())); // goes to qcstmglplot
     emit reload_all_layers();
 
@@ -1368,10 +1372,9 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     getDataset()->fromByteArray( saveFile.readAll() );
     saveFile.close();
     set_mode_normal();
-    QList<int> thresholds = getDataset()->getThresholds();
 
     // required signals
-    QRectF bbox = getDataset()->computeBoundingBox();
+    QRectF bbox = getDataset()->getBoundingBox();
     emit sizeChanged(int(bbox.width() * getDataset()->x()), int(bbox.height() * getDataset()->y())); // goes to qcstmglplot
     emit reload_all_layers();
 

@@ -62,11 +62,6 @@ void DataTakingThread::takedata() {
 
 }
 
-void DataTakingThread::setExternalTrigger(bool external)
-{
-    _isExternalTrigger = external;
-}
-
 void DataTakingThread::ConnectToHardware() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -78,22 +73,6 @@ void DataTakingThread::ConnectToHardware() {
 
 }
 
-void protectTriggerMode(SpidrController *spidrController, Mpx3Config *config)
-{
-    //_currentTriggerMode = ui->triggerModeCombo->currentIndex();
-    //ui->triggerModeCombo->setCurrentIndex(0); //set it to auto
-    spidrController->stopAutoTrigger();
-    //spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
-    spidrController->setShutterTriggerConfig(SHUTTERMODE_AUTO,
-        config->getTriggerLength_64(),
-        config->getTriggerFreq_mHz(),
-        config->getNTriggers(),
-        0);
-
-    // TODO KIA: Is this delay really necessary?
-    usleep(100000);
-}
-
 void setTriggerMode(SpidrController *spidrController, Mpx3Config *config)
 {
     spidrController->setShutterTriggerConfig(config->getTriggerMode(),
@@ -103,12 +82,22 @@ void setTriggerMode(SpidrController *spidrController, Mpx3Config *config)
         0);
 }
 
-void DataTakingThread::stopReadout(int opMode, SpidrController* spidrcontrol)
-{
-    if (opMode == Mpx3Config::__operationMode_ContinuousRW) {
+void DataTakingThread::stopReadout(SpidrController* spidrcontrol, Mpx3Config *config) {
+    if (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW) {
         spidrcontrol->stopContReadout();
     } else {
         spidrcontrol->stopAutoTrigger();
+        if (_isExternalTrigger) {
+            spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO,
+                config->getTriggerLength_64(),
+                config->getTriggerFreq_mHz(),
+                config->getNTriggers(),
+                0);
+        }
+        if (_isSoftwareTrigger) {
+            _mpx3gui->stopTriggerTimers();
+            qDebug() << "[INFO]\tSoftware triggering stopped";
+        }
     }
 }
 
@@ -161,7 +150,6 @@ void DataTakingThread::run() {
         // Fetch new parameters
         // After a start or restart
         _mutex.lock();
-        datataking_score_info score = _score;
         int opMode = config->getOperationMode();
         int contRWFreq = config->getContRWFreq();
 
@@ -170,7 +158,6 @@ void DataTakingThread::run() {
 
         // dropFrames --> will use --> _vis->getDropFrames();
         //  since the user may want to activate/deactivate during data taking.
-        uint halfSemaphoreSize = uint(_consumer->getSemaphoreSize()/2.);
         bool bothCounters = config->getReadBothCounters();
 
         _mpx3gui->clear_data(false);
@@ -182,72 +169,53 @@ void DataTakingThread::run() {
         spidrcontrol->resetCounters();
         spidrdaq->resetLostCount();
         int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
-        bool emergencyStop = false;
-        bool reachLimitStop = false;
         spidrdaq->releaseAll();
 
-        bool stopTimers = false;  // whether to stop the software timers after the run
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
         } else if (opMode == Mpx3Config::__operationMode_SequentialRW) {
-            if (_isExternalTrigger) {
-                setTriggerMode(spidrcontrol, config);
-                spidrcontrol->startAutoTrigger();
-            } else {
-                if (config->getTriggerMode() == SHUTTERMODE_SOFTWARE
-                || (config->getTriggerPeriod() > LONG_PERIOD_US)) {
-                    // software trigger
-                    spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO, 0, 1, 1, 0);
-                    stopTimers = true;
-                    emit sendingShutter();
-                } else {
+            switch (config->getTriggerMode()) {
+            case SHUTTERMODE_AUTO:
+                if (config->getTriggerPeriod() < LONG_PERIOD_US) {
                     setTriggerMode(spidrcontrol, config);
                     spidrcontrol->startAutoTrigger();
+                    break;
                 }
+                [[fallthrough]];
+            case SHUTTERMODE_SOFTWARE:
+                // software trigger
+                _isSoftwareTrigger = true;
+                spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO, 0, 1, 1, 0);
+                emit sendingShutter();
+                break;
+            default:
+                _isExternalTrigger = true;
+                setTriggerMode(spidrcontrol, config);
+                spidrcontrol->startAutoTrigger();
             }
         }
 
-        bool _break = false;
+        int framesRequested = config->getNTriggers();
+        if (framesRequested == 0) framesRequested = INT_MAX;
+
         // TODO: refine the time out
         unsigned long timeOutTime_ms = 500;
 
-        while(!_break && !_stop){
-        // Ask SpidrDaq for frames
-            while ( spidrdaq->hasFrame(timeOutTime_ms) && !_stop) {
+        bool daqRunning = true;
+        while (nFramesKept < framesRequested) {
 
-                // 2) User stop condition
-                if ( _stop ||  _restart  ) {
-                    _break = true;
-                    if(_isExternalTrigger){
-                        protectTriggerMode(spidrcontrol, config);
-                        break;
-                    }
+            // 2) User stop condition
+            if (_stop || _restart) {
+                break;
+            }
 
-                    stopReadout(opMode, spidrcontrol);
-                }
+            if (daqRunning && (framesRequested - nFramesKept < spidrdaq->framesAvailable() - 5)) {
+                // there's enough in the queue, stop acquisition
+                stopReadout(spidrcontrol, config);
+                daqRunning = false;
+            }
 
-                // Three stopping conditions where I still need to let the SpidrDaq::hasFrame loop to finish
-                // 1) If trying to stop a ContRW
-                // 2) User stop
-                // 3) Restart
-                if ( reachLimitStop || _stop || _restart ) {
-                    spidrdaq->releaseFrame();
-                    _consumer->consume();
-                    _break = true;
-                    continue;
-                }
-
-                // An emergency stop when the consumer thread can't keep up
-                if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
-                    qDebug() << "[WARNING]\tConsumer trying to stop ";
-                    if ( !emergencyStop ) {
-                        emit bufferFull( 0 );
-                        stopReadout(opMode, spidrcontrol);
-                        _consumer->consume();
-                    }
-                    emergencyStop = true;
-                    _break = true;
-                }
+            if (spidrdaq->hasFrame(timeOutTime_ms)) {
 
                 // Read data
                 FrameSet *fs = spidrdaq->getFrameSet();
@@ -279,15 +247,15 @@ void DataTakingThread::run() {
                         }
                     // Keep a track of frames actually kept
                     nFramesKept++;
+
+                    // Awake the consumer thread
+                    _consumer->consume();
                 }
 
                 lostPackets += fs->pixelsLost();
 
                 // Release frame
                 spidrdaq->releaseFrame(fs);
-
-                // Awake the consumer thread
-                _consumer->consume();
 
                 // Keep a local count of number of frames
                 nFramesReceived++;
@@ -296,30 +264,15 @@ void DataTakingThread::run() {
 
                 spidrdaq->resetLostCount();
 
-                // How to stop in ContRW
-                // 1) See Note 1 at the bottom
-                //  note than score.framesRequested=0 when asking for infinite frames
-                if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 && !_isExternalTrigger ) {
-                    _break = true;
-                    stopReadout(opMode, spidrcontrol);
-                    reachLimitStop = true;
-                }
-
                 if( _isExternalTrigger ) {
                     int externalCnt = 0;
                     spidrcontrol->getExtShutterCounter(&externalCnt);
                     //Debug() << "[Debug] ext count : " << externalCnt;
                     emit scoring_sig(externalCnt,
-                                     externalCnt,
+                                     nFramesKept,
                                      lostFrames,                  //
                                      lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
                                      spidrdaq->framesCount());
-
-                    if (externalCnt >= config->getNTriggers() && config->getNTriggers() != 0 ){
-                        protectTriggerMode(spidrcontrol, config);
-                        _break = true;
-                        break;
-                    }
                 } else {
                     emit scoring_sig(nFramesReceived,
                                      nFramesKept,
@@ -327,25 +280,15 @@ void DataTakingThread::run() {
                                      lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
                                      spidrdaq->framesCount());
                 }
-
             }
         }
-        if (stopTimers){
-            stopReadout(opMode, spidrcontrol);
-            _mpx3gui->stopTriggerTimers();
-            qDebug() << "[INFO]\tSoftware triggering stopped";
+        if (daqRunning) {
+            stopReadout(spidrcontrol, config);
         }
-
-        protectTriggerMode(spidrcontrol, config);
-        _consumer->consume();
+        msleep(50);
+        spidrdaq->releaseAll();
 
         if ( ! _restart ) {  emit dataTakingFinished();}
-
-        // If this was an emergency stop
-        // Have the consumer free resources
-        if ( emergencyStop ) {
-            _consumer->freeResources();
-        }
 
         _mutex.lock();
         if ( !_restart ) {
@@ -361,8 +304,8 @@ void DataTakingThread::run() {
 
     ///////////////////////////////////////////////////////////////////////////////////
 
-    disconnect(this, SIGNAL(scoring_sig(int,int,int,int,int,int,bool)),
-               _vis,   SLOT( on_scoring(int,int,int,int,int,int,bool)) );
+    disconnect(this, SIGNAL(scoring_sig(int,int,int,int,int)),
+               _vis,   SLOT( on_scoring(int,int,int,int,int)) );
 
     disconnect(this, SIGNAL(dataTakingFinished()), _vis, SLOT(dataTakingFinished()));
     disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis

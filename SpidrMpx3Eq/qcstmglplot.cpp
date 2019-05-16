@@ -192,7 +192,7 @@ void QCstmGLPlot::setSize(int nx, int ny){
 void QCstmGLPlot::readData(Dataset &data){//TODO: only update textures.
     if(!initialized)
         return;
-    QRectF bounding = data.computeBoundingBox();
+    QRectF bounding = data.getBoundingBox();
     program.bind();
     float baseOffsetX = bounding.center().x();
     float baseOffsetY = bounding.center().y();
