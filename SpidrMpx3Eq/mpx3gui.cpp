@@ -395,6 +395,11 @@ void Mpx3GUI::stopTriggerTimers()
     qDebug() << "_timerStop stopTriggerTimers: " << _timerStop;
 }
 
+CommandHandlerWrapper *Mpx3GUI::getCommandHandlerWrapper()
+{
+    return commandHandlerWrapper;
+}
+
 void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );

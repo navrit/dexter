@@ -171,6 +171,7 @@ public:
     void loadLastConfiguration();
     QString getConfigPath(){ return _configPath;}
     void stopTriggerTimers(void);
+    CommandHandlerWrapper* getCommandHandlerWrapper(void);
 
 signals:
     void dataChanged();

@@ -14,6 +14,7 @@ class CommandHandlerWrapper : public QObject
 public:
 
     explicit CommandHandlerWrapper(QObject *parent = 0);
+    CommandHandler* getCommandHandler(void);
 
 
 private:

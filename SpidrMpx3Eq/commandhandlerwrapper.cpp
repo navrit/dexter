@@ -15,6 +15,11 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
     connect(QCstmEqualization::getInstance(),SIGNAL(busy(SERVER_BUSY_TYPE)),this,SLOT(on_serverStatusChanged(SERVER_BUSY_TYPE)));
 }
 
+CommandHandler *CommandHandlerWrapper::getCommandHandler()
+{
+    return commandHandler;
+}
+
 void CommandHandlerWrapper::on_dataReceived(QString command)
 {
     MerlinCommand merlinCmd (command, *merlinInterface);

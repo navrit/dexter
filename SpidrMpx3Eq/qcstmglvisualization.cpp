@@ -497,6 +497,9 @@ void QCstmGLVisualization::dataTakingFinished() {
         _dataConsumerThread->dataTakingSaysIFinished();
     }
 
+    disconnect(this->getDataConsumerThread(), SIGNAL(doneWithOneFrame(int)),
+                _mpx3gui->getCommandHandlerWrapper()->getCommandHandler(), SLOT(on_doneWithOneFrame(int)));
+
     emit someCommandHasFinished_Successfully();
 }
 
@@ -2369,3 +2372,4 @@ void QCstmGLVisualization::on_saveFileComboBox_currentIndexChanged(const QString
 {
     _saveFileComboBox_text = currentText;
 }
+

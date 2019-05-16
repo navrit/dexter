@@ -144,6 +144,7 @@ void DataTakingThread::run() {
 
     connect(this,SIGNAL(sendingShutter()),_mpx3gui,SLOT(sendingShutter()));
 
+
     auto config = _mpx3gui->getConfig();
     QVector<int> activeDevices = config->getActiveDevices();
 

@@ -261,6 +261,8 @@ private slots:
     void on_saveAllCheckBox_stateChanged();
     void on_saveFileComboBox_currentIndexChanged(const QString &currentText);
 
+
+
 public slots:
 
     void StartDataTaking(QString mode="");
