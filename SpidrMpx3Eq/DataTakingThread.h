@@ -50,8 +50,6 @@ public:
 
     void takedata();
 
-    void setExternalTrigger(bool external);
-
 protected:
 
     void run() Q_DECL_OVERRIDE;
@@ -74,8 +72,9 @@ private:
     int _srcAddr;
 
     bool _isExternalTrigger = false;
+    bool _isSoftwareTrigger = false;
 
-    void stopReadout(int opMode, SpidrController* spidrcontrol);
+    void stopReadout(SpidrController* spidrcontrol, Mpx3Config *config);
 
 public slots:
     void on_stop_data_taking_thread();

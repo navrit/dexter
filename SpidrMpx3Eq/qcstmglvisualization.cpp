@@ -154,8 +154,6 @@ void QCstmGLVisualization::rewindScoring()
     _score.lostFrames = 0;
     _score.lostPackets = 0;
     _score.framesCount = 0;
-    _score.mpx3clock_stops = 0;
-    _score.dataMisaligned = false;
 }
 
 void QCstmGLVisualization::rewindHistoLimits() {
@@ -348,14 +346,6 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
         _dataTakingThread = new DataTakingThread(_mpx3gui, _dataConsumerThread, this);
         _dataTakingThread->setObjectName("Dexter producer");
         _dataTakingThread->ConnectToHardware();
-    }
-
-    int triggerMode = _mpx3gui->getConfig()->getTriggerMode();
-    if (triggerMode == SHUTTERMODE_AUTO || triggerMode == SHUTTERMODE_SOFTWARE) { //if is Auto, it is internal otherwise is external
-        _dataTakingThread->setExternalTrigger(false);
-    //todo : disable/enable  ui->triggerLengthSpinBox->setReadOnly(false);
-    } else {
-        _dataTakingThread->setExternalTrigger(true);
     }
 
     if ( ! _takingData ) { // new data
@@ -1104,8 +1094,6 @@ void QCstmGLVisualization::on_scoring(int nFramesReceived,
     _score.lostFrames = lostFrames;
     _score.lostPackets = lostPackets;
     _score.framesCount = framesCount;
-    _score.mpx3clock_stops = 0;
-    _score.dataMisaligned = false;
 }
 
 void QCstmGLVisualization::progress_signal(int framecntr) {

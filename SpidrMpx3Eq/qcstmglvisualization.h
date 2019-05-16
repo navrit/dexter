@@ -141,8 +141,6 @@ public:
         uint lostFrames;
         uint lostPackets;
         uint framesCount;
-        uint mpx3clock_stops;
-        bool dataMisaligned;
     } scoring;
 
     scoring getScoring(){ return _score; }
