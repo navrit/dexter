@@ -264,7 +264,7 @@ void DataTakingThread::run() {
 
                 spidrdaq->resetLostCount();
 
-                if( _isExternalTrigger ) {
+                if( false) {
                     int externalCnt = 0;
                     spidrcontrol->getExtShutterCounter(&externalCnt);
                     //Debug() << "[Debug] ext count : " << externalCnt;
