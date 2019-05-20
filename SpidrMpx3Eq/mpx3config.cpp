@@ -276,7 +276,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
         unsigned int val4 = 0x4;  //shutter out  first lemo connector
         val4 = val4 << 12;
 
-        unsigned int val5 = 0xA; //inhibit_shuter AND shutter second lemo connector
+        unsigned int val5 = 0x9; //inhibit_shuter AND shutter second lemo connector
         val5 = val5 << 16;
 
 
