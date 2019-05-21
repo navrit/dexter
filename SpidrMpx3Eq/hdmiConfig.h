@@ -66,7 +66,7 @@ private:
     static const unsigned inhibitShutterInOn = 0x8;
     static const unsigned inhibitShutterInOff = 0xF;
     static const unsigned shutter_out = 0x4;
-    static const unsigned inhibitShutterAndShutterOut = 0x9;
+    static const unsigned inhibitShutterAndShutterOut = 0xA;
     static const unsigned counterSelectOut = 0xB;
 
     //hdmi config register;

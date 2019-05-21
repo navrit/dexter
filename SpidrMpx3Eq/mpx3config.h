@@ -196,7 +196,7 @@ private:
     QVector<QString> _deviceWaferIdMap;
     int _nDevicesPresent = -1;
     int _nDevicesSupported = -1;
-    int _inhibitShutterRegisterOffset = -1;
+    int _inhibitShutterRegisterOffset = 2;
     bool _isInhibitShutterSelected = false;
     int _hdmiregisterValue = 0;
 
