@@ -202,7 +202,7 @@ void DataTakingThread::run() {
         unsigned long timeOutTime_ms = 500;
 
         bool daqRunning = true;
-        while (nFramesKept < framesRequested) {
+        while (nFramesReceived < framesRequested) {
 
             // 2) User stop condition
             if (_stop || _restart) {
