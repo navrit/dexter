@@ -86,18 +86,6 @@ public:
         int mpx3ClockStops;
     } score_info;
 
-
-    struct sortPair {
-        double thickness;
-        double value;
-        sortPair(double t, double v){thickness = t; value = v;}
-        sortPair() {}
-    };
-
-    struct sortingStruct {
-        bool operator() (const sortPair &lhs, const sortPair &rhs) { return lhs.thickness < rhs.thickness; }
-    } sortByThickness;
-
     struct bStats {
         QPoint init_pixel;
         QPoint end_pixel;
@@ -120,16 +108,6 @@ private:
     QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
     int m_nFrames; //!< The amount of chips, a.k.a. frames here.
     score_info m_scores; //!< some 'score' info about this frame. A bunch of counters.
-
-    bool firstHighSpeedImageSave = true;
-    int nChips = 0;
-    QVector<int> directionx;
-    QVector<int> directiony;
-    QVector<int> startx;
-    QVector<int> starty;
-    QVector<int> endx;
-    QVector<int> endy;
-    int * m_plainImageBuff = nullptr;
 
     QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
     QVector<int> m_frameOrientation;//!<The orientation of the detectors. see the enum.
@@ -166,7 +144,6 @@ public:
 
     QByteArray toByteArray(); //!< Serializes the dataset for saving.
     Canvas toCanvas(int threshold); //!< Serializes the dataset for sending via socket to clients.
-    QVector<int> toQVector(); //!< Serializes the dataset for saving.
     void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
     void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false);  //! Puts the dataset into a TIFF format and saves.
     Canvas makeFrameForSaving(int threshold, bool crossCorrection = true, bool spatialOnly = false);
@@ -180,7 +157,6 @@ public:
     void applyCorrections(QCstmCorrectionsDialog * corrdiag);//<!Handles all corrections.  This function is blocking for the moment !
     void applyOBCorrection();//!< Computes and applies the flat-field correction
     void dumpAllActivePixels(); //!< for testing purposes
-    //void applyBHCorrection(QVector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map);//!< Computes and applies a beam-hardening correction
     void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
     void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
     void calcBasicStats(QPoint pixel_init, QPoint pixel_end); //!Calculates the Mean and standard deviation of the pixel values in the selected region.

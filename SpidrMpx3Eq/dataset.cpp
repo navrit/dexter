@@ -162,8 +162,9 @@ QByteArray Dataset::toByteArray() {
 
     //qDebug()<<"ba 7: "<<ret.length();
     // 68 bit header end offset
-    for(int i = 0; i < keys.length(); i++)
-        stream.writeRawData((const char*)this->getLayer(keys[i]), (int)(sizeof(float)*getLayerSize()));
+    foreach (int key, keys) {
+        stream.writeRawData((const char*)this->getLayer(key), (int)(sizeof(float)*getLayerSize()));
+    }
 
     return ret;
 }
@@ -172,24 +173,6 @@ Canvas Dataset::toCanvas(int threshold) {
     return (m_pixelDepthBits == 24)
             ? Canvas(this, threshold, 0, 4)
             : Canvas(this, threshold, 0, 2);
-}
-
-/**
- * This serializes all the layers in a single vector of integers.
- */
-QVector<int> Dataset::toQVector() {
-
-    QVector<int> tovec;
-
-    QList<int> keys = m_thresholdsToIndices.keys();
-    for(int i = 0; i < keys.length(); i++) {
-        int * layer = this->getLayer(keys[i]);
-        for ( uint64_t j = 0 ; j < this->getPixelsPerLayer() ; j++) {
-            tovec.append( layer[j] );
-        }
-    }
-
-    return tovec;
 }
 
 void Dataset::saveBIN(QString filename)
@@ -217,7 +200,6 @@ Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
     float edgePixelMagicNumberSpectroVertical = float(1.9);
     float edgePixelMagicNumberSpectroHorizontal = float(1.1);
 
-    QList<int> thresholds = m_thresholdsToIndices.keys();
     //----------------------------------------------------
 
     if (spatialOnly){
@@ -231,7 +213,7 @@ Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
     //! Do spatial correction on quadrants, move to respective corners
 
     int gap = 2 * extraPixels;
-    Canvas canvas(this, thresholds[threshold], gap, 4);
+    Canvas canvas(this, threshold, gap, 4);
     int * imageCorrected = (int*) (canvas.image.get());
 
     //! Phase 2
@@ -336,19 +318,19 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
     //! Save for all thresholds in separate files
     //! Note: Could use TIFF pages but this is a much clearer approach for the user and is more compatible cross systems
     QList<int> thresholds = m_thresholdsToIndices.keys();
-    for(int i = 0; i < thresholds.length(); i++) {
+    foreach (int thr, thresholds) {
 
         QString tmpFilename = filename;
         if (thresholds.count() > 1){
-            tmpFilename.replace(".tiff", "-thl" + QString::number(thresholds[i]) + ".tiff");
+            tmpFilename.replace(".tiff", "-thl" + QString::number(thr) + ".tiff");
         }
 
         //! Default mode - do cross and spatial corrections
         if (crossCorrection){
-            Canvas imageCorrected = createCorrectedImage(i, spatialOnly);
+            Canvas imageCorrected = createCorrectedImage(thr, spatialOnly);
             imageCorrected.saveToTiff(tmpFilename.toUtf8().data());
         } else {
-            Canvas image = getFullImageAsArrayWithLayout(i, 4);
+            Canvas image = getFullImageAsArrayWithLayout(thr, 4);
             image.saveToTiff(tmpFilename.toUtf8().data());
         }
     }
@@ -1537,43 +1519,6 @@ void Dataset::dumpAllActivePixels() {
     }
 
 }
-
-/*
-void Dataset::applyBHCorrection(QVector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map)
-//Makes signal to thickness conversion
-{
-    QList<int> keys = m_thresholdsToIndices.keys();
-    if(m_spline==nullptr) m_spline = new tk::spline;  // instantiate spline if not defined
-
-    //Loop over layers
-    for (int i = 0; i < keys.length(); i++)
-    {
-        //Create data structure
-        QVector<QVector<double>> bhData(getPixelsPerLayer());
-        sort(thickness.begin(), thickness.end());
-        for(int j = 0; j<thickness.size(); j++)
-        {
-                int * layer = map[thickness[j]].getLayer(keys[i]);
-                for(unsigned int k = 0; k<getPixelsPerLayer(); k++){ bhData[k].push_back(layer[k]); }
-        }
-        //Apply correction
-        int * currentLayer = originalSet->getLayer(keys[i]);
-        for(unsigned int j = 0; j< getPixelsPerLayer(); j++)
-        {
-            QVector<double> temp = bhData[j];
-            m_spline->set_points(thickness.toStdVector(), temp.toStdVector(), false);
-            currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
-
-            if(j % (getPixelsPerLayer() / 100) == 0)
-            {
-                emit Dataset::updateProgressBar( (100 / keys.size()) * (i+1) * j / getPixelsPerLayer() );
-            }
-        }
-    }
-    }
-
-}
-*/
 
 void Dataset::fromByteArray(QByteArray serialized){
     QDataStream in(&serialized, QIODevice::ReadOnly);
