@@ -53,7 +53,7 @@ private:
 
     Mpx3GUI * _mpx3gui;
 
-    const uint _nFramesBuffer = 8;
+    const uint _nFramesBuffer = 32;
     uint _semaphoreSize;
     uint _nChips;
     bool _bothCounters;
