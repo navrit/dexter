@@ -1006,6 +1006,7 @@ void QCstmGLVisualization::mpx3clock_stops(int stops) {
 }
 
 void QCstmGLVisualization::range_changed(QCPRange newRange){
+    if (newRange.lower < 0) newRange.lower = 0;
     //ui->lowerManualSpin->setValue(newRange.lower);
     //ui->upperManualSpin->setValue(newRange.upper);
     //ui->lowerSpin->setValue(newRange.lower);
@@ -1805,6 +1806,7 @@ void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
                 if(data[i] > max)
                     max = data[i];
             }
+            if (min < 0) min = 0;
             _manualRange = QCPRange( min, max );
 
         } else {

@@ -116,9 +116,7 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int mi
         }
 
         // This could happen
-        if ( min == INT_MIN ) min = 0;
-
-
+        if (min < 0) min = 0;
     }
 
     int binWidth = (max-min)/m_binCount == 0? 1 : (max-min)/m_binCount;
@@ -234,7 +232,9 @@ void QCstmPlotHistogram::clear(){
 
 void QCstmPlotHistogram::changeRange(QCPRange newRange){
 
-    minClampChanged(newRange.lower);
+    double lower = newRange.lower;
+    if (lower < 0) lower = 0;
+    minClampChanged(lower);
     maxClampChanged(newRange.upper);
 
     emit rangeChanged(newRange);
