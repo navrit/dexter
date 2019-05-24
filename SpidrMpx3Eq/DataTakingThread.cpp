@@ -170,6 +170,8 @@ void DataTakingThread::run() {
         spidrdaq->resetLostCount();
         int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
         spidrdaq->releaseAll();
+        _isSoftwareTrigger = false;
+        _isExternalTrigger = false;
 
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
