@@ -140,19 +140,26 @@ int Dataset::getLayerIndex(int threshold){
 
 QByteArray Dataset::toByteArray() {
 
+    int nThresh = m_thresholdsToIndices.size();
+    int headerLength = 4 * sizeof(int)
+                     + m_nFrames * (sizeof(*m_frameLayouts.data()) + sizeof(*m_frameOrientation.data()))
+                     + nThresh * sizeof(int);
+
+    int totalLength = headerLength + nThresh * getLayerSize() * sizeof(int);
+
+    QByteArray ret(totalLength, Qt::Initialization::Uninitialized);
+    QDataStream stream(&ret, QIODevice::WriteOnly);
+    toStream(stream);
+    return ret;
+}
+
+void Dataset::toStream(QDataStream &stream) {
     // Keys are Thresholds
     QList<int> keys = m_thresholdsToIndices.keys();
     int layerCount = m_layers.size();
 
-    int headerLength = 4 * sizeof(int)
-                     + m_nFrames * (sizeof(*m_frameLayouts.data()) + sizeof(*m_frameOrientation.data()))
-                     + keys.size() * sizeof(int);
-
-    int totalLength = headerLength + keys.length() * getLayerSize() * sizeof(int);
-
     // 68 bit header start offset
-    QByteArray ret(totalLength, Qt::Initialization::Uninitialized);
-    QDataStream stream(&ret, QIODevice::WriteOnly);
+    stream.setByteOrder(QDataStream::LittleEndian);
     stream << m_nx << m_ny << m_nFrames << layerCount;
     stream.writeRawData((const char*)m_frameLayouts.data(),(int)(m_nFrames*sizeof(*m_frameLayouts.data())));
     //qDebug()<<"ba 5: "<<ret.length();
@@ -165,8 +172,6 @@ QByteArray Dataset::toByteArray() {
     foreach (int key, keys) {
         stream.writeRawData((const char*)this->getLayer(key), (int)(sizeof(float)*getLayerSize()));
     }
-
-    return ret;
 }
 
 Canvas Dataset::toCanvas(int threshold) {
@@ -186,7 +191,8 @@ void Dataset::saveBIN(QString filename)
         //        QMessageBox::warning ( this, QString("Error saving data"), QString(messg.c_str()) );
         return;
     }
-    saveFile.write(toByteArray());
+    QDataStream stream(&saveFile);
+    toStream(stream);
     saveFile.close();
 }
 
@@ -1533,6 +1539,7 @@ void Dataset::fromByteArray(QByteArray serialized){
     in.readRawData((char*)m_frameOrientation.data(), m_nFrames*(int)sizeof(*m_frameOrientation.data()));
     QVector<int> keys(layerCount);
     in.readRawData((char*)keys.data(), keys.size()*(int)sizeof(int));
+    // TODO: write directly into the right place, skip the local frameBuffer
     QVector<int> frameBuffer(m_nx*m_ny);
     for(int i = 0; i < keys.size(); i++){
         for(int j = 0; j < m_nFrames; j++){
