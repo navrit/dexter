@@ -671,6 +671,8 @@ void setRecordFormatHandler(CommandHandler* ch, Command* cmd){
 }
 
 void getImageHandler(CommandHandler* ch, Command* cmd){
+    // TODO: this function is broken: it will not produce an image in an understandable format
+
 //    QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(0,false);
 //   // QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->getActualData();
 
@@ -685,7 +687,7 @@ void getImageHandler(CommandHandler* ch, Command* cmd){
     QString strData = "";
     for(int i = 0; i<20; i++){
         int value = 0;
-        value |= im.at(i*4) | (im.at((i*4)+1)<<8) | (im.at((i*4)+2)<<16) | (im.at((i*4)+3)<<32);
+        value |= im.at(i*4) | (im.at((i*4)+1)<<8) | (im.at((i*4)+2)<<16) | (im.at((i*4)+3)<<24);
         strData += QString::number(value) + ";";
     }
   //  cmd->setImage();
