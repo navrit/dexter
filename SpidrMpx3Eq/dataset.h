@@ -116,7 +116,6 @@ private:
     QVector<int*>  m_layers;    //!< [Chip, layer(threshold)] Actual data, one pointer per threshold.
     Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
     bool corrected; //!indicates whether or not an image has been corrected.
-    int getLayerIndex(int threshold);
     void rewindScores();
     Canvas createCorrectedImage(int threshold, bool spatialOnly = false);
 
@@ -217,6 +216,7 @@ public:
     int isDataMisaligned(){ return m_scores.dataMisaligned; }
 
     QPoint getSize(){return QPoint(m_nx, m_ny);}
+    void setNewLayer(int threshold, int* data);
     int * getFrame(int index, int threshold); //!< returns a pointer to the data of chip index at the specified threshold.
     int * getFrameAt(int index, int layer); //!< returns a pointer to the data of chip index at the specified layer-index. (i.e. does not call thresholdToLayer(layer))
     int sampleFrameAt(int index, int layer, int x, int y);//!< Returns the value of the pixel at (x,y), in the coordinate-system of the assembly, of chip index directly at the specified layer. Does take into account the orientation of the chip.
@@ -248,8 +248,6 @@ public:
     void DumpSmallMap(map< pair<int, int>, int > m1);
 
     QMap<int, double> GetPadMean();
-
-    int newLayer(int layer);//!<Adds a new layer at the specified threshold.
 
     void calcAllEnergyBins();
 

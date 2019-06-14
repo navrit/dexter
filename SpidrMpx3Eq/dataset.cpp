@@ -131,13 +131,6 @@ void Dataset::zero() {
     }
 }
 
-int Dataset::getLayerIndex(int threshold){
-    int layerIndex = thresholdToIndex(threshold);
-    if(layerIndex == -1)
-        layerIndex = newLayer(threshold);
-    return layerIndex;
-}
-
 QByteArray Dataset::toByteArray() {
 
     int nThresh = m_thresholdsToIndices.size();
@@ -1678,14 +1671,6 @@ QRectF Dataset::getBoundingBox(){
     return m_boundingBox;
 }
 
-int Dataset::newLayer(int threshold){
-    m_thresholdsToIndices[threshold] = m_layers.size();
-    m_layers.append(new int[getPixelsPerLayer()]);
-    for(int j = 0; j < getLayerSize(); j++)
-        m_layers.last()[j] = 0;
-    return m_layers.size()-1;
-}
-
 void Dataset::calcAllEnergyBins()
 {
     qDebug() << "[INFO] Dataset::calcAllEnergyBins() : Calculate all energy bins";
@@ -1693,8 +1678,6 @@ void Dataset::calcAllEnergyBins()
 
 void Dataset::setFrame(FrameSet *frame, int index, int threshold){
 
-    if(!m_thresholdsToIndices.contains(threshold))
-        newLayer(threshold);
     uint32_t *newFrame = reinterpret_cast<uint32_t*>(getFrame(index, threshold));
 
     frame->copyTo32(index, false, newFrame);
@@ -1702,25 +1685,37 @@ void Dataset::setFrame(FrameSet *frame, int index, int threshold){
 
 void Dataset::setFrame(int *frame, int index, int threshold){
 
-    if(!m_thresholdsToIndices.contains(threshold))
-        newLayer(threshold);
     int *newFrame = getFrame(index, threshold);
 
     for (int i = 0 ; i < m_nx*m_ny;i++) {
-
-        //if ( frame[i] > 1 ) continue;
-
         newFrame[i] = frame[i];
     }
 }
 
-int* Dataset::getFrame(int index, int threshold){
-    if(!m_thresholdsToIndices.contains(threshold))
-        return nullptr;
-    else {
-        //int N = m_thresholdsToIndices.size();
-        return &m_layers[thresholdToIndex(threshold)][index*m_nx*m_ny];
+/**
+ * @brief Dataset::setNewLayer set the given data into a new layer for a given threshold
+ * @param threshold the number of the threshold
+ * @param the data that we will borrow for now; it is not sure we can keep it forever
+ */
+void Dataset::setNewLayer(int threshold, int* data) {
+    m_thresholdsToIndices[threshold] = m_layers.size();
+    m_layers.append(data);
+}
+
+/**
+ * @brief Dataset::getFrame get the frame for one chip at a given threshold
+ * @param index the index of the chip
+ * @param threshold the number of the threshold
+ * @return an int pointer to the frame
+ */
+int* Dataset::getFrame(int index, int threshold) {
+    int* layer;
+    if (!m_thresholdsToIndices.contains(threshold)) {
+        setNewLayer(threshold, layer = new int[getPixelsPerLayer()]());
+    } else {
+        layer = m_layers[m_thresholdsToIndices[threshold]];
     }
+    return layer + index*m_nx*m_ny;
 }
 
 //! Relatively cheap
@@ -1818,18 +1813,25 @@ void Dataset::setFramesPerLayer(int newFrameCount){
 }
 
 void Dataset::setLayer(int *data, int threshold) {
-
-    int layerIndex = getLayerIndex(threshold);
-    m_layers[layerIndex] = data;
+    if (m_thresholdsToIndices.contains(threshold)) {
+        m_layers[m_thresholdsToIndices[threshold]] = data;
+    } else {
+        setNewLayer(threshold, data);
+    }
 }
 
 void Dataset::addLayer(int *data, int threshold) {
-
-    int layerIndex = getLayerIndex(threshold);
-    int *dest = m_layers[layerIndex];
-    int n = m_nFrames*m_nx*m_ny;
-    while (n--) {
-        *(dest++) += *(data++);
+    if (m_thresholdsToIndices.contains(threshold)) {
+        int layerIndex = m_thresholdsToIndices[threshold];
+        int *curr = m_layers[layerIndex];
+        int n = m_nFrames*m_nx*m_ny;
+        int* temp = data;
+        while (n--) {
+            *(temp++) += *(curr++);
+        }
+        m_layers[layerIndex] = data;
+    } else {
+        setNewLayer(threshold, data);
     }
 }
 
