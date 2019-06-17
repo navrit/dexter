@@ -13,6 +13,7 @@
 
 #include "SpidrController.h"
 
+
 class Mpx3GUI;
 
 #include <stdint.h>
@@ -284,15 +285,20 @@ public slots:
             if (newVal == __operationMode_ContinuousRW) {
                 setReadBothCounters(false);
             }
+            for(int i = 0 ; i<getNActiveDevices(); i++){
+                _controller->setDiscCsmSpm(i,1);
+            }
         }
     }
 
     void setPixelDepth(int newVal) {
 
         if ( newVal != PixelDepth ) {
-//            qDebug() << "Pixel depth : " << newVal;
             PixelDepth = newVal; emit pixelDepthChanged( newVal );
             SendConfiguration( __pixelDepth );
+            for(int i = 0 ; i<getNActiveDevices(); i++){
+                _controller->setDiscCsmSpm(i,1);
+            }
         }
     }
 
@@ -307,7 +313,6 @@ public slots:
     void setGainMode(int newVal){
         if(newVal != GainMode){
             GainMode = newVal; emit gainModeChanged(GainMode);
-//            qDebug() << "Gain mode: " << newVal;
             SendConfiguration( __gainMode );
         }
     }

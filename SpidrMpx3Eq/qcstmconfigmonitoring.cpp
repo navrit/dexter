@@ -684,18 +684,14 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
 void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx) {
     _mpx3gui->getConfig()->setPixelDepth(int(__pixelDepthMap[std::size_t(newValIndx)]));
     setMaximumFPSFromPixelDepth(newValIndx, -1);
-    if(newValIndx == 3)
-        ui->triggerDowntimeSpinner->setMinimum(2);
-    else
-        ui->triggerDowntimeSpinner->setMinimum(1);
-
     if(newValIndx == 3){
+        ui->triggerDowntimeSpinner->setMinimum(2);
         ui->readBothCountersCheckBox->hide();
     }
-    else
+    else{
+        ui->triggerDowntimeSpinner->setMinimum(1);
         ui->readBothCountersCheckBox->show();
-
-
+    }
 
 }
 
