@@ -65,7 +65,7 @@ void thresholdScan::finishedScan()
 {
     enableSpinBoxes();
     ui->button_startStop->setText(tr("Start"));
-    _mpx3gui->getConfig()->setTriggerDowntime(_shutterDownMem);
+    //_mpx3gui->getConfig()->setTriggerDowntime(_shutterDownMem);
     auto stopTime = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
 
     ui->textEdit_log->append("Finished Threshold scan @ " +
