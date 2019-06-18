@@ -818,7 +818,7 @@ void setThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
 
     // No need for the conversion here. Per chip we address the setting in DAC units.
     //int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(chipId,val);
-    
+
     int dac = val;
     saturateThresholdDacValue(&dac);
 
@@ -839,7 +839,7 @@ void getThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
     int val =0;
     int error = ch->getThreshold(idx,chipId,&val);
     qDebug() << "[INFO]\tval [Dac value] : " << val;
-    // In the per chip case there is no need for energy conversion. 
+    // In the per chip case there is no need for energy conversion.
     //double energy = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(chipId,val);
     //cmd->setData(QString::number(energy));
     cmd->setData(QString::number(val));
@@ -1200,7 +1200,10 @@ void resetSlopesAndOffsetsHandler(CommandHandler* ch, Command* cmd){
     cmd->setError((ERROR_TYPE)error);
 }
 
-
+void getServerStatusHandler(CommandHandler* ch, Command* cmd){
+    cmd->setData(QString::number(ch->getServerStatus()));
+    cmd->setError(NO_ERROR);
+}
 
 //end of handler functions
 

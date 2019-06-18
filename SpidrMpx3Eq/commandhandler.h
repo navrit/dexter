@@ -76,6 +76,7 @@ public:
     double getOffset(int chipNum);
 
     int resetSlopesAndOffsets(void);
+    int getServerStatus(void);
 
     //data
     void emitrequestForAnotherSocket(int);
@@ -104,7 +105,7 @@ public slots:
     void on_doneWithOneFrame(int);
     void on_someCommandHasFinished_Successfully(void);
     void on_equalizationPathExported(QString path);
-
+    void setServerStatus(SERVER_BUSY_TYPE status);
     void testSetThreshold_idx_val_chipId(); /* Test function for set threshold */
 
 private:
@@ -112,6 +113,7 @@ private:
     char* getTimeStamp();
     bool _sendingImage = false;
     QString _equalizationPath = "";
+    SERVER_BUSY_TYPE _serverStatus;
 };
 
 class Command {
@@ -134,6 +136,8 @@ private:
     QByteArray imageToSend;     // image to be sent when 'GetImage' received
     ERROR_TYPE _error = NO_ERROR;
     void print(void); //test
+
+
 };
 
 #endif // COMMANDHANDLER_H

@@ -302,6 +302,8 @@ void MerlinInterface::initializeTables()
     getTable.insert(SLOPES,"GetSlope;" +  QString::number(N));
     getTable.insert(OFFSETS,"GetOffset;" +  QString::number(N));
 
+    getTable.insert(SERVERSTATUS,"GetServerStatus");
+
     //initialize setTable
     setTable.insert(COLOURMODE,"SetColourMode;" + QString::number(ENABLE_DISABLE));
     setTable.insert(CHARGESUMMING,"SetChargeSumming;" + QString::number(CSM_SPM));

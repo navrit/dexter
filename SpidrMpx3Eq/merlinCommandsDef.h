@@ -81,12 +81,15 @@
 #define TPPIXELSPACING      "TPPIXELSPACING"
 //end of testpulses
 
-//energy calibration
+//server status
+#define SERVERSTATUS "SERVERSTATUS"
+
+//end of server status
 
 
 
 
-//end of energy calibration
+
 
 
 #endif // MERLINCOMMANDSDEF_H

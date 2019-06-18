@@ -224,6 +224,9 @@ void CommandHandler::initializeCmdTable()
     cmd_struct resetSlopesAndOffsets{resetSlopesAndOffsetsHandler};
     cmdTable.insert("ResetSlopesAndOffsets",resetSlopesAndOffsets);
 
+    cmd_struct getServerStatus{getServerStatusHandler};
+    cmdTable.insert("GetServerStatus", getServerStatus);
+
 
 }
 
@@ -765,6 +768,19 @@ int CommandHandler::resetSlopesAndOffsets()
     return NO_ERROR;
 }
 
+int CommandHandler::getServerStatus()
+{
+    if(_serverStatus == SB_DATA_TAKING)
+        return MerlinCommand::SB_DATA_TAKING;
+    else if(_serverStatus == SB_THRESHOLD_SCAN)
+        return MerlinCommand::SB_THRESHOLD_SCAN;
+    else if(_serverStatus == SB_DAC_SCAN)
+        return MerlinCommand::SB_DAC_SCAN;
+    else if(_serverStatus == SB_EQUALIZATION)
+        return MerlinCommand::SB_EQUALIZATION;
+    return MerlinCommand::NO_ERROR;
+}
+
 
 
 void CommandHandler::on_doneWithOneFrame(int frameid)
@@ -795,6 +811,11 @@ void CommandHandler::on_equalizationPathExported(QString path)
     _equalizationPath = path;
 }
 
+void CommandHandler::setServerStatus(SERVER_BUSY_TYPE status)
+{
+    _serverStatus = status;
+}
+
 void CommandHandler::emitrequestForAnotherSocket(int port)
 {
     emit requestAnotherSocket(port);
@@ -808,27 +829,30 @@ QString Command::getData()
 void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
 {
     qDebug() << "debug cmd :" << cmd;
+    ch->setServerStatus(serverStatus);
     if(ch->cmdTable.contains(cmd))
     {
-        if(serverStatus == SB_DATA_TAKING && cmd != "Stop"){
-            qDebug () << "Server is busy." << serverStatus;
-            setError(SERVER_BUSY_DATA_TAKING);
-            return;
-        }
-        if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StarStoptScan"){
-            qDebug () << "Server is busy." << serverStatus;
-            setError(SERVER_BUSY_THRESHOLD_SCAN);
-            return;
-        }
-        if(serverStatus == SB_DAC_SCAN){
-            qDebug () << "Server is busy." << serverStatus;
-            setError(SERVER_BUSY_DAC_SCAN);
-            return;
-        }
-        if(serverStatus == SB_EQUALIZATION && cmd != "StopEqualization"){
-            qDebug () << "Server is busy." << serverStatus;
-            setError(SERVER_BUSY_EQUALIZATION);
-            return;
+        if(cmd != "GetServerStatus"){
+            if(serverStatus == SB_DATA_TAKING && cmd != "Stop"){
+                qDebug () << "Server is busy." << serverStatus;
+                setError(SERVER_BUSY_DATA_TAKING);
+                return;
+            }
+            if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StarStoptScan"){
+                qDebug () << "Server is busy." << serverStatus;
+                setError(SERVER_BUSY_THRESHOLD_SCAN);
+                return;
+            }
+            if(serverStatus == SB_DAC_SCAN){
+                qDebug () << "Server is busy." << serverStatus;
+                setError(SERVER_BUSY_DAC_SCAN);
+                return;
+            }
+            if(serverStatus == SB_EQUALIZATION && cmd != "StopEqualization"){
+                qDebug () << "Server is busy." << serverStatus;
+                setError(SERVER_BUSY_EQUALIZATION);
+                return;
+            }
         }
         ch->cmdTable[cmd].handler(ch, this);
     }
