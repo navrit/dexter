@@ -327,7 +327,12 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
 
     //! Reset the UDP packet counter on the SPIDR to 0
     //! Note: any write to this register sets it to 0
+
     _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_UDP_PKTCNTR, 0);
+    Mpx3Config* config = _mpx3gui->getConfig();
+    for(int i=0; i<config->getNActiveDevices();i++){
+        config->Configuration(false,i,Mpx3Config::__readBothCounters);
+    }
 
     if (mode == "CT") {
         runningCT = true;
