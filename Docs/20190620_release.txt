@@ -1,0 +1,7 @@
+software changes from commit 148e348 to commit 146d74d (v1.9.10)
+(commits dls-3.1.1 and up on branch spring2019rc2)
+
+- after thl scan the shutter down times are on not set to zero
+- use the correct DiscCSMSPM value such that 12 bit and 24 bit use both the same thl
+- New server command: SERVERSTATUS
+- The camera can start up correctly in both counter mode 
