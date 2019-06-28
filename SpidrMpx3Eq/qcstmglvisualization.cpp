@@ -1450,8 +1450,10 @@ void QCstmGLVisualization::onRequestForAutoSaveFromServer(bool val)
 
 void QCstmGLVisualization::onRequestForSettingPathFromServer(QString path)
 {
+    autosaveFromServer = true;
     bool success = requestToSetSavePath(path);
     Q_UNUSED(success)
+    autosaveFromServer = false;
 }
 
 void QCstmGLVisualization::onRequestForSettingFormatFromServer(int idx)
@@ -2015,7 +2017,6 @@ void QCstmGLVisualization::consumerFinishedOneFrame(int frameId){
     //! If Save checkbox is checked and Save line edit is not empty,
     //! AND the used requested every frame to be saved.
     //! Save the data to file with path obtained from UI
-
     if ( _saveCheckBox_isChecked && _saveLineEdit_isNotEmpty && _saveAllCheckBox_isChecked ) {
         _mpx3gui->save_data(true, frameId, _saveFileComboBox_text);
     }
@@ -2148,7 +2149,6 @@ void QCstmGLVisualization::on_saveLineEdit_editingFinished()
 {
     bool success = requestToSetSavePath(ui->saveLineEdit->text());
     Q_UNUSED(success)
-
     if (!ui->saveLineEdit->text().isEmpty()) {
         _saveLineEdit_isNotEmpty = true;
     } else {
@@ -2162,12 +2162,16 @@ void QCstmGLVisualization::on_saveLineEdit_textEdited()
     const QDir dir(path);
     const QFileInfo dir_info(path);
 
-
     if (dir.exists()) {
 
         // Exists and is writable --> white
         if (dir_info.isWritable()) {
             ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 255, 255); selection-background-color: rgb(0, 80, 80); }");
+            if (!ui->saveLineEdit->text().isEmpty()) {
+                _saveLineEdit_isNotEmpty = true;
+            } else {
+                _saveLineEdit_isNotEmpty = false;
+            }
             return;
 
         // Exists and is not writable --> red
@@ -2189,7 +2193,11 @@ void QCstmGLVisualization::on_saveLineEdit_textEdited()
             qDebug().noquote() << "[INFO]\t" << msg;
 
             ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(150, 240, 150); selection-background-color: rgb(50, 150, 50); }");
-
+            if (!ui->saveLineEdit->text().isEmpty()) {
+                _saveLineEdit_isNotEmpty = true;
+            } else {
+                _saveLineEdit_isNotEmpty = false;
+            }
         // Does not exist and is not writable --> red
         } else {
             const QString msg = "Path does not exist and is not writable (yet): " + path;
@@ -2241,7 +2249,8 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
         }
     }
 
-    path = ui->saveLineEdit->text();
+    //path = ui->saveLineEdit->text();
+    ui->saveLineEdit->setText(path);
     const QFileInfo dir_info(path);
 
     if (!dir_info.isWritable()) {
@@ -2363,3 +2372,29 @@ void QCstmGLVisualization::on_saveFileComboBox_currentIndexChanged(const QString
     _saveFileComboBox_text = currentText;
 }
 
+
+void QCstmGLVisualization::on_saveLineEdit_textChanged(const QString &arg1)
+{
+    if(autosaveFromServer){
+        bool success = requestToSetSavePath(ui->saveLineEdit->text());
+        Q_UNUSED(success)
+        if (!ui->saveLineEdit->text().isEmpty()) {
+            _saveLineEdit_isNotEmpty = true;
+        } else {
+            _saveLineEdit_isNotEmpty = false;
+        }
+    }
+}
+
+void QCstmGLVisualization::on_saveLineEdit_returnPressed()
+{
+    if(!autosaveFromServer){
+        bool success = requestToSetSavePath(ui->saveLineEdit->text());
+        Q_UNUSED(success)
+        if (!ui->saveLineEdit->text().isEmpty()) {
+            _saveLineEdit_isNotEmpty = true;
+        } else {
+            _saveLineEdit_isNotEmpty = false;
+        }
+    }
+}

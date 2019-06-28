@@ -637,7 +637,11 @@ void setRecordPathHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    ch->setRecordPath(cmd->arguments.at(0));
+    if(!ch->setRecordPath(cmd->arguments.at(0)))
+    {
+        cmd->setError(INVALID_ARG);
+        return;
+    }
     cmd->setData("Path is set");
     cmd->setError(NO_ERROR);
 }

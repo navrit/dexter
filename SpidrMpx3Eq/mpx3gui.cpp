@@ -1107,7 +1107,6 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         //!
         //! Get the visualisation dialog UI saveLineEdit text and assign to filename
         path = getVisualization()->getsaveLineEdit_Text(); // TODO optimise this, no need to call this every loop
-
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and ".bin"
         filename = path;
         filename.append("/");

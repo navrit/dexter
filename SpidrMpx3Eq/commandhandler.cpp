@@ -267,9 +267,13 @@ void CommandHandler::setAutoSave(bool val)
     emit requestForAutoSave(val);
 }
 
-void CommandHandler::setRecordPath(QString path)
+bool CommandHandler::setRecordPath(QString path)
 {
+    QDir dir(path);
+    if (!dir.exists())
+        return false;
     emit requestForSettingSavePath(path);
+    return true;
 }
 
 void CommandHandler::setRecordFormat(int idx)

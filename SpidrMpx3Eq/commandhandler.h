@@ -33,7 +33,7 @@ public:
     void startLiveCamera(bool);
     void startSnap(void);
     void setAutoSave(bool);
-    void setRecordPath(QString);
+    bool setRecordPath(QString);
     void setRecordFormat(int);
     int setThreshold(int,int);
     int setThreshold(int,int,int);

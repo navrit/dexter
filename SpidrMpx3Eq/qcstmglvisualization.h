@@ -261,6 +261,10 @@ private slots:
 
 
 
+    void on_saveLineEdit_textChanged(const QString &arg1);
+
+    void on_saveLineEdit_returnPressed();
+
 public slots:
 
     void StartDataTaking(QString mode="");
