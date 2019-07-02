@@ -22,7 +22,7 @@ public:
     void dataTakingSaysIFinished();
 
     void consume();
-    void SeparateThresholds(bool is_thh, uint32_t *data, int chip_offset);
+    void SeparateThresholds(int threshold_offset, uint32_t *data, int chip_offset);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 
     QSemaphore *freeFrames = nullptr;

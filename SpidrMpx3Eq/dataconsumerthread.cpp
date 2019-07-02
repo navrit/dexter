@@ -150,7 +150,7 @@ void DataConsumerThread::run()
 
                         for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                             usedFrames->acquire();
-                            SeparateThresholds(bool(i),
+                            SeparateThresholds(i,
                                                buffer + readdescriptor,
                                                ci);
                             freeFrames->release();
@@ -162,7 +162,7 @@ void DataConsumerThread::run()
                     // SeparateThresholds -> I can do it on a chip per chip basis
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                         usedFrames->acquire();
-                        SeparateThresholds(false,
+                        SeparateThresholds(0,
                                            buffer + readdescriptor,
                                            ci);
                         freeFrames->release();
@@ -227,7 +227,7 @@ void DataConsumerThread::dataTakingSaysIFinished()
     _mutex.unlock();
 }
 
-void DataConsumerThread::SeparateThresholds(bool is_thh, uint32_t *data,
+void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data,
                                             int chip_offset) {
 
   // Layout of 110um pixel
@@ -242,12 +242,13 @@ void DataConsumerThread::SeparateThresholds(bool is_thh, uint32_t *data,
   //		P3 --> TH4, TH5
   //		P4 --> TH6, TH7
 
-  int pixel_index_input_data = 0, pixel_index_colour = 0, redi = 0, redj = 0;
+  int pixel_index_input_data = 0, pixel_index_colour = 0, pixel_cluster_index_i = 0, pixel_cluster_index_j = 0;
 
-  for (int j = 0; j < __matrix_size_y; j++) {
 
-    redi = 0;
-    for (int i = 0; i < __matrix_size_x; i++) {
+  for (int j = 0; j < __matrix_size_y; j += 2) {
+
+    pixel_cluster_index_i = 0;
+    for (int i = 0; i < __matrix_size_x; i += 2) {
 
       // Depending on which chip are we taking care of, consider the offset.
       // 'data' bring the information of all 4 chips
@@ -256,27 +257,17 @@ void DataConsumerThread::SeparateThresholds(bool is_thh, uint32_t *data,
 
       // Pixel_index_colour goes up to 128*128 = 16384
       // i.e. this is the end of the chip for a specific threshold
-      pixel_index_colour = XYtoX(redi, redj, __matrix_size_color_x);
+      pixel_index_colour = XYtoX(pixel_cluster_index_i, pixel_cluster_index_j, __matrix_size_color_x);
       pixel_index_colour += chip_offset * __matrix_size_color;
 
-      if        ((i % 2) == 0 && (j % 2) == 1) {
-          _colourdata[0 + int(is_thh)][pixel_index_colour] = data[pixel_index_input_data]; // P1 // TH0 !
+      _colourdata[0 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + __matrix_size_x]; // P1 // TH0 !
+      _colourdata[2 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data]; // P2 // TH2 !
+      _colourdata[4 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + 1 + __matrix_size_x]; // P3 // TH4 !
+      _colourdata[6 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + 1]; // P4 // TH6 !
 
-      } else if ((i % 2) == 0 && (j % 2) == 0) {
-          _colourdata[2 + int(is_thh)][pixel_index_colour] = data[pixel_index_input_data]; // P2 // TH2 !
-
-      } else if ((i % 2) == 1 && (j % 2) == 1) {
-          _colourdata[4 + int(is_thh)][pixel_index_colour] = data[pixel_index_input_data]; // P3 // TH4 !
-
-      } else if ((i % 2) == 1 && (j % 2) == 0) {
-          _colourdata[6 + int(is_thh)][pixel_index_colour] = data[pixel_index_input_data]; // P4 // TH6 !
-      }
-
-      if (i % 2 == 1)
-        redi++;
+      pixel_cluster_index_i++;
     }
 
-    if (j % 2 == 1)
-      redj++;
+    pixel_cluster_index_j++;
   }
 }
