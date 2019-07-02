@@ -128,8 +128,10 @@ void DataConsumerThread::run()
         // Go chasing the producer
         while ( readdescriptor != descriptor ) {
 
+            _bothCounters = _mpx3gui->getConfig()->getReadBothCounters();
+
             // Check single or both counters
-            if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
+            if ( _bothCounters ) {
                 bothCountersMod = 2;
                 delvrCounters = 1; // do all of them (8)
             } else {
