@@ -17,7 +17,7 @@ class DataConsumerThread : public QThread
 public:
 
     explicit DataConsumerThread(Mpx3GUI *, QObject * parent = nullptr);
-    virtual ~DataConsumerThread();
+    virtual ~DataConsumerThread() override;
     void copydata(FrameSet * source, int chipIndex, bool counterH);
     uint getSemaphoreSize(){return _semaphoreSize;}
     void dataTakingSaysIFinished();
@@ -51,7 +51,7 @@ private:
     bool _stop;
     int _frameId;
 
-    Mpx3GUI * _mpx3gui;
+    Mpx3GUI * _mpx3gui = nullptr;
 
     const uint _nFramesBuffer = 32;
     uint _semaphoreSize;

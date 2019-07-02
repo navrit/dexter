@@ -230,9 +230,7 @@ void DataConsumerThread::dataTakingSaysIFinished()
     _mutex.unlock();
 }
 
-void DataConsumerThread::SeparateThresholds(int th,
-                                            uint32_t * data,
-                                            int chipOffset) {
+void DataConsumerThread::SeparateThresholds(int threshold, uint32_t *data, int chipOffset) {
 
     // Layout of 110um pixel
     //  -------------   ---------------------
@@ -248,10 +246,10 @@ void DataConsumerThread::SeparateThresholds(int th,
 
     int indx = 0, indxRed = 0, redi = 0, redj = 0;
 
-    for (int j = 0 ; j < __matrix_size_y ; j++) {
+    for (int j = 0; j < __matrix_size_y; j++) {
 
         redi = 0;
-        for (int i = 0 ; i < __matrix_size_x  ; i++) {
+        for (int i = 0; i < __matrix_size_x; i++) {
 
             // Depending on which chip are we taking care of, consider the offset.
             // 'data' bring the information of all 4 chips
@@ -262,25 +260,22 @@ void DataConsumerThread::SeparateThresholds(int th,
             indxRed += chipOffset*__matrix_size_color;
 
             if( (i % 2) == 0 && (j % 2) == 0) {
-                _colordata[2+th][indxRed] = data[indx]; // P2 // TH2 !
+                _colordata[2+threshold][indxRed] = data[indx]; // P2 // TH2 !
             }
             if( (i % 2) == 0 && (j % 2) == 1) {
-                _colordata[0+th][indxRed] = data[indx]; // P1 // TH0 !
+                _colordata[0+threshold][indxRed] = data[indx]; // P1 // TH0 !
             }
             if( (i % 2) == 1 && (j % 2) == 0) {
-                _colordata[6+th][indxRed] = data[indx]; // P4 // TH6 !
+                _colordata[6+threshold][indxRed] = data[indx]; // P4 // TH6 !
             }
             if( (i % 2) == 1 && (j % 2) == 1) {
-                _colordata[4+th][indxRed] = data[indx]; // P3 // TH4 !
+                _colordata[4+threshold][indxRed] = data[indx]; // P3 // TH4 !
             }
 
             if (i % 2 == 1) redi++;
-
         }
 
         if (j % 2 == 1) redj++;
-
     }
 
 }
-
