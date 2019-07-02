@@ -527,45 +527,6 @@ void QCstmGLVisualization::DestroyTimer() {
     _etatimer = nullptr;
 }
 
-void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {
-
-    // Layout of 110um pixel
-    //  -------------
-    //  | P3  |  P1 |
-    //	-------------
-    //  | P4  |  P2 |
-    //  -------------
-    //  Where:
-    //  	P1 --> TH0, TH1
-    //		P2 --> TH2, TH3
-    //		P3 --> TH4, TH5
-    //		P4 --> TH6, TH7
-
-    int indx = 0, indxRed = 0, redi = 0, redj = 0;
-
-    for (int j = 0 ; j < __matrix_size_y ; j++) {
-
-        redi = 0;
-        for (int i = 0 ; i < __matrix_size_x  ; i++) {
-
-            indx = XYtoX( i, j, __matrix_size_x);
-            indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
-
-            if( i % 2 == 0 && j % 2 == 0) {
-                (*th6)[indxRed] = data[indx]; // P4
-            } if( i % 2 == 0 && j % 2 == 1) {
-                (*th4)[indxRed] = data[indx]; // P3
-            } if( i % 2 == 1 && j % 2 == 0) {
-                (*th2)[indxRed] = data[indx]; // P2
-            } if( i % 2 == 1 && j % 2 == 1) {
-                (*th0)[indxRed] = data[indx]; // P1
-            } if (i % 2 == 1) redi++;
-        }
-
-        if (j % 2 == 1) redj++;
-    }
-}
-
 pair<int, int> QCstmGLVisualization::XtoXY(int X, int dimX){
     return make_pair(X % dimX, X/dimX);
 }
