@@ -255,17 +255,17 @@ void DataConsumerThread::SeparateThresholds(int threshold, uint32_t *data,
       pixel_index_colour = XYtoX(redi, redj, __matrix_size_color_x);
       pixel_index_colour += chip_offset * __matrix_size_color;
 
-      if ((i % 2) == 0 && (j % 2) == 0) {
-        _colordata[2 + threshold][indxRed] = data[indx]; // P2 // TH2 !
-      }
-      if ((i % 2) == 0 && (j % 2) == 1) {
-        _colordata[0 + threshold][indxRed] = data[indx]; // P1 // TH0 !
-      }
-      if ((i % 2) == 1 && (j % 2) == 0) {
-        _colordata[6 + threshold][indxRed] = data[indx]; // P4 // TH6 !
-      }
-      if ((i % 2) == 1 && (j % 2) == 1) {
-        _colordata[4 + threshold][indxRed] = data[indx]; // P3 // TH4 !
+      if        ((i % 2) == 0 && (j % 2) == 1) {
+          _colourdata[0 + int(is_thh)][pixel_index_colour] = data[pixel_index_input_data]; // P1 // TH0 !
+
+      } else if ((i % 2) == 0 && (j % 2) == 0) {
+          _colourdata[2 + int(is_thh)][pixel_index_colour] = data[pixel_index_input_data]; // P2 // TH2 !
+
+      } else if ((i % 2) == 1 && (j % 2) == 1) {
+          _colourdata[4 + int(is_thh)][pixel_index_colour] = data[pixel_index_input_data]; // P3 // TH4 !
+
+      } else if ((i % 2) == 1 && (j % 2) == 0) {
+          _colourdata[6 + int(is_thh)][pixel_index_colour] = data[pixel_index_input_data]; // P4 // TH6 !
       }
 
       if (i % 2 == 1)
