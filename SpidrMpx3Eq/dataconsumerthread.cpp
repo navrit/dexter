@@ -38,10 +38,10 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     // When working in color mode.
     // The user might select ColorMode in the middle of an operation.
     // Allocating the data just in case.
-    _colordata = new int*[ __max_colors ]; // 8 thresholds(colors)
+    _colourdata = new int*[ __max_colors ]; // 8 thresholds(colors)
     for (int i = 0 ; i < __max_colors ; i++) {
-        _colordata[i] = new int[ __matrix_size_color * _nChips ];
-        memset(_colordata[i], 0, (sizeof(int) * __matrix_size_color * _nChips ));
+        _colourdata[i] = new int[ __matrix_size_color * _nChips ];
+        memset(_colourdata[i], 0, (sizeof(int) * __matrix_size_color * _nChips ));
     }
 
 }
@@ -65,8 +65,8 @@ DataConsumerThread::~DataConsumerThread() {
 
 
     // Color structure
-    for (int i = 0 ; i < __max_colors ; i++) delete [] _colordata[i];
-    delete [] _colordata;
+    for (int i = 0 ; i < __max_colors ; i++) delete [] _colourdata[i];
+    delete [] _colourdata;
     delete [] buffer;
 
     qDebug() << "[DEBUG]\tDataConsumerThread finished";
@@ -117,7 +117,6 @@ void DataConsumerThread::copydata(FrameSet * source, int chipIndex, bool counter
 
 void DataConsumerThread::run()
 {
-
     int bothCountersMod = 1;
     int delvrCounters = 1;
 
@@ -125,12 +124,6 @@ void DataConsumerThread::run()
 
         // When abort execution. Triggered as the destructor is called.
         if ( _abort ) return;
-
-        //_mutex.lock();
-        //_frameId = 0;
-        // local variables to scope variables
-        //_mutex.unlock();
-
 
         // Go chasing the producer
         while ( readdescriptor != descriptor ) {
@@ -148,7 +141,7 @@ void DataConsumerThread::run()
             // Colour Mode //
             if ( _mpx3gui->getConfig()->getColourMode() ) {
 
-                if (_bothCounters) {
+                if ( _bothCounters ) {
                     for ( int i = 0 ; i < bothCountersMod ; i++ ) {
                         // SeparateThresholds -> I can do it on a chip per chip basis
                         for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
@@ -175,9 +168,9 @@ void DataConsumerThread::run()
                 }
 
                 // Add the corresponding layers
-                if ( _colordata != nullptr ) {
+                if ( _colourdata != nullptr ) {
                     for ( int i = 0 ; i < __max_colors ; i+= delvrCounters ) {
-                        _mpx3gui->addLayer( _colordata[i], i );
+                        _mpx3gui->addLayer( _colourdata[i], i );
                     }
                 }
 
@@ -240,12 +233,12 @@ void DataConsumerThread::SeparateThresholds(int threshold, uint32_t *data,
   //  | P4  |  P2 |   | thl 6,7 | thl 2,3 |
   //  -------------   ---------------------
   //  Where:
-  //  	P1 --> TH0, TH1
+  //  	    P1 --> TH0, TH1
   //		P2 --> TH2, TH3
   //		P3 --> TH4, TH5
   //		P4 --> TH6, TH7
 
-  int indx = 0, indxRed = 0, redi = 0, redj = 0;
+  int pixel_index_input_data = 0, pixel_index_colour = 0, redi = 0, redj = 0;
 
   for (int j = 0; j < __matrix_size_y; j++) {
 
@@ -254,12 +247,13 @@ void DataConsumerThread::SeparateThresholds(int threshold, uint32_t *data,
 
       // Depending on which chip are we taking care of, consider the offset.
       // 'data' bring the information of all 4 chips
-      indx = XYtoX(i, j, __matrix_size_x);
-      indx += chipOffset * __matrix_size;
+      pixel_index_input_data = XYtoX(i, j, __matrix_size_x);
+      pixel_index_input_data += chip_offset * __matrix_size;
 
-      // This index should go up to 128*128
-      indxRed = XYtoX(redi, redj, __matrix_size_x / 2);
-      indxRed += chipOffset * __matrix_size_color;
+      // Pixel_index_colour goes up to 128*128 = 16384
+      // i.e. this is the end of the chip for a specific threshold
+      pixel_index_colour = XYtoX(redi, redj, __matrix_size_color_x);
+      pixel_index_colour += chip_offset * __matrix_size_color;
 
       if ((i % 2) == 0 && (j % 2) == 0) {
         _colordata[2 + threshold][indxRed] = data[indx]; // P2 // TH2 !

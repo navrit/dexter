@@ -11,7 +11,6 @@
 
 class DataConsumerThread : public QThread
 {
-
     Q_OBJECT
 
 public:
@@ -29,8 +28,8 @@ public:
                        );
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 
-    QSemaphore * freeFrames;
-    QSemaphore * usedFrames;
+    QSemaphore *freeFrames = nullptr;
+    QSemaphore *usedFrames = nullptr;
 
 protected:
 
@@ -66,7 +65,7 @@ private:
     uint32_t * buffer = nullptr;
     uint descriptor = 0;
     uint readdescriptor = 0;
-    int ** _colordata = nullptr;
+    int ** _colourdata = nullptr;
 
 };
 
