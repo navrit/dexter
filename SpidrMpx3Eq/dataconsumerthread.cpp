@@ -142,11 +142,13 @@ void DataConsumerThread::run()
             if ( _mpx3gui->getConfig()->getColourMode() ) {
 
                 if ( _bothCounters ) {
+
                     for ( int i = 0 ; i < bothCountersMod ; i++ ) {
                         // SeparateThresholds -> I can do it on a chip per chip basis
+
                         for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                             usedFrames->acquire();
-                            SeparateThresholds(i,
+                            SeparateThresholds(bool(i),
                                                buffer + readdescriptor,
                                                ci);
                             freeFrames->release();
@@ -158,7 +160,7 @@ void DataConsumerThread::run()
                     // SeparateThresholds -> I can do it on a chip per chip basis
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                         usedFrames->acquire();
-                        SeparateThresholds(0,
+                        SeparateThresholds(false,
                                            buffer + readdescriptor,
                                            ci);
                         freeFrames->release();
@@ -223,8 +225,8 @@ void DataConsumerThread::dataTakingSaysIFinished()
     _mutex.unlock();
 }
 
-void DataConsumerThread::SeparateThresholds(int threshold, uint32_t *data,
-                                            int chipOffset) {
+void DataConsumerThread::SeparateThresholds(bool is_thh, uint32_t *data,
+                                            int chip_offset) {
 
   // Layout of 110um pixel
   //  -------------   ---------------------
