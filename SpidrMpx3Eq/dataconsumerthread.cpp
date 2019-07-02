@@ -230,52 +230,55 @@ void DataConsumerThread::dataTakingSaysIFinished()
     _mutex.unlock();
 }
 
-void DataConsumerThread::SeparateThresholds(int threshold, uint32_t *data, int chipOffset) {
+void DataConsumerThread::SeparateThresholds(int threshold, uint32_t *data,
+                                            int chipOffset) {
 
-    // Layout of 110um pixel
-    //  -------------   ---------------------
-    //  | P3  |  P1 |   | thl 4,5 | thl 0,1 |
-    //	-------------   ---------------------
-    //  | P4  |  P2 |   | thl 6,7 | thl 2,3 |
-    //  -------------   ---------------------
-    //  Where:
-    //  	P1 --> TH0, TH1
-    //		P2 --> TH2, TH3
-    //		P3 --> TH4, TH5
-    //		P4 --> TH6, TH7
+  // Layout of 110um pixel
+  //  -------------   ---------------------
+  //  | P3  |  P1 |   | thl 4,5 | thl 0,1 |
+  //	-------------   ---------------------
+  //  | P4  |  P2 |   | thl 6,7 | thl 2,3 |
+  //  -------------   ---------------------
+  //  Where:
+  //  	P1 --> TH0, TH1
+  //		P2 --> TH2, TH3
+  //		P3 --> TH4, TH5
+  //		P4 --> TH6, TH7
 
-    int indx = 0, indxRed = 0, redi = 0, redj = 0;
+  int indx = 0, indxRed = 0, redi = 0, redj = 0;
 
-    for (int j = 0; j < __matrix_size_y; j++) {
+  for (int j = 0; j < __matrix_size_y; j++) {
 
-        redi = 0;
-        for (int i = 0; i < __matrix_size_x; i++) {
+    redi = 0;
+    for (int i = 0; i < __matrix_size_x; i++) {
 
-            // Depending on which chip are we taking care of, consider the offset.
-            // 'data' bring the information of all 4 chips
-            indx = XYtoX( i, j, __matrix_size_x);
-            indx += chipOffset*__matrix_size;
+      // Depending on which chip are we taking care of, consider the offset.
+      // 'data' bring the information of all 4 chips
+      indx = XYtoX(i, j, __matrix_size_x);
+      indx += chipOffset * __matrix_size;
 
-            indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
-            indxRed += chipOffset*__matrix_size_color;
+      // This index should go up to 128*128
+      indxRed = XYtoX(redi, redj, __matrix_size_x / 2);
+      indxRed += chipOffset * __matrix_size_color;
 
-            if( (i % 2) == 0 && (j % 2) == 0) {
-                _colordata[2+threshold][indxRed] = data[indx]; // P2 // TH2 !
-            }
-            if( (i % 2) == 0 && (j % 2) == 1) {
-                _colordata[0+threshold][indxRed] = data[indx]; // P1 // TH0 !
-            }
-            if( (i % 2) == 1 && (j % 2) == 0) {
-                _colordata[6+threshold][indxRed] = data[indx]; // P4 // TH6 !
-            }
-            if( (i % 2) == 1 && (j % 2) == 1) {
-                _colordata[4+threshold][indxRed] = data[indx]; // P3 // TH4 !
-            }
+      if ((i % 2) == 0 && (j % 2) == 0) {
+        _colordata[2 + threshold][indxRed] = data[indx]; // P2 // TH2 !
+      }
+      if ((i % 2) == 0 && (j % 2) == 1) {
+        _colordata[0 + threshold][indxRed] = data[indx]; // P1 // TH0 !
+      }
+      if ((i % 2) == 1 && (j % 2) == 0) {
+        _colordata[6 + threshold][indxRed] = data[indx]; // P4 // TH6 !
+      }
+      if ((i % 2) == 1 && (j % 2) == 1) {
+        _colordata[4 + threshold][indxRed] = data[indx]; // P3 // TH4 !
+      }
 
-            if (i % 2 == 1) redi++;
-        }
-
-        if (j % 2 == 1) redj++;
+      if (i % 2 == 1)
+        redi++;
     }
 
+    if (j % 2 == 1)
+      redj++;
+  }
 }
