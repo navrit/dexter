@@ -1,6 +1,8 @@
 # README #
 
-Steps to get this repository up and running and developers information (formerly in a RTF file)
+Steps to get this repository up and running and developers information.
+
+Release notes are in a separate .md file
 
 ### What is this repository for? ###
 
@@ -20,81 +22,11 @@ cd Release
 ./Dexter
 ```
 
-### Contribution guidelines ###
+### Relevant developers ###
 
-* Contact me
-
-### Current owner ###
-
-* Navrit Bal
-    * navrit@amscins.com
-
--------------------------------------------------------------
-## Release Notes
-
-Is this section worth maintaining?
-
-* 2.0.0
-    * ...
-* 1.9.8
-    * hotfix-dls-Jan2019-demo
-        * ...
-    * ...
-
-...
-
-* 1.6.1
-    * 2017/08/14
-    * Autosave bugfix and minor improvements
-* 1.6.0
-    * 2017/08/09
-    * Henk’s Double Counter workaround in LEON software
-* 1.5.0
-    * 2017/08/01
-    * New major chip feature. Test pulses works!
-* 1.4.1
-    * 2017/07/21
-    * Minor bug fix - Threshold scan - number of frames = 1
-* 1.4.0
-    * 2017/07/21
-    * New feature - Threshold scan
-        * To be extended for spectroscopic units
-* 1.3.1
-    * 2017/07/18
-    * Save both TIFFs at once
-    * Threshold scan in development
-    * 2017/06/13
-    * Minor bugfix - save as text file with all thresholds
-* 1.3.0
-    * 2017/05/30
-    * SpidrMpx3Lib big update
-    * Speed tweaking
-    * Added alpha feature - threshold scan
-* 1.2.4
-    * 2017/05/21
-    * Minor bug fix - keyboard shortcut fix
-* 1.2.3
-    * 2017/05/17
-    * Major bug fix - SpidrMpx3Lib fix (crash on connection)
-* 1.2.2
-    * 2017/05/12
-    * Minor bug fix - keyboard shortcut
-* 1.2.1
-    * 2017/05/11
-    * Various keyboard shortcuts for GUI automation added
-* 1.2.0
-    * 2017/04/24
-    * Developer mode added
-    * Autosave improved
-    * Icon fix
-    * Updated Author information
-* 1.1.0
-    * 2017/03/22
-    * Equalisation bug fix
-* 1.0.0
-    * 2017/03/20
-    * First release version
-
+* Lead - Bram Bouwens
+* Support - Kiavash Matin
+* Support - Navrit Bal
 
 -------------------------------------------------------------
 
@@ -105,7 +37,7 @@ Author: Amber van Keeken (primary) & Navrit Bal (notes)
 ## Setting up a new view (eg. Configuration, DACs etc.) using QtCreator
 
 1. The 'view' are QWidgets that are part of a StackedWidget. In QtCreator, go to the design form of the main window and right-click on the stackedWidget -> Insert page. A new QWidget is then added to the stackedWidget.
-2. Create a new Qt Designer Form Class with QWidget as its base class.  
+2. Create a new Qt Designer Form Class with QWidget as its base class.
 3. Promote the QWidget to the newly made class.
 - I can’t see the newly made class in mpx3gui.ui? (designer view)
     - Right click on the new class, *Promote to ...*
@@ -121,7 +53,7 @@ Author: Amber van Keeken (primary) & Navrit Bal (notes)
     - Include your <ui_HEADERNAME.h>
     - **NOTE: THE ORDER OF YOUR TAB IN THE STACKED WIDGET GIVES IT AN INDEX NUMBER which affects things like keyboard shortcuts.** You cannot search for this. Use the Qt Designer to change the order to match what the ...id variables say.
 
-4. Add functionalities to the newly made class (widget) as you would for a normal widget, dialog or window.  
+4. Add functionalities to the newly made class (widget) as you would for a normal widget, dialog or window.
 
 - Make sure to have a private variable *_mpx3gui* (or something similar) and a public setter (_setMpx3GUI_) that sets the private variable to the main GUI, to have access to the other objects, in particular _dataset_.
 
@@ -189,11 +121,11 @@ is also called the coefficient of determination and ranges from 0–1. 1 being a
 
 For the DQE we need :
 
-- **NEQ**  
-**NEQ = G^2 [MTF(n)]^2/ NPS(n)**  
+- **NEQ**
+**NEQ = G^2 [MTF(n)]^2/ NPS(n)**
 for this we need:
     - **(E or P)MTF (n)**(Dobbins, 1995) or (Flynn & Samei, 1999) resp.
-    - EMTF can be estimated by averaging several PMTF:  
+    - EMTF can be estimated by averaging several PMTF:
     - P(resampling)MTF is the fourier transform of:
         - **LSF**  
         Line spread function.   
@@ -203,16 +135,16 @@ for this we need:
             We need:
                 - **Sharp edge image**
 
-    - **NPS (n)**  
+    - **NPS (n)**
     for this we need:
         - **Fourier Transform **  
         of RoI’s open beam image(s)
     - **G^2**
     The system gain.
 
-- **SNR^2_ideal**  
+- **SNR^2_ideal**
 for this we need:
-    - **SNR^2_ideal / exposure**  
+    - **SNR^2_ideal / exposure**
     a quantity that can be obtained by:
         - Tabulated values for specific beam qualities. (Dobbins, 1995) (Hoeschen, 2001)
         - Estimation by computational modelling. (Flynn & Samei, 1999) See included screen captures.
@@ -232,9 +164,9 @@ The way that is implemented works by the following steps:
 - Calculating the distance to the edge line for each point and plot the value of all points against the distance from the edge.
 - Binning these points using a binsize set by the user. This gives the discrete ESF.
 - Making a fit through the (binned) datapoints using an error function.
-- Differentiation of this fitted function gives the LSF.  
-    - Differentiation by using the fitting parameters or numerical differentiation are both possible (see options).  
-- Fast Fourier Transforming of the LSF gives the MTF.  
+- Differentiation of this fitted function gives the LSF.
+    - Differentiation by using the fitting parameters or numerical differentiation are both possible (see options).
+- Fast Fourier Transforming of the LSF gives the MTF.
 - Maximization of MTF (TO DO, see below).
 
 Another implementation is discussed by Samei et.
@@ -249,8 +181,8 @@ al. (1998). This method consists of the following steps:
 - The ESF_k array is numerically differentiated.
 - The baseline of the LSF is substracted using a linear fit to the 10-nm-long portions of the LSF tails.
 - A Hanning filter with a window width of 20 mm is applied to the LSF to establish a sampling rate of 0.05 cycles/mm.
-- Presampling MTF is obtained by a Fast Fourier Transform of the LSF.  
-- This is repeated for 17 angles in an +-0.16 degrees, by varying by 0.02 degrees each time. The MTF’s are each integrated from 0-2 cycles/mm and the angle associated with the maximum of this MTF integral is identified as the best estimate for the edge angle and its MTF is the result.  
+- Presampling MTF is obtained by a Fast Fourier Transform of the LSF.
+- This is repeated for 17 angles in an +-0.16 degrees, by varying by 0.02 degrees each time. The MTF’s are each integrated from 0-2 cycles/mm and the angle associated with the maximum of this MTF integral is identified as the best estimate for the edge angle and its MTF is the result.
 
 The extent of the regions used by Samei are not feasible for the Medipix3… The LSF looks significantly different than ours, so the Hanning filter and baseline substraction or extrapolation of the tails (as in other papers) might not be the way to go. (?)
 But we CAN use the iterative MTF maximization by varying the angle. Only one parameter changes and then the entire “Calc MTF” procedure can be repeated:
@@ -258,7 +190,7 @@ But we CAN use the iterative MTF maximization by varying the angle. Only one par
 #### TO DO for MTF calculation:
 
 - Implement slit method.  Try Fujita’s slit method. (“Simple”).
-- Maximize MTF by angle variation.  
+- Maximize MTF by angle variation.
 - Get the calculation to work for horizontal edges.
 - (?)Better quantization of goodness of fit. -> R^2 and the mean squared error are given.
 
@@ -272,7 +204,7 @@ calculation. Which is not necessarily the order of implementation.
 
 #### Steps:
 
-- Determine characteristic curve.  
+- Determine characteristic curve.
 - Convert pixel values to be linearly proportional to exposure (using characteristic curve).
 - Take multiple flat field images (at multiple exposures).
 - Determine best size of ROI (N) and number of ROI. (M)
@@ -312,19 +244,19 @@ The way the MTF is calculated can be chosen by the radio buttons, checkboxes and
 - *Edge vs. Slit radio buttons*
     These let the user choose between the edge and slit method. Both should be
 	reported for the most accurate MTF. (TO DO: implement slit method.)
-- *Error function vs _Smoothing*  
+- *Error function vs _Smoothing*
     If *Error function* is selected in the combobox, an error function is fitted to the (binned) data. This then represents the ESF and is used to calculate the derivative (LSF) (see next point). When *Smoothing* is selected, the binned data is smoothed by a 4th order (Gaussian weighted) moving polynomial fit, using a window width as specified by the user.
-- *Window width*  
+- *Window width*
     Here the user specifies the window width to be used in the local fitting.
 	This must be an uneven number, since there must be as much data
 	points to the left of the point to be fitted as to the right. It
 	must also be at least 3. And finally the width must be smaller than
 	the entire dataset. The program gives off warnings and changes the
 	value automatically when this happens.
-- *Func der*  
+- *Func der*
 When this is checked and an error function has been used (both checked),
 	the derivative data is calculated by using the formula for the
-	derivative of the error function, using the fitted parameters.  
+	derivative of the error function, using the fitted parameters.
 If the error function has not been used, but instead the binned data
 	was smoothed, the numerical derivative of this smoothed data is
 	taken as the LSF.
@@ -342,15 +274,15 @@ parent (_mpx3gui) is deleted.
 
 Three buttons are available.
 
-- _Ok_  
+- _Ok_
     The settings are applied and saved* and the dialog is closed (but is not
 	destroyed). When opening the dialog again, the settings are the way
 	the user changed them before.
-- _Cancel_  
+- _Cancel_
     The settings are not applied and not saved. The changes the user made in
 	the ui are changed back to how they were when the user opened the
 	window (before any changes were made). The dialog is closed.
-- _Apply_  
+- _Apply_
     The settings are applied and saved*, but the dialog is not closed. This
 	way the user can see what options are used when calculating the MTF
 	and NPS. (These are also noted in the log (see LOG).)
@@ -370,29 +302,29 @@ To add an option, a few things have to be done:
 	file in designer mode. You do not need to _go to slot…_
 
 2. Choose an appropriate, obvious and short name for
-	the option/setting and rename the widget something similar.   
+	the option/setting and rename the widget something similar. 
     [For example: the option for the size of the bins is called _binsize_
 	and the corresponding widget (a LineEdit) is called  _binSizeLineEdit_.
 	It should not be necessary to switch to the ui to look up the name.]
 
 3. In _optionsDialog.cpp_,
-	add the appropriate expression for saving the option to _setCurrentSettings()_.  
-    [For example: the binsize is set like this:  
+	add the appropriate expression for saving the option to _setCurrentSettings()_.
+    [For example: the binsize is set like this:
     > _currentSettings["binsize"]=ui->binSizeLineEdit->text().toInt();]
 
 4. Also add an expression for resetting the option in _resetSettings()._
 
 5. In _QCstmDQE.cpp,_ add an expression for setting the corresponding private variable in
 	_on_apply_options()_.
-	Or start some procedure.  
+	Or start some procedure.
     [For example: QCstmDQE has a variable called _windowW_
 	that is used to locally fit the data (smoothing). This is set by the
-	following expression:  
-    > _windowW=options.value("windowW");  
+	following expression:
+    > _windowW=options.value("windowW");
 
     In the case of __binsize_, if it has changed, the binned data is immediately plotted again.]
 
-6. Test.  
+6. Test.
 
 
 ## Works Cited
