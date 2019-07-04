@@ -38,10 +38,10 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     // When working in color mode.
     // The user might select ColorMode in the middle of an operation.
     // Allocating the data just in case.
-    _colordata = new int*[ __max_colors ]; // 8 thresholds(colors)
+    _colourdata = new int*[ __max_colors ]; // 8 thresholds(colors)
     for (int i = 0 ; i < __max_colors ; i++) {
-        _colordata[i] = new int[ __matrix_size_color * _nChips ];
-        memset(_colordata[i], 0, (sizeof(int) * __matrix_size_color * _nChips ));
+        _colourdata[i] = new int[ __matrix_size_color * _nChips ];
+        memset(_colourdata[i], 0, (sizeof(int) * __matrix_size_color * _nChips ));
     }
 
 }
@@ -65,8 +65,8 @@ DataConsumerThread::~DataConsumerThread() {
 
 
     // Color structure
-    for (int i = 0 ; i < __max_colors ; i++) delete [] _colordata[i];
-    delete [] _colordata;
+    for (int i = 0 ; i < __max_colors ; i++) delete [] _colourdata[i];
+    delete [] _colourdata;
     delete [] buffer;
 
     qDebug() << "[DEBUG]\tDataConsumerThread finished";
@@ -117,7 +117,6 @@ void DataConsumerThread::copydata(FrameSet * source, int chipIndex, bool counter
 
 void DataConsumerThread::run()
 {
-
     int bothCountersMod = 1;
     int delvrCounters = 1;
 
@@ -126,17 +125,13 @@ void DataConsumerThread::run()
         // When abort execution. Triggered as the destructor is called.
         if ( _abort ) return;
 
-        //_mutex.lock();
-        //_frameId = 0;
-        // local variables to scope variables
-        //_mutex.unlock();
-
-
         // Go chasing the producer
         while ( readdescriptor != descriptor ) {
 
+            _bothCounters = _mpx3gui->getConfig()->getReadBothCounters();
+
             // Check single or both counters
-            if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
+            if ( _bothCounters ) {
                 bothCountersMod = 2;
                 delvrCounters = 1; // do all of them (8)
             } else {
@@ -148,9 +143,11 @@ void DataConsumerThread::run()
             // Colour Mode //
             if ( _mpx3gui->getConfig()->getColourMode() ) {
 
-                if (_bothCounters) {
+                if ( _bothCounters ) {
+
                     for ( int i = 0 ; i < bothCountersMod ; i++ ) {
                         // SeparateThresholds -> I can do it on a chip per chip basis
+
                         for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                             usedFrames->acquire();
                             SeparateThresholds(i,
@@ -175,9 +172,9 @@ void DataConsumerThread::run()
                 }
 
                 // Add the corresponding layers
-                if ( _colordata != nullptr ) {
+                if ( _colourdata != nullptr ) {
                     for ( int i = 0 ; i < __max_colors ; i+= delvrCounters ) {
-                        _mpx3gui->addLayer( _colordata[i], i );
+                        _mpx3gui->addLayer( _colourdata[i], i );
                     }
                 }
 
@@ -230,57 +227,47 @@ void DataConsumerThread::dataTakingSaysIFinished()
     _mutex.unlock();
 }
 
-void DataConsumerThread::SeparateThresholds(int th,
-                                            uint32_t * data,
-                                            int chipOffset) {
+void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data,
+                                            int chip_offset) {
 
-    // Layout of 110um pixel
-    //  -------------   ---------------------
-    //  | P3  |  P1 |   | thl 4,5 | thl 0,1 |
-    //	-------------   ---------------------
-    //  | P4  |  P2 |   | thl 6,7 | thl 2,3 |
-    //  -------------   ---------------------
-    //  Where:
-    //  	P1 --> TH0, TH1
-    //		P2 --> TH2, TH3
-    //		P3 --> TH4, TH5
-    //		P4 --> TH6, TH7
+  // Layout of 110um pixel
+  //  -------------   ---------------------
+  //  | P3  |  P1 |   | thl 4,5 | thl 0,1 |
+  //	-------------   ---------------------
+  //  | P4  |  P2 |   | thl 6,7 | thl 2,3 |
+  //  -------------   ---------------------
+  //  Where:
+  //  	    P1 --> TH0, TH1
+  //		P2 --> TH2, TH3
+  //		P3 --> TH4, TH5
+  //		P4 --> TH6, TH7
 
-    int indx = 0, indxRed = 0, redi = 0, redj = 0;
+  int pixel_index_input_data = 0, pixel_index_colour = 0, pixel_cluster_index_i = 0, pixel_cluster_index_j = 0;
 
-    for (int j = 0 ; j < __matrix_size_y ; j++) {
 
-        redi = 0;
-        for (int i = 0 ; i < __matrix_size_x  ; i++) {
+  for (int j = 0; j < __matrix_size_y; j += 2) {
 
-            // Depending on which chip are we taking care of, consider the offset.
-            // 'data' bring the information of all 4 chips
-            indx = XYtoX( i, j, __matrix_size_x);
-            indx += chipOffset*__matrix_size;
+    pixel_cluster_index_i = 0;
+    for (int i = 0; i < __matrix_size_x; i += 2) {
 
-            indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
-            indxRed += chipOffset*__matrix_size_color;
+      // Depending on which chip are we taking care of, consider the offset.
+      // 'data' bring the information of all 4 chips
+      pixel_index_input_data = XYtoX(i, j, __matrix_size_x);
+      pixel_index_input_data += chip_offset * __matrix_size;
 
-            if( (i % 2) == 0 && (j % 2) == 0) {
-                _colordata[2+th][indxRed] = data[indx]; // P2 // TH2 !
-            }
-            if( (i % 2) == 0 && (j % 2) == 1) {
-                _colordata[0+th][indxRed] = data[indx]; // P1 // TH0 !
-            }
-            if( (i % 2) == 1 && (j % 2) == 0) {
-                _colordata[6+th][indxRed] = data[indx]; // P4 // TH6 !
-            }
-            if( (i % 2) == 1 && (j % 2) == 1) {
-                _colordata[4+th][indxRed] = data[indx]; // P3 // TH4 !
-            }
+      // Pixel_index_colour goes up to 128*128 = 16384
+      // i.e. this is the end of the chip for a specific threshold
+      pixel_index_colour = XYtoX(pixel_cluster_index_i, pixel_cluster_index_j, __matrix_size_color_x);
+      pixel_index_colour += chip_offset * __matrix_size_color;
 
-            if (i % 2 == 1) redi++;
+      _colourdata[0 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + __matrix_size_x]; // P1 // TH0 !
+      _colourdata[2 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data]; // P2 // TH2 !
+      _colourdata[4 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + 1 + __matrix_size_x]; // P3 // TH4 !
+      _colourdata[6 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + 1]; // P4 // TH6 !
 
-        }
-
-        if (j % 2 == 1) redj++;
-
+      pixel_cluster_index_i++;
     }
 
+    pixel_cluster_index_j++;
+  }
 }
-

@@ -11,26 +11,22 @@
 
 class DataConsumerThread : public QThread
 {
-
     Q_OBJECT
 
 public:
 
     explicit DataConsumerThread(Mpx3GUI *, QObject * parent = nullptr);
-    virtual ~DataConsumerThread();
+    virtual ~DataConsumerThread() override;
     void copydata(FrameSet * source, int chipIndex, bool counterH);
     uint getSemaphoreSize(){return _semaphoreSize;}
     void dataTakingSaysIFinished();
 
     void consume();
-    void SeparateThresholds(int th,
-                       uint32_t * data,
-                       int chipOffset
-                       );
+    void SeparateThresholds(int threshold_offset, uint32_t *data, int chip_offset);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 
-    QSemaphore * freeFrames;
-    QSemaphore * usedFrames;
+    QSemaphore *freeFrames = nullptr;
+    QSemaphore *usedFrames = nullptr;
 
 protected:
 
@@ -51,7 +47,7 @@ private:
     bool _stop;
     int _frameId;
 
-    Mpx3GUI * _mpx3gui;
+    Mpx3GUI * _mpx3gui = nullptr;
 
     const uint _nFramesBuffer = 32;
     uint _semaphoreSize;
@@ -66,7 +62,7 @@ private:
     uint32_t * buffer = nullptr;
     uint descriptor = 0;
     uint readdescriptor = 0;
-    int ** _colordata = nullptr;
+    int ** _colourdata = nullptr;
 
 };
 

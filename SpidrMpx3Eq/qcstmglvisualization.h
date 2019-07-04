@@ -70,7 +70,6 @@ public:
     void drawFrameImage();
     void rewindScoring();
 
-    void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
     bool isTakingData(){ return _takingData; }
 
     void SetMpx3GUI(Mpx3GUI * p);
