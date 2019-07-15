@@ -119,7 +119,7 @@ private:
 
 signals:
     void takeImage();
-    void takeAndSaveImageSequence();
+    void takeAndSaveImageSequence(QString folder);
     void saveImageSignal(QString filePath);
     void setExposure(int microseconds);
     void setNumberOfFrames(int number_of_frames);

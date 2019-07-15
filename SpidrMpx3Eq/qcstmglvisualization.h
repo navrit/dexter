@@ -321,7 +321,7 @@ public slots:
 
     //! Used for ZMQ interface + TCP interface
     void takeImage();
-    void takeAndSaveImageSequence();
+    void takeAndSaveImageSequence(QString folder);
     void saveImageSlot(QString filePath);
     void setExposure(int microseconds);
     void setNumberOfFrames(int number_of_frames);

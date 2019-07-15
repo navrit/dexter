@@ -48,7 +48,7 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 
     //! Straight name mapping to appropriate slots in visualisation, could go anywhere
     connect(this, SIGNAL(takeImage()), _mpx3gui->getVisualization(), SLOT(takeImage()));
-    connect(this, SIGNAL(takeAndSaveImageSequence()), _mpx3gui->getVisualization(), SLOT(takeAndSaveImageSequence()));
+    connect(this, SIGNAL(takeAndSaveImageSequence(QString)), _mpx3gui->getVisualization(), SLOT(takeAndSaveImageSequence(QString)));
     connect(this, SIGNAL(saveImageSignal(QString)), _mpx3gui->getVisualization(), SLOT(saveImageSlot(QString)));
     connect(this, SIGNAL(setExposure(int)), _mpx3gui->getVisualization(), SLOT(setExposure(int)));
     connect(this, SIGNAL(setNumberOfFrames(int)), _mpx3gui->getVisualization(), SLOT(setNumberOfFrames(int)));
@@ -251,7 +251,14 @@ void zmqController::takeAndSaveImageSequence(QJsonObject obj)
     qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE : "  << obj["command"].toString();
 #endif
     if (_isConnectedToSPIDR) {
-        emit takeAndSaveImageSequence();
+        const QString folder = obj["arg1"].toString();
+
+        if (folderExists(folder)) {
+            emit takeAndSaveImageSequence(folder);
+        } else {
+            emit takeAndSaveImageSequence("");
+        }
+
     } else {
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
         emit someCommandHasFailed();

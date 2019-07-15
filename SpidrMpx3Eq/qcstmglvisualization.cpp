@@ -1212,18 +1212,20 @@ void QCstmGLVisualization::takeImage()
     //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
 }
 
-void QCstmGLVisualization::takeAndSaveImageSequence()
+void QCstmGLVisualization::takeAndSaveImageSequence(QString folder)
 {
-    //! Activate autosave to home directory or whatever
+    //! Activate autosave to the specified path or if empty, the home directory
     //! Trigger data taking
 #ifdef QT_DEBUG
-    qDebug() << ("[INFO]\tZMQ Activate autosave to home directory or whatever \n\t + Trigger data taking");
+    qDebug() << ("[INFO]\tZMQ Activate autosave to the specified path or if empty, the home directory\n\t + Trigger data taking");
 #endif
 
     zmqRunning = true;
 
-    if (ui->saveLineEdit->text().isEmpty()) {
+    if (ui->saveLineEdit->text().isEmpty() || (folder.isEmpty())) {
         ui->saveLineEdit->setText(QDir::homePath() + QDir::separator());
+    } else {
+        requestToSetSavePath(folder);
     }
     //! Otherwise there's something there already,
     //! validate in on_saveLineEdit_textEdited() and on_saveLineEdit_editingFinished()
