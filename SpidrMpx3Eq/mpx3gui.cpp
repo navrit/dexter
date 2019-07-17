@@ -424,13 +424,14 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
     // Change me when adding extra views
     // Inform every module of changes in connection status
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget , SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
-    connect(this,SIGNAL(ConnectionStatusChanged(bool)),_ui->hdmiConfigTab,SLOT(ConnectionStatusChanged(bool)));
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->hdmiConfigTab, SLOT(ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->THScan, SLOT(ConnectionStatusChanged(bool)) );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
     connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
@@ -443,7 +444,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
 
-    connect( getConfig(), SIGNAL(colourModeChanged(bool)), getTHScan(), SLOT(slot_colourModeChanged(bool)));
+    connect( getConfig(), SIGNAL(colourModeChanged(bool)), getTHScan(), SLOT(slot_colourModeChanged()));
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,

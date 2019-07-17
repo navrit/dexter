@@ -80,6 +80,7 @@ public slots:
     void button_startStop_clicked_remotely();
 
 private slots:
+    void ConnectionStatusChanged(bool connected);
     void finishedScan();
     void on_button_startStop_clicked();
     void on_pushButton_setPath_clicked();

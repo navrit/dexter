@@ -25,9 +25,27 @@ thresholdScan::thresholdScan(QWidget *parent) :
     ui->setupUi(this);
     thresholdScanInst = this;
 
+    //! Disable all of the Threshold scan GUI before connection
+    this->setEnabled(false);
+
+    initTableView();
+}
+
+thresholdScan::~thresholdScan()
+{
+    delete ui;
+}
+
+thresholdScan *thresholdScan::getInstance()
+{
+    return thresholdScanInst;
+}
+
+void thresholdScan::initTableView()
+{
     myThresholdScanDelegate = new ThresholdScanDelegate(this);
 
-    const int rows = 11;
+    const int rows = 12;
     const int cols = 3;
 
     // Create a new model
@@ -39,17 +57,18 @@ thresholdScan::thresholdScan(QWidget *parent) :
     _standardItemModel->setHeaderData(2, Qt::Horizontal, tr("Description"));
 
     const QStringList items = QStringList()
-                                         << "Threshold 0"
-                                         << "Threshold 1"
-                                         << "Threshold 2"
-                                         << "Threshold 3"
-                                         << "Threshold 4"
-                                         << "Threshold 5"
-                                         << "Threshold 6"
-                                         << "Threshold 7"
-                                         << "Step size"
-                                         << "Scan start"
-                                         << "Scan end";
+                              << "Threshold 0"
+                              << "Threshold 1"
+                              << "Threshold 2"
+                              << "Threshold 3"
+                              << "Threshold 4"
+                              << "Threshold 5"
+                              << "Threshold 6"
+                              << "Threshold 7"
+                              << "Step size"
+                              << "Frames per step"
+                              << "Scan start"
+                              << "Scan end";
 
     //! Print these variables in the Scan Logging?
     //! 1. "Number of steps"
@@ -64,6 +83,10 @@ thresholdScan::thresholdScan(QWidget *parent) :
     // If we do not set this, it will use default delegate - oh no!
     ui->tableView_modelBased->setItemDelegate(myThresholdScanDelegate);
 
+    // Set column widths
+    ui->tableView_modelBased->setColumnWidth(0, 60);
+    ui->tableView_modelBased->setColumnWidth(1, 60);
+    ui->tableView_modelBased->setColumnWidth(2, 260);
 
     // Generate data
     for (int row = 0; row < rows; row++) {
@@ -78,8 +101,10 @@ thresholdScan::thresholdScan(QWidget *parent) :
                 } else if (row == 8) {
                     value = 1;
                 } else if (row == 9) {
-                    value = 256;
+                    value = 1;
                 } else if (row == 10) {
+                    value = 256;
+                } else if (row == 11) {
                     value = 20;
                 } else {
                     value = 101;
@@ -93,9 +118,10 @@ thresholdScan::thresholdScan(QWidget *parent) :
                     checkbox->setCheckable(true);
                     checkbox->setCheckState(Qt::Unchecked);
                     checkbox->setStyleSheet("QCheckBox { \
-                        padding : 5px; \
-                        margin : 3px; \
-                    }");
+                                                padding : 5px; \
+                                                margin : 3px; \
+                                                padding-left : 20px; \
+                                            }");
                     ui->tableView_modelBased->setIndexWidget(_standardItemModel->index(row, col), checkbox);
                 } else {
                     value = "N/A";
@@ -108,8 +134,10 @@ thresholdScan::thresholdScan(QWidget *parent) :
                 } else if (row == 8) {
                     value = "The scan step size between thresholds";
                 } else if (row == 9) {
-                    value = "Scan starting threshold";
+                    value = "Number of frames to integrate per step";
                 } else if (row == 10) {
+                    value = "Scan starting threshold";
+                } else if (row == 11) {
                     value = "Scan ending threshold";
                 } else {
                     value = "...";
@@ -119,16 +147,6 @@ thresholdScan::thresholdScan(QWidget *parent) :
             }
         }
     }
-}
-
-thresholdScan::~thresholdScan()
-{
-    delete ui;
-}
-
-thresholdScan *thresholdScan::getInstance()
-{
-    return thresholdScanInst;
 }
 
 void thresholdScan::changeAllDACs(int val)
