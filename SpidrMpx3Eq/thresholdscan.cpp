@@ -328,6 +328,10 @@ void thresholdScan::resumeTHScan()
 void thresholdScan::button_startStop_clicked_remotely()
 {
     on_button_startStop_clicked();
+
+void thresholdScan::ConnectionStatusChanged(bool connected)
+{
+    this->setEnabled(connected);
 }
 
 void thresholdScan::startDataTakingThread()

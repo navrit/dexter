@@ -52,6 +52,8 @@ private:
     ThresholdScanDelegate *myThresholdScanDelegate = nullptr;
     QElapsedTimer *_timer = nullptr;
 
+    void initTableView();
+
     void stopScan();
     void resetScan();
     void startDataTakingThread();
