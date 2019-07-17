@@ -327,7 +327,15 @@ void thresholdScan::resumeTHScan()
 
 void thresholdScan::button_startStop_clicked_remotely()
 {
-    on_button_startStop_clicked();
+    if (ui->button_startStop->isEnabled()) {
+        on_button_startStop_clicked();
+    } else {
+        //TODO Reply with an error somehow?
+
+        // Meanwhile, respond with a Threshold scan busy error message
+        emit busy(SB_THRESHOLD_SCAN);
+    }
+}
 
 void thresholdScan::ConnectionStatusChanged(bool connected)
 {
