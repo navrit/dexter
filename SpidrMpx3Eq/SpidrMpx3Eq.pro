@@ -85,6 +85,7 @@ SOURCES += main.cpp \
     ThlScan.cpp \
     DataTakingThread.cpp \
     datacontrollerthread.cpp \
+    thresholdscandelegate.cpp \
     zmqcontroller.cpp \
     qcstmBHWindow.cpp \
     qcstmBHdialog.cpp \
@@ -132,6 +133,7 @@ HEADERS += mpx3gui.h \
     ThlScan.h \
     DataTakingThread.h \
     datacontrollerthread.h \
+    thresholdscandelegate.h \
     zmqcontroller.h \
     qcstmBHWindow.h \
     qcstmBHdialog.h \
