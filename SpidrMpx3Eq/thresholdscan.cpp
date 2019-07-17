@@ -23,12 +23,102 @@ thresholdScan::thresholdScan(QWidget *parent) :
     ui(new Ui::thresholdScan)
 {
     ui->setupUi(this);
-
-    QStringList items;
-    items << MPX3RX_DAC_TABLE[0].name << MPX3RX_DAC_TABLE[1].name;
-    ui->comboBox_thresholdToScan->addItems(items);
-    ui->comboBox_thresholdToScan->setCurrentIndex(0);
     thresholdScanInst = this;
+
+    myThresholdScanDelegate = new ThresholdScanDelegate(this);
+
+    const int rows = 11;
+    const int cols = 3;
+
+    // Create a new model
+    // QStandardItemModel(int rows, int columns, QObject * parent = 0)
+    _standardItemModel = new QStandardItemModel(rows, cols, this);
+
+    _standardItemModel->setHeaderData(0, Qt::Horizontal, tr("Value"));
+    _standardItemModel->setHeaderData(1, Qt::Horizontal, tr("Enabled"));
+    _standardItemModel->setHeaderData(2, Qt::Horizontal, tr("Description"));
+
+    const QStringList items = QStringList()
+                                         << "Threshold 0"
+                                         << "Threshold 1"
+                                         << "Threshold 2"
+                                         << "Threshold 3"
+                                         << "Threshold 4"
+                                         << "Threshold 5"
+                                         << "Threshold 6"
+                                         << "Threshold 7"
+                                         << "Step size"
+                                         << "Scan start"
+                                         << "Scan end";
+
+    //! Print these variables in the Scan Logging?
+    //! 1. "Number of steps"
+    //! 2. "Estimated time to completion"
+
+    _standardItemModel->setVerticalHeaderLabels(items);
+
+    // Attach the model to the view
+    ui->tableView_modelBased->setModel(_standardItemModel);
+
+    // Tie the View with the new ThresholdScanDelegate instance
+    // If we do not set this, it will use default delegate - oh no!
+    ui->tableView_modelBased->setItemDelegate(myThresholdScanDelegate);
+
+
+    // Generate data
+    for (int row = 0; row < rows; row++) {
+        for (int col = 0; col < cols; col++) {
+            QModelIndex index = _standardItemModel->index(row, col, QModelIndex());
+
+            QVariant value = 99;
+
+            if (col == 0) {
+                if (row >= 0 && row <= 7) {
+                    value = 0;
+                } else if (row == 8) {
+                    value = 1;
+                } else if (row == 9) {
+                    value = 256;
+                } else if (row == 10) {
+                    value = 20;
+                } else {
+                    value = 101;
+                }
+
+                _standardItemModel->setData(index, value);
+
+            } else if (col == 1) {
+                if (row >= 0 && row <= 7) {
+                    QCheckBox *checkbox = new QCheckBox();
+                    checkbox->setCheckable(true);
+                    checkbox->setCheckState(Qt::Unchecked);
+                    checkbox->setStyleSheet("QCheckBox { \
+                        padding : 5px; \
+                        margin : 3px; \
+                    }");
+                    ui->tableView_modelBased->setIndexWidget(_standardItemModel->index(row, col), checkbox);
+                } else {
+                    value = "N/A";
+                    _standardItemModel->setData(index, value);
+                }
+
+            } else if (col == 2) {
+                if (row >= 0 && row <= 7) {
+                    value = "Threshold to scan";
+                } else if (row == 8) {
+                    value = "The scan step size between thresholds";
+                } else if (row == 9) {
+                    value = "Scan starting threshold";
+                } else if (row == 10) {
+                    value = "Scan ending threshold";
+                } else {
+                    value = "...";
+                }
+
+                _standardItemModel->setData(index, value);
+            }
+        }
+    }
 }
 
 thresholdScan::~thresholdScan()
@@ -41,31 +131,24 @@ thresholdScan *thresholdScan::getInstance()
     return thresholdScanInst;
 }
 
-QString thresholdScan::getOriginalPath()
+void thresholdScan::changeAllDACs(int val)
 {
-    return originalPath;
-}
+    //const int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
+    //! The output of THL0 is very different if the other thresholds TH1-7 are in the noise...
 
-void thresholdScan::setOriginalPath(QString newPath)
-{
-    originalPath = newPath;
-}
-
-uint thresholdScan::getFramesPerStep()
-{
-    return framesPerStep;
-}
-
-void thresholdScan::setFramesPerStep(uint val)
-{
-    ui->spinBox_framesPerStep->setValue(int(val));
+    /*for (int chipID = 0; chipID < activeDevices; chipID++) {
+        for (int dacCode = MPX3RX_DAC_THRESH_0; dacCode <= MPX3RX_DAC_THRESH_7; dacCode++ ) {
+            SetDAC_propagateInGUI(chipID, thresholdToScan, val);
+            }
+        }
+    }*/
 }
 
 void thresholdScan::finishedScan()
 {
-    enableSpinBoxes();
+    // enableSpinBoxes();
     ui->button_startStop->setText(tr("Start"));
-    //_mpx3gui->getConfig()->setTriggerDowntime(_shutterDownMem);
+
     auto stopTime = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
 
     ui->textEdit_log->append("Finished Threshold scan @ " +
@@ -73,11 +156,11 @@ void thresholdScan::finishedScan()
 
     //! Print footer to log box and end timer with relevant units
 
-    auto elapsed = timer.elapsed();
+    auto elapsed = _timer->elapsed();
     if (elapsed < 1000){
-        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()) + "ms");
+        ui->textEdit_log->append("Elapsed time: " + QString::number(_timer->elapsed()) + "ms");
     } else {
-        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()/1000) + "s");
+        ui->textEdit_log->append("Elapsed time: " + QString::number(_timer->elapsed()/1000) + "s");
     }
     ui->textEdit_log->append("\n------------------------------------------");
 
@@ -91,64 +174,62 @@ void thresholdScan::startScan()
     //! Use acquisition settings from other view
     resetScan();
 
-    disableSpinBoxes();
+    // disableSpinBoxes();
 
     //! Initialise variables
 
     //! Get values from GUI
-    minTH = ui->spinBox_minimum->value();
-    maxTH = ui->spinBox_maximum->value();
-    thresholdSpacing = uint(ui->spinBox_spacing->value());
-    framesPerStep = uint(ui->spinBox_framesPerStep->value()); /* Minimum of 0 is enforced in the ui code */
-    activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
+    // minTH = ui->spinBox_minimum->value();
+    // maxTH = ui->spinBox_maximum->value();
+    // thresholdSpacing = uint(ui->spinBox_spacing->value());
+    // framesPerStep = uint(ui->spinBox_framesPerStep->value()); /* Minimum of 0 is enforced in the ui code */
+    _activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
 
-    newPath = ui->lineEdit_path->text();
-    if(newPath.isEmpty() || newPath == ""){
-        newPath = QDir::homePath();
+    _newPath = ui->lineEdit_path->text();
+    if(_newPath.isEmpty() || _newPath == ""){
+        _newPath = QDir::homePath();
     }
-    setOriginalPath(newPath);
+    setOriginalPath(_newPath);
 
-    height = _mpx3gui->getDataset()->getHeight();
-    width =  _mpx3gui->getDataset()->getWidth();
-
-    iteration = minTH;
+    _iteration = _minTH;
 
     //! Integrating frames?
-    if (framesPerStep > 1) {
+    if (_framesPerStep > 1) {
         _mpx3gui->set_summing(true);
-        qDebug() << "[INFO] Set summing: true";
+        qDebug() << "[INFO]\tSumming frames: true";
     } else {
         _mpx3gui->set_summing(false);
-        qDebug() << "[INFO] Set summing: false";
+        qDebug() << "[INFO]\tSumming frames: false";
     }
 
     //! Print header to log box and start timer
     auto startTime = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
     ui->textEdit_log->append("Starting Threshold scan @ " +
                              startTime);
-    timer.start();
+    _timer->start();
 
     //! TODO Take Double counter behaviour into account
 
     _running = true;
     ui->button_startStop->setText(tr("Stop"));
-    enableSpinBoxes();
+
+    // enableSpinBoxes();
 
     //! Work around etc.
     _mpx3gui->GetSpidrController()->stopAutoTrigger();
     Sleep( 100 );
 
-    //! Clear the dataset -----------------------------------------------------
-    _mpx3gui->getDataset()->zero();
+    //! Clear the dataset - not necessary due to driver changes? Check this
+    //_mpx3gui->getDataset()->zero();
 
-    setThresholdToScan();
+    setThresholdsToScan();
 
     startDataTakingThread();
 }
 
 void thresholdScan::stopScan()
 {
-    enableSpinBoxes();
+    // enableSpinBoxes();
     ui->button_startStop->setText(tr("Start"));
 
     //! Print interrupt footer
@@ -158,11 +239,11 @@ void thresholdScan::stopScan()
 
     //! Print footer to log box and end timer with relevant units
 
-    auto elapsed = timer.elapsed();
+    auto elapsed = _timer->elapsed();
     if (elapsed < 1000){
-        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()) + "ms");
+        ui->textEdit_log->append("Elapsed time: " + QString::number(_timer->elapsed()) + "ms");
     } else {
-        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()/1000) + "s");
+        ui->textEdit_log->append("Elapsed time: " + QString::number(_timer->elapsed()/1000) + "s");
     }
     ui->textEdit_log->append("\n------------------------------------------");
 
@@ -186,17 +267,17 @@ void thresholdScan::resumeTHScan()
 
     //! Main loop through thresholds using all 8 counters (0-7)
 
-    if (iteration <= maxTH) {
+    if (_iteration <= _maxTH) {
         //qDebug() << "LOOP " << iteration << maxTH;
 
         //! Set DACs on all active chips ------------------------------------------
-        for (int i = 0 ; i < activeDevices ; i++) {
+        for (int i = 0 ; i < _activeDevices ; i++) {
             if ( ! _mpx3gui->getConfig()->detectorResponds(i) ) {
                 qDebug() << "[ERR ] Device " << i << " not responding.";
             } else {
                 //! Check if iteration <= 512
-                if  (iteration <= 512) {
-                    changeAllDACs(iteration);
+                if  (_iteration <= 512) {
+                    changeAllDACs(_iteration);
                 }
             }
         }
@@ -205,13 +286,13 @@ void thresholdScan::resumeTHScan()
         _mpx3gui->getDataset()->toTIFF(makePath(), false); //! Save raw TIFF
 
 
-        //! Clear the dataset -----------------------------------------------------
-        _mpx3gui->getDataset()->zero();
+        //! Clear the dataset - not necessary due to driver changes? Check this
+        // _mpx3gui->getDataset()->zero();
 
 
         update_timeGUI();
         //! Increment iteration counter -------------------------------------------
-        iteration += thresholdSpacing;
+        _iteration += _thresholdSpacing;
 
         startDataTakingThread();
 
@@ -240,49 +321,19 @@ void thresholdScan::startDataTakingThread()
 void thresholdScan::update_timeGUI()
 {
     /* I know this looks excessive, it's not. */
-    ui->progressBar->setValue(int(double(float(iteration-minTH) / float(maxTH-minTH)) * 100.0));
+    ui->progressBar->setValue(int(double(float(_iteration-_minTH) / float(_maxTH-_minTH)) * 100.0));
 }
 
 QString thresholdScan::makePath()
 {
-    QString path = newPath;
+    QString path = _newPath;
     path.append("/");
     //path.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
     path.append("th-");
-    path.append(QString::number(iteration));
+    path.append(QString::number(_iteration));
     path.append("_raw.tiff");
 
     return path;
-}
-
-bool thresholdScan::get_changeOtherThresholds()
-{
-    return changeOtherThresholds;
-}
-
-void thresholdScan::set_changeOtherThresholds(bool arg)
-{
-    changeOtherThresholds = arg;
-}
-
-void thresholdScan::enableSpinBoxes()
-{
-    ui->spinBox_minimum->setEnabled(1);
-    ui->spinBox_maximum->setEnabled(1);
-    ui->spinBox_spacing->setEnabled(1);
-    ui->spinBox_framesPerStep->setEnabled(1);
-
-    ui->comboBox_thresholdToScan->setEnabled(1);
-}
-
-void thresholdScan::disableSpinBoxes()
-{
-    ui->spinBox_minimum->setDisabled(1);
-    ui->spinBox_maximum->setDisabled(1);
-    ui->spinBox_spacing->setDisabled(1);
-    ui->spinBox_framesPerStep->setDisabled(1);
-
-    ui->comboBox_thresholdToScan->setDisabled(1);
 }
 
 QString thresholdScan::getPath(QString msg)
@@ -298,84 +349,27 @@ QString thresholdScan::getPath(QString msg)
     return path;
 }
 
-void thresholdScan::SetDAC_propagateInGUI(int devId, int dac_code, int dac_val)
+void thresholdScan::SetDAC_propagateInGUI(int chip, int dac_code, int dac_val)
 {
     //! Actually set DAC
-    _mpx3gui->GetSpidrController()->setDac( devId, dac_code, dac_val );
+    _mpx3gui->GetSpidrController()->setDac( chip, dac_code, dac_val );
 
     //! Important GUI Code -------------------------------------
     //! Adjust the sliders and the SpinBoxes to the new value
     connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-    //! SlideAndSpin works with the DAC index, no the code.
+    //! SlideAndSpin works with the DAC index, not the code.
     int dacIndex = _mpx3gui->getDACs()->GetDACIndex( dac_code );
-    emit slideAndSpin( dacIndex,  dac_val );
+    emit slideAndSpin( dacIndex, dac_val );
     disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
     // ---------------------------------------------------------
 
     //! Set DAC in local config.
-    _mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
+    _mpx3gui->getDACs()->SetDACValueLocalConfig( chip, dacIndex, dac_val);
 }
 
-void thresholdScan::changeAllDACs(int val)
-{
-    const int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
-    //! Set all thresholds sequentially within one chip at a time unless the checkbox tells you otherwise
-    //!    The output of THL0 is very different if the other thresholds TH1-7 are in the noise...
-
-    for (int chipID = 0; chipID < activeDevices; chipID++) {
-        for (int dacCode = MPX3RX_DAC_THRESH_0; dacCode <= MPX3RX_DAC_THRESH_7; dacCode++ ) {
-            int i = val;
-
-            if (get_changeOtherThresholds() == true) {
-                if ( dacCode == MPX3RX_DAC_THRESH_0 ) {
-                    SetDAC_propagateInGUI(chipID, dacCode, i);
-                } else if ( dacCode == MPX3RX_DAC_THRESH_1 ) {
-                    if ( i == 512 ) {
-                        i = 511;
-                    }
-                    SetDAC_propagateInGUI(chipID, dacCode, i+1);
-                } else if ( dacCode == MPX3RX_DAC_THRESH_2 ) {
-                    if ( i >= 511 ) {
-                        i = 510;
-                    }
-                    SetDAC_propagateInGUI(chipID, dacCode, i+2);
-                } else if ( dacCode == MPX3RX_DAC_THRESH_3 ) {
-                    if ( i >= 510 ) {
-                        i = 509;
-                    }
-                    SetDAC_propagateInGUI(chipID, dacCode, i+3);
-                } else if ( dacCode == MPX3RX_DAC_THRESH_4 ) {
-                    if ( i >= 509 ) {
-                        i = 508;
-                    }
-                    SetDAC_propagateInGUI(chipID, dacCode, i+4);
-                } else if ( dacCode == MPX3RX_DAC_THRESH_5 ) {
-                    if ( i >= 508 ) {
-                        i = 507;
-                    }
-                    SetDAC_propagateInGUI(chipID, dacCode, i+5);
-                } else if ( dacCode == MPX3RX_DAC_THRESH_6 ) {
-                    if ( i >= 507 ) {
-                        i = 506;
-                    }
-                    SetDAC_propagateInGUI(chipID, dacCode, i+6);
-                } else if ( dacCode == MPX3RX_DAC_THRESH_7 ) {
-                    if ( i >= 506 ) {
-                        i = 505;
-                    }
-                    SetDAC_propagateInGUI(chipID, dacCode, i+7);
-                }
-            } else { //! Use the threshold from the dropdown menu + 1
-                SetDAC_propagateInGUI(chipID, thresholdToScan, i);
-            }
-        }
-    }
-}
-
-void thresholdScan::setThresholdToScan()
-{
-    thresholdToScan = ui->comboBox_thresholdToScan->currentIndex()+1; //! +1 because MPX3RX_DAC_THRESH_0 = 1, not 0
-    //qDebug() << "[INFO][THSCAN]\tThreshold to scan:" << thresholdToScan;
+void thresholdScan::setThresholdsToScan()
+{  
+    qDebug() << "[INFO][THSCAN]\tThreshold(s) to scan: NOT IMPLEMENTED";
 }
 
 void thresholdScan::on_button_startStop_clicked()
@@ -394,31 +388,9 @@ void thresholdScan::on_pushButton_setPath_clicked()
     ui->lineEdit_path->setText(getPath("Choose a folder to save the files to."));
 }
 
-void thresholdScan::on_spinBox_minimum_valueChanged(int val)
-{
-    _mpx3gui->getDACs()->GetUI()->dac0SpinBox->setValue(val);
-}
-
-void thresholdScan::on_spinBox_framesPerStep_valueChanged(int val)
-{
-    if(!_mpx3gui->getVisualization()->GetUI()->infDataTakingCheckBox->isChecked())
-        _mpx3gui->getVisualization()->GetUI()->nTriggersSpinBox->setValue(val);
-}
-
-void thresholdScan::on_checkBox_incrementOtherThresholds_stateChanged()
-{
-    if (ui->checkBox_incrementOtherThresholds->isChecked()) {
-        set_changeOtherThresholds(true);
-        ui->comboBox_thresholdToScan->setDisabled(true);
-    } else {
-        set_changeOtherThresholds(false);
-        ui->comboBox_thresholdToScan->setDisabled(false);
-    }
-}
-
 void thresholdScan::slot_colourModeChanged(bool)
 {
-    ui->comboBox_thresholdToScan->clear();
+    // ui->comboBox_thresholdToScan->clear();
     QStringList items;
     int maxThreshold = 0;
 
@@ -432,8 +404,8 @@ void thresholdScan::slot_colourModeChanged(bool)
         items << MPX3RX_DAC_TABLE[i].name;
     }
 
-    ui->comboBox_thresholdToScan->addItems(items);
-    ui->comboBox_thresholdToScan->setCurrentIndex(0);
+    // ui->comboBox_thresholdToScan->addItems(items);
+    // ui->comboBox_thresholdToScan->setCurrentIndex(0);
 }
 
 void thresholdScan::on_lineEdit_path_editingFinished()
