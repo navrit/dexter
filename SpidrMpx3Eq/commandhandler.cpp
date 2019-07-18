@@ -334,64 +334,57 @@ int CommandHandler::getThreshold(int idx,int chipId,int *val)
 int CommandHandler::setStartScan(int val)
 {
     return UNKNOWN_ERROR;
-    /*if (val < 0 || val > 511)
+    if (val < 0 || val > 511)
         return ARG_VAL_OUT_RANGE;
-    // TODO THSCAN thresholdScan::getInstance()->GetUI()->spinBox_minimum->setValue(val);
-    return NO_ERROR;*/
+    thresholdScan::getInstance()->setStartTH(val);
+    return NO_ERROR;
 }
 
 int CommandHandler::setStopScan(int val)
 {
     return UNKNOWN_ERROR;
-    /*if (val < 1 || val > 512)
+    if (val < 1 || val > 512)
         return ARG_VAL_OUT_RANGE;
-    // TODO THSCAN thresholdScan::getInstance()->GetUI()->spinBox_maximum->setValue(val);
-    return NO_ERROR;*/
+    thresholdScan::getInstance()->setEndTH(val);
+    return NO_ERROR;
 }
 
 int CommandHandler::setStepScan(int val)
 {
     return UNKNOWN_ERROR;
-    /*
+
     if (val < 1 || val > 510)
         return ARG_VAL_OUT_RANGE;
-    qDebug() << "step : " << val;
-    // TODO THSCAN thresholdScan::getInstance()->GetUI()->spinBox_spacing->setValue(val);
-    return NO_ERROR;*/
+    thresholdScan::getInstance()->setStepSize(val);
+    return NO_ERROR;
 }
 
+//! TODO change this function so it supports taking a vector of thresholds to scan
 int CommandHandler::setThresholdScan(int val)
 {
-    return UNKNOWN_ERROR;
-    // TODO THSCAN QComboBox* comboBox = thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan;
-    /*int max = comboBox->count();
-    if (val >= 0 && val < max)
+    if (val >= 0 && val < 8)
     {
-       comboBox->setCurrentIndex(val);
+       thresholdScan::getInstance()->setThresholdToScan(val, true);
        return NO_ERROR;
     }
-    return ARG_VAL_OUT_RANGE;*/
+    return ARG_VAL_OUT_RANGE;
 }
 
 int CommandHandler::setFramesPerScan(int val)
 {
-    return UNKNOWN_ERROR;
-    // TODO THSCAN QSpinBox* spinBox = thresholdScan::getInstance()->GetUI()->spinBox_framesPerStep;
-    /*int max = spinBox->maximum();
-    int min = spinBox->minimum();
-    if (val >= min && val < max)
-    {
-       spinBox->setValue(val);
+    if (val >= 0 ) {
+       thresholdScan::getInstance()->setFramesPerStep(val);
        return NO_ERROR;
     }
-    return ARG_VAL_OUT_RANGE;*/
+    return ARG_VAL_OUT_RANGE;
 }
 
 int CommandHandler::setScanPath(QString path)
 {
     QFileInfo outputDir(path);
-    if(!outputDir.exists())
+    if (!outputDir.exists() && outputDir.isWritable()) {
         return UNKNOWN_COMMAND;
+    }
     thresholdScan::getInstance()->GetUI()->lineEdit_path->setText(path);
     return NO_ERROR;
 
@@ -399,27 +392,28 @@ int CommandHandler::setScanPath(QString path)
 
 int CommandHandler::getStartScan()
 {
-    // TODO THSCAN return thresholdScan::getInstance()->GetUI()->spinBox_minimum->value();
+    return thresholdScan::getInstance()->getStartTH();
 }
 
 int CommandHandler::getStopScan()
 {
-    // TODO THSCAN return thresholdScan::getInstance()->GetUI()->spinBox_maximum->value();
+    return thresholdScan::getInstance()->getEndTH();
 }
 
 int CommandHandler::getStepScan()
 {
-    // TODO THSCAN return thresholdScan::getInstance()->GetUI()->spinBox_spacing->value();
+    return thresholdScan::getInstance()->getStepSize();
 }
 
+//! TODO change this function so it supports returning a vector of enabled thresholds to scan
 int CommandHandler::getThresholdScan()
 {
-    // TODO THSCAN return thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan->currentIndex();
+    return thresholdScan::getInstance()->getThresholdScanEnabled(0);
 }
 
 int CommandHandler::getFramesPerScan()
 {
-    // TODO THSCAN return thresholdScan::getInstance()->GetUI()->spinBox_framesPerStep->value();
+    return thresholdScan::getInstance()->getFramesPerStep();
 }
 
 QString CommandHandler::getScanPath()
