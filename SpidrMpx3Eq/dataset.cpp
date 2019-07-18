@@ -305,7 +305,7 @@ Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
  *
  *          Does cross correction for non spectroscopic mode ONLY - spectroscopic images have a non constant ratio??? #SpecialPixels
  */
-void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
+void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly, int threshold) {
 
     //----------------------------------------------------
 
@@ -314,24 +314,35 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
         return;
     }
 
-    //! Save for all thresholds in separate files
-    //! Note: Could use TIFF pages but this is a much clearer approach for the user and is more compatible cross systems
-    QList<int> thresholds = m_thresholdsToIndices.keys();
-    foreach (int thr, thresholds) {
-
-        QString tmpFilename = filename;
-        if (thresholds.count() > 1){
-            tmpFilename.replace(".tiff", "-thl" + QString::number(thr) + ".tiff");
+    if (threshold == -1) {
+        //! Save for all thresholds in separate TIFF files
+        QList<int> thresholds = m_thresholdsToIndices.keys();
+        foreach (int thr, thresholds) {
+            handleTiffSaving(filename, thr, crossCorrection, spatialOnly);
         }
+    } else {
+        //! Save a specific threshold only
+        //! Used in Threshold Scan for more specific control
 
-        //! Default mode - do cross and spatial corrections
-        if (crossCorrection){
-            Canvas imageCorrected = createCorrectedImage(thr, spatialOnly);
-            imageCorrected.saveToTiff(tmpFilename.toUtf8().data());
-        } else {
-            Canvas image = getFullImageAsArrayWithLayout(thr, 4);
-            image.saveToTiff(tmpFilename.toUtf8().data());
-        }
+        handleTiffSaving(filename, threshold, crossCorrection, spatialOnly);
+    }
+}
+
+void Dataset::handleTiffSaving(QString filename, int threshold, bool crossCorrection, bool spatialOnly)
+{
+    QString tmpFilename = filename;
+    auto lastIndex = filename.lastIndexOf("/");
+    tmpFilename.insert(lastIndex+1, QString("th" + QString::number(threshold) + "-"));
+
+    //qDebug() << "[DEBUG]\tSaving: " << tmpFilename;
+
+    //! Default mode - do cross and spatial corrections
+    if (crossCorrection){
+        Canvas imageCorrected = createCorrectedImage(threshold, spatialOnly);
+        imageCorrected.saveToTiff(tmpFilename.toUtf8().data());
+    } else {
+        Canvas image = getFullImageAsArrayWithLayout(threshold, 4);
+        image.saveToTiff(tmpFilename.toUtf8().data());
     }
 }
 
