@@ -14,8 +14,20 @@ QWidget *ThresholdScanDelegate::createEditor(QWidget *parent,
 {
     if (index.column() == 0) {
         QSpinBox *editor = new QSpinBox(parent);
-        editor->setMinimum(0);
-        editor->setMaximum(511);
+        if (index.row() >= 0 && index.row() <= 7) {
+            editor->setMinimum(-512);
+            editor->setMaximum(512);
+        } else if (index.row() == 8) {
+            editor->setMinimum(1);
+            editor->setMaximum(511);
+        } else if (index.row() == 9) {
+            editor->setMinimum(1);
+            editor->setMaximum(1000000);
+        } else {
+            editor->setMinimum(0);
+            editor->setMaximum(511);
+        }
+
         return editor;
 
     } else if (index.column() == 1) {
