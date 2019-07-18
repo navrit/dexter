@@ -804,6 +804,7 @@ int QCstmDacs::GetDACIndex(int dac_code) {
     for(int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
         if ( MPX3RX_DAC_TABLE[i].code == dac_code ) return i;
     }
+    qDebug() << "[ERROR]\tDAC not found, DAC code requested =" << dac_code;
     return -1;
 }
 
