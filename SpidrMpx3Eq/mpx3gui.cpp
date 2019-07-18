@@ -448,7 +448,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,
-                 this, &Mpx3GUI::on_shortcutsSwithPages );
+                 this, &Mpx3GUI::on_shortcutsSwitchPages );
     }
 
 }
@@ -459,7 +459,7 @@ Mpx3GUI *Mpx3GUI::getInstance()
 }
 
 // Change me when adding extra views
-void Mpx3GUI::on_shortcutsSwithPages() {
+void Mpx3GUI::on_shortcutsSwitchPages() {
 
     // figure out who sent it
     QShortcut * sc = static_cast<QShortcut*> ( QObject::sender() );

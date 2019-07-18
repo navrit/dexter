@@ -310,7 +310,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
     //----------------------------------------------------
 
     if (filename.isEmpty()){
-        qDebug() << ">> ERROR empty filename, cancelling.";
+        qDebug() << "[ERROR]\tEmpty filename, file not saved.";
         return;
     }
 

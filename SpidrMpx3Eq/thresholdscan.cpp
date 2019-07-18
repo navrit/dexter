@@ -43,14 +43,11 @@ thresholdScan *thresholdScan::getInstance()
 
 void thresholdScan::initTableView()
 {
-    myThresholdScanDelegate = new ThresholdScanDelegate(this);
-
-    const int rows = 12;
-    const int cols = 3;
+    _myThresholdScanDelegate = new ThresholdScanDelegate(this);
 
     // Create a new model
-    // QStandardItemModel(int rows, int columns, QObject * parent = 0)
-    _standardItemModel = new QStandardItemModel(rows, cols, this);
+    // QStandardItemModel(int tableRows, int columns, QObject * parent = 0)
+    _standardItemModel = new QStandardItemModel(_tableRows, _tableCols, this);
 
     _standardItemModel->setHeaderData(0, Qt::Horizontal, tr("Value"));
     _standardItemModel->setHeaderData(1, Qt::Horizontal, tr("Enabled"));
@@ -81,16 +78,16 @@ void thresholdScan::initTableView()
 
     // Tie the View with the new ThresholdScanDelegate instance
     // If we do not set this, it will use default delegate - oh no!
-    ui->tableView_modelBased->setItemDelegate(myThresholdScanDelegate);
+    ui->tableView_modelBased->setItemDelegate(_myThresholdScanDelegate);
 
-    // Set column widths
+    //! Set column widths
     ui->tableView_modelBased->setColumnWidth(0, 60);
     ui->tableView_modelBased->setColumnWidth(1, 60);
     ui->tableView_modelBased->setColumnWidth(2, 260);
 
-    // Generate data
-    for (int row = 0; row < rows; row++) {
-        for (int col = 0; col < cols; col++) {
+    //! Generate data
+    for (int row = 0; row < _tableRows; row++) {
+        for (int col = 0; col < _tableCols; col++) {
             QModelIndex index = _standardItemModel->index(row, col, QModelIndex());
 
             QVariant value = 99;
@@ -130,7 +127,7 @@ void thresholdScan::initTableView()
 
             } else if (col == 2) {
                 if (row >= 0 && row <= 7) {
-                    value = "Threshold to scan";
+                    value = "Threshold starting value and which will be scanned";
                 } else if (row == 8) {
                     value = "The scan step size between thresholds";
                 } else if (row == 9) {
@@ -164,7 +161,6 @@ void thresholdScan::changeAllDACs(int val)
 
 void thresholdScan::finishedScan()
 {
-    // enableSpinBoxes();
     ui->button_startStop->setText(tr("Start"));
 
     auto stopTime = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
@@ -182,6 +178,8 @@ void thresholdScan::finishedScan()
     }
     ui->textEdit_log->append("\n------------------------------------------");
 
+    ui->progressBar->setValue(100);
+
     resetScan();
     emit scanIsDone();
 }
@@ -191,8 +189,6 @@ void thresholdScan::startScan()
     qDebug() << "[INFO]\tStarting a threshold scan";
     //! Use acquisition settings from other view
     resetScan();
-
-    // disableSpinBoxes();
 
     //! Initialise variables
 

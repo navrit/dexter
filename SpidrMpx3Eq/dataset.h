@@ -142,12 +142,12 @@ public:
     int getNChipsY();
 
     QByteArray toByteArray(); //!< Serializes the dataset for saving.
-    void toStream(QDataStream &stream);
-    Canvas toCanvas(int threshold); //!< Serializes the dataset for sending via socket to clients.
-    void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
     void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false);  //! Puts the dataset into a TIFF format and saves.
+    void toStream(QDataStream &stream); //!< Serializes the dataset for sending via socket to clients.
+    Canvas toCanvas(int threshold);
+    void saveBIN(QString filename); //!< Puts the dataset into a BIN format and saves.
     Canvas makeFrameForSaving(int threshold, bool crossCorrection = true, bool spatialOnly = false);
-    void toASCII(QString filename); //! Puts the dataset into ASCII format and saves.
+    void toASCII(QString filename); //!< Puts the dataset into ASCII format and saves.
 
     void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
     void fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer);

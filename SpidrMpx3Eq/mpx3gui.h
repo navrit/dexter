@@ -198,7 +198,7 @@ signals:
     void exitApp(int);
 
 public slots:
-    void on_shortcutsSwithPages();
+    void on_shortcutsSwitchPages();
     void generateFrame();
     void clear_data(bool printToStatusBar = true);
     void zero_data(bool printToStatusBar = true);

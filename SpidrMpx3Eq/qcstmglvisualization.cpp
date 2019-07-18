@@ -458,7 +458,8 @@ void QCstmGLVisualization::dataTakingFinished() {
 
     int UDP_packetCounter = -1;
     _mpx3gui->GetSpidrController()->getSpidrReg(MPX3RX_UDP_PKTCNTR, &UDP_packetCounter);
-    qDebug().nospace() << "[DEBUG]\t0x" << hex << MPX3RX_UDP_PKTCNTR << " UDP packet counter = " << dec << UDP_packetCounter;
+
+    // qDebug().nospace() << "[DEBUG]\t0x" << hex << MPX3RX_UDP_PKTCNTR << " UDP packet counter = " << dec << UDP_packetCounter;
 
     // Recover from single shot if it was requested
     if ( _singleShot ) {

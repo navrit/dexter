@@ -359,7 +359,7 @@ void MerlinInterface::initializeTables()
     //initialize cmdTable
     cmdTable.insert(STOPACQUISITION,"Stop");
     cmdTable.insert(STARTACQUISITION,"Start");
-    cmdTable.insert(THSCAN,"StarStoptScan");
+    cmdTable.insert(THSCAN,"StarStopScan");
     cmdTable.insert(RESETSLOPESANDOFFSETS,"ResetSlopesAndOffsets");
     cmdTable.insert(STOPEQUALIZATION,"StopEqualization");
 }

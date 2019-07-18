@@ -11,8 +11,6 @@
 #include "qcstmequalization.h"
 
 
-//#include <QTimer> // For the test function
-
 CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
 {
     QCstmGLVisualization * visualisation = ((Mpx3GUI*) parent)-> getVisualization();
@@ -32,8 +30,6 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToSaveConfigRemotely(QString)),QCstmConfigMonitoring::getInstance(),SLOT(saveConfigFileRemotely(QString)));
     connect(this,SIGNAL(requestToChangeGuiforThreshold(int)),QCstmDacs::getInstance(),SLOT(onDevNumChanged(int)));
     initializeCmdTable();
-
-    //QTimer::singleShot(10000, this, SLOT(testSetThreshold_idx_val_chipId())); // Test function to show setting thresholds does work
 }
 
 Mpx3GUI* CommandHandler::getGui() {
@@ -164,7 +160,7 @@ void CommandHandler::initializeCmdTable()
 
 
     cmd_struct startScan {startScanHandler};
-    cmdTable.insert("StarStoptScan",startScan);
+    cmdTable.insert("StarStopScan",startScan);
 
 
     cmd_struct setOperatingEnergy {setOperatingEnergyHandler};
@@ -226,8 +222,6 @@ void CommandHandler::initializeCmdTable()
 
     cmd_struct getServerStatus{getServerStatusHandler};
     cmdTable.insert("GetServerStatus", getServerStatus);
-
-
 }
 
 bool Command::enoughArguments(int argsNum,QString command)
@@ -252,9 +246,7 @@ void Command::setError(ERROR_TYPE et)
 
 void CommandHandler::startLiveCamera(bool takingDataFlag)
 {
-    //emit requestForInfDataTracking(true);
     emit requestForDataTaking(!takingDataFlag);
-    //QCstmGLVisualization::getInstance()->setInfDataTaking(true);
 }
 
 void CommandHandler::startSnap()
@@ -841,7 +833,7 @@ void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
                 setError(SERVER_BUSY_DATA_TAKING);
                 return;
             }
-            if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StarStoptScan"){
+            if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StarStopScan"){
                 qDebug () << "Server is busy." << serverStatus;
                 setError(SERVER_BUSY_THRESHOLD_SCAN);
                 return;

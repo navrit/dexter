@@ -51,7 +51,6 @@
 #define THSTART "THSTART"
 #define THSTOP  "THSTOP"
 #define THSTEP  "THSTEP"
-#define THSCAN  "THSCAN"
 #define THFRAMES "THFRAMES"  //does not exist in M doc
 #define THPATH   "THPATH"    //does not exist in M doc
 #define THSCAN   "THSCAN"    //does not exist in M doc (this is an CMD)
