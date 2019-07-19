@@ -445,6 +445,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
 
     connect( getConfig(), SIGNAL(colourModeChanged(bool)), getTHScan(), SLOT(slot_colourModeChanged()));
+    connect( getConfig(), SIGNAL(readBothCountersChanged(bool)), getTHScan(), SLOT(slot_doubleCounterModeChanged()));
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,

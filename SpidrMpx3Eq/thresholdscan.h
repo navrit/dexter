@@ -34,13 +34,22 @@ public:
     QString getOriginalPath(){ return _originalPath; }
     void setOriginalPath(QString) { _originalPath = _newPath; }
 
-    uint getFramesPerStep(){ return _framesPerStep; }
-    void setFramesPerStep(uint val){ return; } //! Needs attention
+    int  getThresholdOffset(uint threshold);
+    bool getThresholdScanEnabled(uint threshold);
+    QCheckBox *getThresholdScanEnabled_pointer(uint threshold);
+    int  getStartTH();
+    void setStartTH(int val);
+    int  getEndTH();
+    void setEndTH(int val);
+    uint getStepSize();
+    void setStepSize(uint val);
+    uint getFramesPerStep();
+    void setFramesPerStep(uint val);
+    void setThresholdToScan(int threshold, bool scan);
 
-    void changeAllDACs(int val);
+    void setThresholdsOnAllChips(int val);
 
-    void setThresholdsToScan(); //! Needs attention
-    int getThresholdsToScan() {return -1;} //! Needs attention
+    QString getCurrentTimeISOms();
 
 private:
     Ui::thresholdScan *ui = nullptr;
@@ -49,7 +58,7 @@ private:
     //! QStandardItemModel provides a classic item-based approach to working with the model.
     QStandardItemModel *_standardItemModel = nullptr;
     //! Make a member pointer to a new MyDelegate instance
-    ThresholdScanDelegate *myThresholdScanDelegate = nullptr;
+    ThresholdScanDelegate *_myThresholdScanDelegate = nullptr;
     QElapsedTimer *_timer = nullptr;
 
     void initTableView();
@@ -59,21 +68,27 @@ private:
     void startDataTakingThread();
     void SetDAC_propagateInGUI(int chip, int dac_code, int dac_val );
     void update_timeGUI();
+    void enableOrDisableGUIItems();
     bool _stop = false;
     bool _running = false;
+    bool _isScanDescending = true;
 
-    std::vector<std::tuple<int, bool>> thresholdsToScan = { {0, true}, {1,false}, {2,false}, {3,false}, {4,false}, {5,false}, {6,false}, {7,false} };
+    std::vector<bool> _thresholdsToScan = { true, false, false, false, false, false, false, false };
+    std::vector<int> _thresholdOffsets = { 0, 0, 0, 0, 0, 0, 0, 0};
 
-    uint _thresholdSpacing = 1;
+    const int _tableRows = 12;
+    const int _tableCols = 3;
+
+    uint _stepSize = 1;
     uint _framesPerStep = 1;
-    int _minTH = 0;
-    int _maxTH = 511;
+    int _startTH = 0;
+    int _endTH = 511;
     int _iteration = 0;
-    int _activeDevices = 0;
+    uint _activeDevices = 0;
     QString _originalPath = "";
     QString _newPath = "";
 
-    QString makePath();
+    QString makePath(int thresholdOffset);
     QString getPath(QString);
 
 
@@ -86,7 +101,8 @@ private slots:
     void finishedScan();
     void on_button_startStop_clicked();
     void on_pushButton_setPath_clicked();
-    void slot_colourModeChanged(bool); //! Needs attention
+    void slot_colourModeChanged();
+    void slot_doubleCounterModeChanged();
     void on_lineEdit_path_editingFinished();
     void on_lineEdit_path_textEdited(const QString &path);
 
