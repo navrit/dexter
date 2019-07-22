@@ -145,8 +145,9 @@ public:
     void toStream(QDataStream &stream); //!< Serializes the dataset for sending via socket to clients.
     Canvas toCanvas(int threshold);
     void saveBIN(QString filename); //!< Puts the dataset into a BIN format and saves.
-    void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false, int threshold = -1);  //!< Puts the dataset into a TIFF format and saves.
-    void handleTiffSaving(QString filename, int threshold, bool crossCorrection, bool spatialOnly);
+    void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false, QString dateTime = "", int threshold = -1, uint index = -1, int thr_value = -1);  //!< Puts the dataset into a TIFF format and saves.
+    void handleTiffSaving(QString filename, int thr, bool crossCorrection, bool spatialOnly);
+    QString buildPathExtension(QString dateTime, int index, int thr, int thr_value, QString extension);
 
     Canvas makeFrameForSaving(int threshold, bool crossCorrection = true, bool spatialOnly = false);
     void toASCII(QString filename); //!< Puts the dataset into ASCII format and saves.

@@ -83,12 +83,14 @@ private:
     uint _framesPerStep = 1;
     int _startTH = 0;
     int _endTH = 511;
-    int _iteration = 0;
+    int _currentThr = 0;
+    uint _iteration = 0;
     uint _activeDevices = 0;
     QString _originalPath = "";
     QString _newPath = "";
+    QString _runStartDateTimeWithMs = "";
+    QList<int> _thresholds = {};
 
-    QString makePath(int thresholdOffset);
     QString getPath(QString);
 
 

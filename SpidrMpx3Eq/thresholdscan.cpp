@@ -203,7 +203,7 @@ void thresholdScan::startScan()
     resetScan();
 
     //! Initialise variables
-
+    _runStartDateTimeWithMs = getCurrentTimeISOms();
     _activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
 
     //! Get values from TableView model (not the logically the same as the GUI)
@@ -250,6 +250,11 @@ void thresholdScan::startScan()
     }
     setOriginalPath(_newPath);
 
+    //! Make sub-folder
+    const QString scanFolder = _newPath + "/scan_" + _runStartDateTimeWithMs;
+    QDir().mkdir(scanFolder);
+    qDebug() << "[INFO]\tMade scan sub-folder: " << scanFolder;
+
     //! Integrating frames?
     if ( _framesPerStep > 1 ) {
         _mpx3gui->set_mode_integral();
@@ -270,7 +275,8 @@ void thresholdScan::startScan()
     //! Update General Settings with the last successfully used threshold path
     _mpx3gui->getGeneralSettings()->setLastThresholdPath(getOriginalPath());
 
-    _iteration = _startTH;
+    _currentThr = _startTH;
+    _iteration = 0;
     update_timeGUI();
     _timer->start();
     _running = true;
@@ -444,33 +450,47 @@ void thresholdScan::resumeTHScan()
     if (_stop)
         return;
 
+    if (_thresholds.isEmpty()) {
+        _thresholds = _mpx3gui->getDataset()->getThresholds();
+    }
+
     //! Main loop through thresholds using all 8 counters (0-7)
 
-    if ((_iteration >= _startTH && _iteration <= _endTH) || (_iteration <= _startTH && _iteration >= _endTH)) {
-        //qDebug().noquote() << QString("[DEBUG]\tLOOP %1 --> From %2 to %3").arg(_iteration).arg(_startTH).arg(_endTH);
+    if ((_currentThr >= _startTH && _currentThr <= _endTH) || (_currentThr <= _startTH && _currentThr >= _endTH)) {
+        //qDebug().noquote() << QString("[DEBUG]\tLOOP %1 --> From %2 to %3").arg(_currentThr).arg(_startTH).arg(_endTH);
 
         //! Set threshold DACs on all chips
-        setThresholdsOnAllChips(_iteration);
+        setThresholdsOnAllChips(_currentThr);
 
         //! Save the data, with the offsets calculated into the filename
-        for (ulong th = 0; th < MPX3RX_DAC_THRESH_7; ++th) {
 
-            //! If the threshold is in the list to be scanned
-            if (_thresholdsToScan[th]) {
+        //qDebug() << "[DEBUG]\tth =" << th << " | _thresholdOffsets[th] =" << _thresholdOffsets[th];
 
-                //qDebug() << "[DEBUG]\tth =" << th << " | _thresholdOffsets[th] =" << _thresholdOffsets[th];
-                _mpx3gui->getDataset()->toTIFF(makePath(_thresholdOffsets[th]), false, false, th); //! Save raw TIFF
-
+        foreach (int thr, _thresholds) {
+            //! Calculate the actual threshold used during scan, <0 and >511 are not possible to set anyway
+            int actualThr = _currentThr + _thresholdOffsets[thr];
+            if (actualThr < 0 ) {
+                actualThr = 0;
+            } else if (actualThr > 511) {
+                actualThr = 511;
             }
+
+            //! Save raw TIFF with the following format:
+            //!    “scan_“ + start_run_datetime_second_precision + / + scan_iteration + “-” + “th” + threshold_number + “-” + threshold_value + “.” + file_format
+            //!
+            //!    [scan_20190722_160023] / [000-511] - th[0-7] - [000-511] . [tiff, pgm etc.]
+            _mpx3gui->getDataset()->toTIFF(_newPath, false, false, _runStartDateTimeWithMs, thr, _iteration, actualThr);
         }
 
         update_timeGUI();
-        //! Increment/decrement iteration counter -------------------------------
+        //! Increment/decrement current threshold counter -------------------------------
         if (_isScanDescending) {
-            _iteration -= _stepSize;
+            _currentThr -= _stepSize;
         } else {
-            _iteration += _stepSize;
+            _currentThr += _stepSize;
         }
+
+        _iteration++;
 
         startDataTakingThread();
 
@@ -478,8 +498,7 @@ void thresholdScan::resumeTHScan()
 
         //! DONE
         finishedScan();
-
-//        qDebug() << "[INFO] Threshold scan finished -----------------";
+        qDebug() << "[INFO] Threshold scan finished -----------------";
         return;
     }
 }
@@ -511,9 +530,9 @@ void thresholdScan::update_timeGUI()
 {
     /* I know this looks excessive, it's not. */
     if (_startTH < _endTH) {
-        ui->progressBar->setValue(int(double(float(_iteration - std::min(_startTH, _endTH)) / float(std::max(_startTH, _endTH) - std::min(_startTH, _endTH))) * 100.0));
+        ui->progressBar->setValue(int(double(float(_currentThr - std::min(_startTH, _endTH)) / float(std::max(_startTH, _endTH) - std::min(_startTH, _endTH))) * 100.0));
     } else {
-        ui->progressBar->setValue(int(double(float(std::max(_startTH, _endTH) - _iteration ) / float(std::max(_startTH, _endTH) - std::min(_startTH, _endTH))) * 100.0));
+        ui->progressBar->setValue(int(double(float(std::max(_startTH, _endTH) - _currentThr ) / float(std::max(_startTH, _endTH) - std::min(_startTH, _endTH))) * 100.0));
     }
 }
 
@@ -578,28 +597,6 @@ void thresholdScan::enableOrDisableGUIItems()
             }
         }
     }
-}
-
-QString thresholdScan::makePath(int thresholdOffset)
-{
-    //! Format is th[0-7]-[0-511].tiff
-    //!    where [0-511] is padded so you always have 3 digits, easier for post-processing
-
-    QString path = _newPath;
-    path.append("/");
-
-    //! Calculate the actual threshold used during scan, <0 and >511 are not possible to set anyway
-    int actualThr = _iteration + thresholdOffset;
-    if (actualThr < 0 ) {
-        actualThr = 0;
-    } else if (actualThr > 511) {
-        actualThr = 511;
-    }
-    path.append(QString::number(actualThr).rightJustified(3, '0'));
-
-    path.append("-" +  getCurrentTimeISOms() + ".tiff");
-
-    return path;
 }
 
 QString thresholdScan::getPath(QString msg)
