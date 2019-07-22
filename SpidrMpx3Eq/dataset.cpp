@@ -302,10 +302,10 @@ Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
  * @param filename - absolute file path to save to
  * @param crossCorrection - attempt to correct the cross or not, default is no correction
  * @param spatialOnly - geometrical correction only. Make the gap between the quadrants, fix the rest in post-processing in external software
- * @param dateTime - optional -
- * @param threshold - optional -
- * @param index - optional -
- * @param thr_value - optional -
+ * @param dateTime - optional - send a date time string through, currently used for threshold scans to categorise measurements in scan folders and ensure uniqueness
+ * @param threshold - optional - specify which threshold should be saved, -1 is the default meaning all existing thresholds should be saved
+ * @param index - optional - measurement index or counter, used in threshold scans to have naturally and numerically ordered files
+ * @param thr_value - optional - the value of the threshold specified by the 'threshold' variable, used in threshold scans because thresholds can have offsets
  * @remarks Writes a 32 bit, greyscale, dynamic sized, vertically flipped TIFF image to `filename`,
  *          writes all thresholds
  *          Does cross correction for non spectroscopic mode ONLY - spectroscopic images have a non constant ratio #SpecialPixels
