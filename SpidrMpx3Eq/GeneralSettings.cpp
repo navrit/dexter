@@ -74,6 +74,7 @@ void GeneralSettings::setLastThresholdPath(QString folder)
     if (info.isDir() && info.isAbsolute() && info.isWritable()) {
         _lastThresholdScanPath = folder;
         writeSetting();
+        qDebug() << "[INFO]\tWritten last threshold path to file: " << _lastThresholdScanPath;
     } else {
         qDebug() << "[ERROR]\tCould not set last threshold path to General Settings";
     }
@@ -82,7 +83,8 @@ void GeneralSettings::setLastThresholdPath(QString folder)
 QString GeneralSettings::getLastThresholdPath()
 {
     readSetting();
-    return lastThresholdScanPath;
+    qDebug() << "[INFO]\tRead last threshold path from file: " << _lastThresholdScanPath;
+    return _lastThresholdScanPath;
 }
 
 void GeneralSettings::writeSetting()

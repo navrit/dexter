@@ -395,7 +395,7 @@ void thresholdScan::setThresholdToScan(int threshold, bool scan)
     if (threshold > 0 && threshold < MPX3RX_DAC_THRESH_7) {
         _thresholdsToScan[threshold] = scan;
     } else {
-        qDebug() << "[ERROR]\t";
+        qDebug() << "[ERROR]\tThreshold to scan could not be set - requested threshold out of range = " << threshold;
     }
 }
 
