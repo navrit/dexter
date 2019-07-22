@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QDir>
+#include <QtDebug>
 
 const static QString companyName = "ASI";
 const static QString softwareName = "Dexter";

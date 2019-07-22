@@ -70,7 +70,13 @@ double GeneralSettings::getSlope(int chipNum)
 
 void GeneralSettings::setLastThresholdPath(QString folder)
 {
-    writeSetting();
+    const QFileInfo info = QFileInfo(folder);
+    if (info.isDir() && info.isAbsolute() && info.isWritable()) {
+        _lastThresholdScanPath = folder;
+        writeSetting();
+    } else {
+        qDebug() << "[ERROR]\tCould not set last threshold path to General Settings";
+    }
 }
 
 QString GeneralSettings::getLastThresholdPath()
