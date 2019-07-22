@@ -87,9 +87,9 @@ QString GeneralSettings::getLastThresholdPath()
 
 void GeneralSettings::writeSetting()
 {
-    QSettings settings(COMPANY_NAME, SOFTWARE_NAME);
-    settings.setValue(EQUALIZATION_PATH, _equalizationPath);
-    settings.setValue(CONFIG_PATH, _configPath);
+    QSettings settings(companyName, softwareName);
+    settings.setValue(equalisationPath, _equalizationPath);
+    settings.setValue(configPath, _configPath);
     settings.setValue(lastThresholdScanPath, _lastThresholdScanPath);
 
     settings.beginGroup(SLOPE);
@@ -109,14 +109,14 @@ void GeneralSettings::writeSetting()
 
 void GeneralSettings::readSetting()
 {
-    QSettings settings(COMPANY_NAME, SOFTWARE_NAME);
+    QSettings settings(companyName, softwareName);
 
 
-    if(settings.contains(EQUALIZATION_PATH))
-        _equalizationPath = settings.value(EQUALIZATION_PATH).toString();
+    if(settings.contains(equalisationPath))
+        _equalizationPath = settings.value(equalisationPath).toString();
 
-    if(settings.contains(CONFIG_PATH))
-        _configPath = settings.value(CONFIG_PATH).toString();
+    if(settings.contains(configPath))
+        _configPath = settings.value(configPath).toString();
 
     if ( settings.contains(lastThresholdScanPath) ) {
         _lastThresholdScanPath = settings.value(lastThresholdScanPath).toString();
