@@ -160,7 +160,7 @@ void CommandHandler::initializeCmdTable()
 
 
     cmd_struct startScan {startScanHandler};
-    cmdTable.insert("StarStopScan",startScan);
+    cmdTable.insert("StartStopScan",startScan);
 
 
     cmd_struct setOperatingEnergy {setOperatingEnergyHandler};
@@ -827,7 +827,7 @@ void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
                 setError(SERVER_BUSY_DATA_TAKING);
                 return;
             }
-            if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StarStopScan"){
+            if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StartStopScan"){
                 qDebug () << "Server is busy." << serverStatus;
                 setError(SERVER_BUSY_THRESHOLD_SCAN);
                 return;
