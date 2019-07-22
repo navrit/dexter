@@ -425,6 +425,10 @@ void thresholdScan::resetScan()
 {
     _stop = false;
     _running = false;
+
+    //! Wipe current dataset before continuing
+    _mpx3gui->getDataset()->zero();
+
     emit busy(FREE);
 }
 
