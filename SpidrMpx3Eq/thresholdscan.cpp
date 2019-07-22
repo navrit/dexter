@@ -197,9 +197,9 @@ void thresholdScan::finishedScan()
 
 void thresholdScan::startScan()
 {
+    //! Use acquisition settings from other view
     qDebug() << "[INFO]\tStarting a threshold scan";
 
-    //! Use acquisition settings from other view
     resetScan();
 
     //! Initialise variables
@@ -222,6 +222,13 @@ void thresholdScan::startScan()
         _isScanDescending = false;
     } else {
         _isScanDescending = true;
+    }
+
+    //! Set DAC starting values
+    if (_isScanDescending) {
+        setThresholdsOnAllChips(_startTH);
+    } else {
+        setThresholdsOnAllChips(_endTH);
     }
 
     //! Set starting values for thresholds specified
@@ -429,10 +436,6 @@ void thresholdScan::resetScan()
 {
     _stop = false;
     _running = false;
-
-    //! Wipe current dataset before continuing
-    _mpx3gui->getDataset()->zero();
-
     emit busy(FREE);
 }
 
