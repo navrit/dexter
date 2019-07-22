@@ -198,6 +198,7 @@ void thresholdScan::finishedScan()
 void thresholdScan::startScan()
 {
     qDebug() << "[INFO]\tStarting a threshold scan";
+
     //! Use acquisition settings from other view
     resetScan();
 
@@ -258,6 +259,9 @@ void thresholdScan::startScan()
     auto startTime = getCurrentTimeISOms();
     ui->textEdit_log->append("Starting Threshold scan @ " +
                              startTime);
+
+    //! Update General Settings with the last successfully used threshold path
+    _mpx3gui->getGeneralSettings()->setLastThresholdPath(getOriginalPath());
 
     _iteration = _startTH;
     update_timeGUI();
@@ -604,10 +608,19 @@ QString thresholdScan::makePath(int thresholdOffset)
 QString thresholdScan::getPath(QString msg)
 {
     QString path = "";
+    QString startPath = QDir::currentPath();
+    const QString lastSavedPath = _mpx3gui->getGeneralSettings()->getLastThresholdPath();
+
+    //! Use the last saved path via General Settings if it is available
+    //! It is only saved there if it is valid already so no real error checking is done here
+    if (lastSavedPath != "" && QFileInfo(lastSavedPath).isDir() && QFileInfo(lastSavedPath).isReadable()) {
+        startPath = lastSavedPath;
+    }
+
     path = QFileDialog::getExistingDirectory(
                 this,
                 msg,
-                QDir::currentPath(),
+                startPath,
                 QFileDialog::ShowDirsOnly);
 
     // We WILL get a path before exiting this function

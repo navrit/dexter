@@ -68,11 +68,23 @@ double GeneralSettings::getSlope(int chipNum)
     return 0.0;
 }
 
+void GeneralSettings::setLastThresholdFolder(QString folder)
+{
+    writeSetting();
+}
+
+QString GeneralSettings::getLastThresholdFolder()
+{
+    readSetting();
+    return lastThresholdScanFolder;
+}
+
 void GeneralSettings::writeSetting()
 {
     QSettings settings(COMPANY_NAME, SOFTWARE_NAME);
     settings.setValue(EQUALIZATION_PATH, _equalizationPath);
     settings.setValue(CONFIG_PATH, _configPath);
+    settings.setValue(lastThresholdScanFolder, _lastThresholdScanFolder);
 
     settings.beginGroup(SLOPE);
     settings.setValue("chip_0", _slopes[0]);
@@ -81,19 +93,13 @@ void GeneralSettings::writeSetting()
     settings.setValue("chip_3", _slopes[3]);
     settings.endGroup();
 
-
     settings.beginGroup(OFFSET);
     settings.setValue("chip_0",_offsets[0]);
     settings.setValue("chip_1",_offsets[1]);
     settings.setValue("chip_2",_offsets[2]);
     settings.setValue("chip_3",_offsets[3]);
     settings.endGroup();
-
 }
-
-
-
-
 
 void GeneralSettings::readSetting()
 {
@@ -106,6 +112,9 @@ void GeneralSettings::readSetting()
     if(settings.contains(CONFIG_PATH))
         _configPath = settings.value(CONFIG_PATH).toString();
 
+    if ( settings.contains(lastThresholdScanFolder) ) {
+        _lastThresholdScanFolder = settings.value(lastThresholdScanFolder).toString();
+    }
 
     if(settings.contains(SLOPE+"/"+"chip_0"))
         _slopes[0] = settings.value(SLOPE+"/"+"chip_0").toDouble();
@@ -130,6 +139,4 @@ void GeneralSettings::readSetting()
 
     if(settings.contains(OFFSET+"/"+"chip_3"))
         _offsets[3] = settings.value(OFFSET+"/"+"chip_3").toDouble();
-
-
 }
