@@ -154,10 +154,10 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
 //                QString arg = argParser(pslType);
 //                _error = NO_ERROR;
 //                pslCmd = pslCmdList.at(0) + ";" + arg;
-//                parseResult = pslCmd.toLatin1().data(); return;
+//                parseResult = pslCmd.toUtf8().data(); return;
 //            }
             //_error = NO_ERROR;
-           // parseResult = pslCmdList.at(0).toLatin1().data(); return;
+           // parseResult = pslCmdList.at(0).toUtf8().data(); return;
         }
         _error = UNKNOWN_COMMAND;
         parseResult = ""; return;

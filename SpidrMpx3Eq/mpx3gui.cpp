@@ -1090,17 +1090,17 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         if (filename.isNull()){
             return;
         }
-        if (selectedFilter == BIN_FILES && !filename.toLower().toLatin1().contains(".bin")){
+        if (selectedFilter == BIN_FILES && !filename.toLower().toUtf8().contains(".bin")){
             filename.append(".bin");
-        } else if (selectedFilter == SPATIAL_TIFF_FILES && !filename.toLower().toLatin1().contains("_spatialCorrected.tiff")){
+        } else if (selectedFilter == SPATIAL_TIFF_FILES && !filename.toLower().toUtf8().contains("_spatialCorrected.tiff")){
             filename.append("_spatialCorrected.tiff");
-        } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toLatin1().contains("_raw.tiff")){
+        } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toUtf8().contains("_raw.tiff")){
             filename.append("_raw.tiff");
-        } else if (selectedFilter == BOTH_TIFF_FILES && !filename.toLower().toLatin1().contains(".tiff")){
+        } else if (selectedFilter == BOTH_TIFF_FILES && !filename.toLower().toUtf8().contains(".tiff")){
             filename.append("_both.tiff");
-        } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tiff")){
+        } else if (selectedFilter == TIFF_FILES && !filename.toLower().toUtf8().contains(".tiff")){
             filename.append(".tiff");
-        } else if (selectedFilter == ASCII_FILES && !filename.toLower().toLatin1().contains(".txt")){
+        } else if (selectedFilter == ASCII_FILES && !filename.toLower().toUtf8().contains(".txt")){
             filename.append(".txt");
         }
 

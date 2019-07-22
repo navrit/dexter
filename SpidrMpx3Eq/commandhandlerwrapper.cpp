@@ -44,7 +44,7 @@ void CommandHandlerWrapper::on_requestForDataTaking(bool)
 {
     QString acqHeader = commandHandler->getAcquisitionHeader();
     const char* dummy="";
-    emit imageIsReady(acqHeader.toLatin1(), Canvas());
+    emit imageIsReady(acqHeader.toUtf8(), Canvas());
     commandHandler->getImage();
 }
 

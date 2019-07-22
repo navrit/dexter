@@ -1073,7 +1073,7 @@ void QCstmConfigMonitoring::on_merlinInterfaceTestButton_clicked()
     }
     pad.append('e');
     qDebug()<<" Pad len = " << pad.length();
-    qDebug()<<" Pad len byte= " << pad.toLatin1().length();
+    qDebug()<<" Pad len byte= " << pad.toUtf8().length();
     qDebug()<<" Pad data = " << pad;
 }
 

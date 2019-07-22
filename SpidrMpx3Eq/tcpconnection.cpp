@@ -80,7 +80,7 @@ void TcpConnecton::error(QAbstractSocket::SocketError socketError)
 void TcpConnecton::on_responseIsReady(QString response)
 {
     //qDebug() << "Response received at the tcpconnection : " << response;
-    QByteArray ba = response.toLatin1();
+    QByteArray ba = response.toUtf8();
     //qDebug()<<"size:"<<ba.size();
     mutex.lock();
     int sndSize = m_socket->write(ba);

@@ -607,14 +607,14 @@ void CommandHandler::getImage()
 //        }
 //        len = zeros + len;
 //        QString firstPart = "MPX,"+ len + ",MQ1," + hd;
-//        ba += firstPart.toLatin1();
+//        ba += firstPart.toUtf8();
 //        ba += frame;
 //        emit imageIsReady(ba);
 //        frameCounter++;
 
 //    }
 //    FrameHeaderDataStruct frameHeader;
-//    QByteArray ba = generateMerlinFrameHeader(frameHeader).toLatin1().data();
+//    QByteArray ba = generateMerlinFrameHeader(frameHeader).toUtf8().data();
 //    ba += Mpx3GUI::getInstance()->getDataset()->toSocketData();
 //    commandIsDecoded("",ba,true);
     return;
@@ -786,7 +786,7 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
         size += hd.length();
         auto len = QString("%1").arg(size, 10, 10, QChar('0'));
         QString firstPart = "MPX," + len + "," + hd;
-        emit imageIsReady(firstPart.toLatin1(), frame);
+        emit imageIsReady(firstPart.toUtf8(), frame);
     }
 }
 
