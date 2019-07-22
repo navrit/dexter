@@ -290,7 +290,7 @@ void Mpx3GUI::loadEqualisationFromPathRemotely(QString path)
 
 void Mpx3GUI::onEqualizationPathExported(QString path)
 {
-    _generalSettings->setEqualizationPath(path);
+    _generalSettings->setEqualisationPath(path);
 }
 
 void Mpx3GUI::sendingShutter()
@@ -1023,10 +1023,10 @@ void Mpx3GUI::initialiseServers()
 
 void Mpx3GUI::_loadEqualizationFromGeneralSettings()
 {
-    QDir eqDir(_generalSettings->getEqualizationPath());
+    QDir eqDir(_generalSettings->getEqualisationPath());
     if(eqDir.exists()){
-        getEqualization()->LoadEqualization(false, false, _generalSettings->getEqualizationPath());
-        qDebug() << "[INFO]\tEqualization loaded from" << _generalSettings->getEqualizationPath();
+        getEqualization()->LoadEqualization(false, false, _generalSettings->getEqualisationPath());
+        qDebug() << "[INFO]\tEqualization loaded from" << _generalSettings->getEqualisationPath();
     }
 }
 
