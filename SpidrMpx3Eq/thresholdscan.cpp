@@ -449,14 +449,8 @@ void thresholdScan::resumeTHScan()
     if ((_iteration >= _startTH && _iteration <= _endTH) || (_iteration <= _startTH && _iteration >= _endTH)) {
         //qDebug().noquote() << QString("[DEBUG]\tLOOP %1 --> From %2 to %3").arg(_iteration).arg(_startTH).arg(_endTH);
 
-        //! Set DACs on all active chips
-        for (int i = 0 ; i < int(_activeDevices); i++) {
-            if ( ! _mpx3gui->getConfig()->detectorResponds(i) ) {
-                qDebug() << "[ERROR]\tDevice " << i << " not responding.";
-            } else {
-                setThresholdsOnAllChips(_iteration);
-            }
-        }
+        //! Set threshold DACs on all chips
+        setThresholdsOnAllChips(_iteration);
 
         //! Save the data, with the offsets calculated into the filename
         for (ulong th = 0; th < MPX3RX_DAC_THRESH_7; ++th) {
