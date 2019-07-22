@@ -245,10 +245,10 @@ void thresholdScan::startScan()
 
     //! Integrating frames?
     if ( _framesPerStep > 1 ) {
-        _mpx3gui->set_summing(true);
+        _mpx3gui->set_mode_integral();
         qDebug() << "[INFO]\tIntegrating frames: true";
     } else {
-        _mpx3gui->set_summing(false);
+        _mpx3gui->set_mode_normal();
         qDebug() << "[INFO]\tIntegrating frames: false";
     }
     //! Tell the config how many frames we want
