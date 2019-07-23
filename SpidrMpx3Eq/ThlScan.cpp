@@ -24,6 +24,14 @@
 using namespace std;
 
 #include <fstream>
+//! TODO
+//! 1. Check all instances of __matrix_size_*, __array_size*, _fullsize_*,
+//! 2. Check for (incorrectly) fixed data sizes
+//! 3. Refactor & cleanup
+//! 4. Refactor SetDAC_propagateInGUI()
+//! 5. Cleanup header file, structure and includes
+//! 6. ClangFormat files?
+//! 7. Address compilation warnings in ThlScan
 
 ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 
