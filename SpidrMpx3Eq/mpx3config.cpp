@@ -673,17 +673,21 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
     if(itParent != JSobjectParent.end()){
         QJsonObject JSobject = itParent.value().toObject();
         it = JSobject.find("chip_0");
-        if(it != JSobject.end());
+        if(it != JSobject.end()) {
             _chipIDELAYS[0] = uint8_t (it.value().toInt());
+        }
         it = JSobject.find("chip_1");
-        if(it != JSobject.end());
+        if(it != JSobject.end()) {
             _chipIDELAYS[1] = uint8_t (it.value().toInt());
+        }
         it = JSobject.find("chip_2");
-        if(it != JSobject.end());
+        if(it != JSobject.end()) {
             _chipIDELAYS[2] = uint8_t (it.value().toInt());
+        }
         it = JSobject.find("chip_3");
-        if(it != JSobject.end());
+        if(it != JSobject.end()) {
             _chipIDELAYS[3] = uint8_t (it.value().toInt());
+        }
     }
 
     itParent = JSobjectParent.find("DetectorConfig");
