@@ -13,7 +13,7 @@
 //! 4. Refactor SetDAC_propagateInGUI()
 //! 5. [DONE] Cleanup header file, structure and includes
 //! 6. ClangFormat files?
-//! 7. Address compilation warnings in ThlScan
+//! 7. [DONE] Address all compilation warnings
 
 ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 

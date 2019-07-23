@@ -450,10 +450,10 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
     }
 
     //qDebug() << "click release: " << pixelAt(clickReleaseLocation).x() << "," << pixelAt(clickReleaseLocation).y();
-
 }
 
 void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event) {
+    Q_UNUSED(event);
     // Double click brings back to full view
     setZoom(0.45);
     emit double_click();
@@ -461,7 +461,7 @@ void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event) {
 
 void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that well for controls.
     //Can't seem to handle multiple presses at once and stutters quite badly.
-    const GLfloat speed = zoom*0.05;
+    const GLfloat speed = GLfloat (zoom*0.05);
     switch(event->key()){
     case Qt::Key_Left:
         addOffset(+speed, 0);

@@ -893,13 +893,13 @@ void Mpx3Config::setIpZmqSubAddress(QString ip_and_port)
 
     QString string = ip_and_port.toLower();
 
-    if (string.contains(QRegExp("(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+    if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
         Zmq_Sub_address = ip_and_port;
 
         emit IpZmqSubAddressChanged( this->getIpZmqSubAddressPortString() );
     } else {
         qDebug() << "[ERROR] ZMQ IP SUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
-                    \n You need to match the following Regex: '(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
+                    \n You need to match the following Regex: '(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
         emit IpZmqSubAddressChangedFailed( "Eg.: tcp://192.168.1.1:5555 - Invalid input" );
     }
 

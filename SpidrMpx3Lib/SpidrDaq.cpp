@@ -144,6 +144,7 @@ int SpidrDaq::classVersion()
 
 std::string SpidrDaq::ipAddressString( int index )
 {
+    Q_UNUSED(index);
   //if( index < 0 || index >= (int) _frameReceivers.size() )
     return std::string( "" );
   //return _frameReceivers[index]->ipAddressString();

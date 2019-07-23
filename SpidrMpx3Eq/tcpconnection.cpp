@@ -92,6 +92,7 @@ void TcpConnecton::on_responseIsReady(QString response)
 
 void TcpConnecton::on_imageIsReady(QByteArray header, Canvas image)
 {
+
     //qDebug() << "Data received at the tcpconnection.";
     //qDebug()<<"header size:"<<header.size();
    // qDebug()<<"Image size:"<<image.size();
@@ -102,5 +103,5 @@ void TcpConnecton::on_imageIsReady(QByteArray header, Canvas image)
     //m_socket->waitForBytesWritten();
     mutex.unlock();
 
-
+    Q_UNUSED(sndSize);
 }

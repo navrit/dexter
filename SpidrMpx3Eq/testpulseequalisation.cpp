@@ -5,9 +5,7 @@
 #include "mpx3config.h"
 
 testPulseEqualisation::testPulseEqualisation(Mpx3GUI * mg, QWidget *parent) :
-    _mpx3gui(mg),
-    QDialog(parent),
-    ui(new Ui::testPulseEqualisation)
+    _mpx3gui(mg), QDialog(parent), ui(new Ui::testPulseEqualisation)
 {
     ui->setupUi(this);
 
@@ -240,7 +238,7 @@ bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
     qDebug() << "[INFO]\tTest pulse equalisation --> Requested injection voltage for TP_REF_A and TP_REF_B:" << requestedInjectionVoltage;
 
     //! Make a modal progress bar as well for visual updates
-    int totalDACsToSet = _mpx3gui->getConfig()->getNActiveDevices() * 3;
+    int totalDACsToSet = int(_mpx3gui->getConfig()->getNActiveDevices() * 3);
     int numberOfDACsSet = 0;
     QProgressDialog progress("Setting test pulse DACs...", QString(), 0, totalDACsToSet, this);
     progress.setModal(true);
@@ -293,8 +291,8 @@ uint testPulseEqualisation::setDACToVoltage(uint chipID, int dacCode, double V)
     //! Give them some reasonable starting values to save time
     //! Get these from this existing values in the config unless I know better ;)
     if (dacCode == MPX3RX_DAC_TP_REF)   dac_val = 60;
-    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_TP_REF_A ));
-    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_TP_REF_B ));
+    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = uint(_mpx3gui->getConfig()->getDACValue(chipID, int(_mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_TP_REF_A ))));
+    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = uint(_mpx3gui->getConfig()->getDACValue(chipID, int(_mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_TP_REF_B ))));
 
     while (!foundTarget) {
         if (dac_val >= 511) {
@@ -304,9 +302,9 @@ uint testPulseEqualisation::setDACToVoltage(uint chipID, int dacCode, double V)
 
         }
 
-        spidrcontrol->setDac(chipID, dacCode, int(dac_val));
-        spidrcontrol->setSenseDac(chipID, dacCode);
-        spidrcontrol->getDacOut(chipID, &adc_val, nSamples);
+        spidrcontrol->setDac(int(chipID), dacCode, int(dac_val));
+        spidrcontrol->setSenseDac(int(chipID), dacCode);
+        spidrcontrol->getDacOut(int(chipID), &adc_val, nSamples);
 
         adc_val /= nSamples;
         adc_volt = (__voltage_DACS_MAX/double(__maxADCCounts)) * (double(adc_val));
@@ -346,7 +344,7 @@ uint testPulseEqualisation::setDACToVoltage(uint chipID, int dacCode, double V)
 void testPulseEqualisation::SetDAC_propagateInGUI(uint devId, int dac_code, int dac_val ) {
 
     // Set Dac
-    spidrcontrol->setDac( devId, dac_code, dac_val );
+    spidrcontrol->setDac( int(devId), dac_code, dac_val );
     // Adjust the sliders and the SpinBoxes to the new value
     connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
     // Get the DAC back just to be sure and then slide&spin

@@ -61,34 +61,28 @@ unsigned hdmiConfig::_comboBoxIndexToHdmiCode(int comboBoxIndex)
     switch (comboBoxIndex) {
     case 1:
         return externalShutterIn;
-        break;
     case 2:
         if(Mpx3GUI::getInstance()->getConfig()->isInhibitShutterSelected())
             return inhibitShutterInOn;
         else
             return inhibitShutterInOff;
-        break;
     case 3:
         return shutter_out;
-        break;
     case 4:
         return inhibitShutterAndShutterOut;
-        break;
     case 5:
         return counterSelectOut;
-        break;
     default:
         return 0;
-        break;
     }
 }
 
 void hdmiConfig::_setHdmiRegister(unsigned code, unsigned shift)
 {
-    if(shift >= 0 && shift < 6 )
+    if(shift < 6 )
         _hdmiRegisterArray[shift] = code;
     if(code == inhibitShutterInOff || code == inhibitShutterInOn)
-        Mpx3GUI::getInstance()->getConfig()->onSetInhibitShutterRegisterOffset(shift*4);
+        Mpx3GUI::getInstance()->getConfig()->onSetInhibitShutterRegisterOffset(int(shift*4));
 }
 
 void hdmiConfig::on_hdmi1Pin1ComboBox_currentIndexChanged(int index)
@@ -183,12 +177,11 @@ void hdmiConfig::on_submitPb_released()
         Mpx3GUI::getInstance()->getConfig()->onSetInhibitShutterRegisterOffset(-1);
 
     qDebug().noquote() << "[INFO]\tHDMI config : " << QString::number(_hdmiRegister, 2);
-    Mpx3GUI::getInstance()->GetSpidrController()->setSpidrReg(0x0810,_hdmiRegister, true);
-    Mpx3GUI::getInstance()->getConfig()->setHdmiRegisterValue(_hdmiRegister);
+    Mpx3GUI::getInstance()->GetSpidrController()->setSpidrReg(0x0810, int(_hdmiRegister), true);
+    Mpx3GUI::getInstance()->getConfig()->setHdmiRegisterValue(int(_hdmiRegister));
 }
 
 void hdmiConfig::ConnectionStatusChanged(bool con)
 {
-
     this->setEnabled(con);
 }

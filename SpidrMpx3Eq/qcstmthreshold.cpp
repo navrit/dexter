@@ -121,7 +121,7 @@ void QCstmThreshold::on_thlCalibDifferentiateCheckBox_toggled(bool checked)
 //            qDebug() << f.size() << " | " << x.size();
 
             //! Put points from array on graph
-            for ( int i = 0; i < x.size() ; i++ ) {
+            for ( ulong i = 0; i < x.size() ; i++ ) {
 //                qDebug() << x[j] << f[j];
                 setPoint(QPointF(x[i],f[i]), _plotIdxCntr);
             }
@@ -130,10 +130,10 @@ void QCstmThreshold::on_thlCalibDifferentiateCheckBox_toggled(bool checked)
             auto peak = std::min_element(std::begin(f), std::end(f)) + std::distance(std::begin(f), biggest);
             double xAtPeak = 0;
 
-            for ( int i = 0; i < x.size() ; i++ ) {
-                if (f[i] == *peak){
+            for ( ulong i = 0; i < x.size() ; i++ ) {
+                if (int(f[i]) == int(*peak)) {
                     auto minX = std::min_element(std::begin(x), std::end(x));
-                    xAtPeak = i + *minX;
+                    xAtPeak = int(i) + *minX;
                 }
             }
             graphNew->setName( "dC/dTHL Peak @ " + QString::number(xAtPeak) + ", " + QString::number(*peak) );
@@ -358,9 +358,9 @@ std::vector<double> QCstmThreshold::derivativeFivePointStencil(std::vector<int> 
 {
     std::vector<double> f_prime;
 
-    for (int i = 0 ; i < x.size() ; i++) {
-        if (i < (x.size() - 2)){
-            double der;
+    for (ulong i = 0 ; i < x.size() ; i++) {
+        if (i < ulong(x.size() - 2)) {
+            double der = 0;
             der +=   -f[i + 2]; // f1
             der +=  8.*f[i    ]; // f2
             der += -8.*f[i    ]; // f3
@@ -379,12 +379,12 @@ std::vector<double> QCstmThreshold::derivativeFivePointStencil(std::vector<int> 
 
     auto f_primeMax = std::max_element(std::begin(f_prime), std::end(f_prime));
     auto distToMax = std::distance(std::begin(f_prime), f_primeMax);
-    double fPeak = f[distToMax];
+    double fPeak = f[ulong(distToMax)];
     auto a = *f_primeMax / fPeak;
 
     //! Normalise to max of input (x)
     // Meant to be f_prime = f_prime * a but this isn't Python
-    for (int i = 0 ; i < x.size() ; i++) {
+    for (ulong i = 0 ; i < x.size() ; i++) {
         f_prime[i] = f_prime[i] / a;
     }
     return f_prime;
@@ -529,7 +529,7 @@ void CustomScanThread::run() {
 
         // Set Dac
         if ( _cstmThreshold->GetUI()->onAllChipsCheckBox->isChecked() ) {
-            for(int i = 0 ; i < _mpx3gui->getConfig()->getNActiveDevices() ; i++) {
+            for(int i = 0 ; i < int(_mpx3gui->getConfig()->getNActiveDevices()); i++) {
                 if ( ! _cstmThreshold->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
                     qDebug() << "[ERR ] Device " << i << " not responding.";
                 } else {
@@ -651,7 +651,7 @@ void CustomScanThread::run() {
         qDebug() << "Reactive THL = " << turnonTHL << " | pixelsFired = " << startReacting;
         qDebug() << "nReps = " << nReps;
 
-        double nFiredAverage = ((double)pixelsReactive) / ((double)nReps);
+        double nFiredAverage = (double(pixelsReactive)) / (double(nReps));
 
         // Scan info
         QString firedVal;

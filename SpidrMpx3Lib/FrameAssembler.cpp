@@ -2,7 +2,8 @@
 #include "UdpReceiver.h"
 #include <iomanip> // For pretty column printing --> std::setw()
 
-//#define SKIPMOSTPIXELS
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
 
 FrameAssembler::FrameAssembler(int chipIndex) {
     this->chipIndex = chipIndex;
@@ -20,7 +21,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
     if (row_counter >= 0) {
       // we're in a frame
       int eorIndex = (endCursor - (cursor & 0xff)) / pixels_per_word;
-      packetLoss = firstType == POLL_TIME_OUT || eorIndex >= packetSize;
+      packetLoss = firstType == POLL_TIME_OUT || eorIndex >= int(packetSize);
       if (! packetLoss) {
           uint64_t eorPacket = pixel_packet[eorIndex];
           packetLoss = ! packetEndsRow(eorPacket)
@@ -99,9 +100,8 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
           }
           cursor = next_cursor;
           assert (cursor >= 0 && cursor < MPX_PIXEL_COLUMNS);
-          { int rowEndIx = (endCursor - cursor) / pixels_per_word;
-            assert (rowEndIx >= packetSize || packetEndsRow(pixel_packet[rowEndIx]));
-          }
+          int rowEndIx = (endCursor - cursor) / pixels_per_word;
+          assert (uint64_t(rowEndIx) >= packetSize || packetEndsRow(pixel_packet[rowEndIx]));
           row_counter = next_row;
           frame->pixelsLost += missing + (row_counter - 1 - last_row) * MPX_PIXEL_COLUMNS + cursor;
           if (cursor == 0) {
@@ -125,13 +125,16 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       // the OMR could be bogus on some rare chip boards, verify!
       if (! packetEndsRow(pixel_packet[endCursor/pixels_per_word])) {
           std::cerr << "[ERROR] bad OMR in Info Header\n";
-          int countL;
+          int countL = 0;
           if (packetEndsRow(pixel_packet[4])) {
-              counter_bits = 1; countL = 0;
+              counter_bits = 1;
+              countL = 0;
           } else if (packetEndsRow(pixel_packet[25])) {
-              counter_bits = 6; countL = 1;
+              counter_bits = 6;
+              countL = 1;
           } else if (packetEndsRow(pixel_packet[51])) {
-              counter_bits = 12; countL = 2;
+              counter_bits = 12;
+              countL = 2;
           }
           omr.setCountL(countL);
           pixels_per_word = 60 / counter_bits;
@@ -272,8 +275,8 @@ void FrameAssembler::lutInit(bool lutBug) {
       int pixcode = 0;
       for(int i=0; i<64; i++ )
         {
-          _mpx3Rx6BitsLut[pixcode] = i;
-          _mpx3Rx6BitsEnc[i] = pixcode;
+          _mpx3Rx6BitsLut[pixcode] = uint(i);
+          _mpx3Rx6BitsEnc[i] = uint(pixcode);
           // Next code = (!b0 & !b1 & !b2 & !b3 & !b4) ^ b4 ^ b5
           int bit = (pixcode & 0x01) ^ ((pixcode & 0x20)>>5);
           if( (pixcode & 0x1F) == 0 ) bit ^= 1;
@@ -284,8 +287,8 @@ void FrameAssembler::lutInit(bool lutBug) {
       pixcode = 0;
       for(int i=0; i<4096; i++ )
         {
-          _mpx3Rx12BitsLut[pixcode] = i;
-          _mpx3Rx12BitsEnc[i] = pixcode;
+          _mpx3Rx12BitsLut[pixcode] = uint(i);
+          _mpx3Rx12BitsEnc[i] = uint(pixcode);
           // Next code = (!b0 & !b1 & !b2 & !b3 & !b4& !b5& !b6 & !b7 &
           //              !b8 & !b9 & !b10) ^ b0 ^ b3 ^ b5 ^ b11
           int bit = ((pixcode & 0x001) ^ ((pixcode & 0x008)>>3) ^
@@ -301,3 +304,5 @@ uint   FrameAssembler::_mpx3Rx6BitsEnc[64];
 uint   FrameAssembler::_mpx3Rx12BitsLut[4096];
 uint   FrameAssembler::_mpx3Rx12BitsEnc[4096];
 bool  FrameAssembler::_lutBug;
+
+#pragma GCC diagnostic pop

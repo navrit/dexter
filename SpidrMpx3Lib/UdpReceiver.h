@@ -12,8 +12,11 @@
 #include <thread>
 #include <unistd.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
+#pragma GCC diagnostic pop
 
 #include "PacketContainer.h"
 #include "configs.h"
