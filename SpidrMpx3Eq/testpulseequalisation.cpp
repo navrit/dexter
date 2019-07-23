@@ -66,7 +66,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
             //turnOffAllCTPRs(spidrcontrol, chipID, false);
 
             for ( int i = startPixelOffset; i < __matrix_size; i++ ) {
-                pix = _mpx3gui->XtoXY(i, __array_size_x);
+                pix = _mpx3gui->XtoXY(i, __matrix_size_x);
 
                 //! Unmask all pixels that we are going to inject test pulses into.
                 //! --> mask all pixels that we aren't using
@@ -130,7 +130,7 @@ bool testPulseEqualisation::deactivate()
             spidrcontrol->setInternalTestPulse(chipID, false);
 
             for ( int i = 0; i < __matrix_size; i++ ) {
-                pix = _mpx3gui->XtoXY(i, __array_size_x);
+                pix = _mpx3gui->XtoXY(i, __matrix_size_x);
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
                 spidrcontrol->configPixelMpx3rx(pix.first,
                                                 pix.second,
@@ -363,7 +363,7 @@ void testPulseEqualisation::SetDAC_propagateInGUI(uint devId, int dac_code, int 
 void testPulseEqualisation::turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit)
 {
     //! Turn off all CTPRs by default and submit to chip for a clean start
-    for (int column = 0; column < __array_size_x; column++ ) {
+    for (int column = 0; column < __matrix_size_x; column++ ) {
         spidrcontrol->configCtpr( chipID, column, 0 );
     }
 

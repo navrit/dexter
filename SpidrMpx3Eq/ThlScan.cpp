@@ -1830,14 +1830,14 @@ set<int> ThlScan::GetReworkSubset(set<int> reworkSet, int spacing, int offset_x,
 
     set<int> subset;
 
-    for (int i = 0 ; i < __array_size_x ; i++) {
+    for (int i = 0 ; i < __matrix_size_x ; i++) {
 
         // For instance if spacing = 4, there should be calls with offset_x=0,1,2,3
         //  in order to cover the whole matrix.
         if ( (i + offset_x) % spacing == 0 ) { // This is the right column
-            for (int j = 0 ; j < __array_size_y ; j++) {
+            for (int j = 0 ; j < __matrix_size_y ; j++) {
                 if( (j + offset_y) % spacing == 0 ) { // Unmasked
-                    int pix = XYtoX(i,j, __array_size_x);
+                    int pix = XYtoX(i,j, __matrix_size_x);
                     if( reworkSet.find( pix ) != reworkSet.end() ) subset.insert( pix );
                 }
             }
@@ -1868,23 +1868,23 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
     // The reason is that it needs to match with the _pixelCountsMap id structure.
     int chipIdOffset = __matrix_size * devId;
 
-    for (int i = 0 ; i < __array_size_x ; i++) {
+    for (int i = 0 ; i < __matrix_size_x ; i++) {
 
         // For instance if spacing = 4, there should be calls with offset_x=0,1,2,3
         //  in order to cover the whole matrix.
         if ( (i + offset_x) % spacing == 0 ) { // This is the right column
 
-            for (int j = 0 ; j < __array_size_y ; j++) {
+            for (int j = 0 ; j < __matrix_size_y ; j++) {
 
                 if( (j + offset_y) % spacing != 0 ) { // This one should be masked
                     spidrcontrol->setPixelMaskMpx3rx(i, j, true);
-                    _maskedSet.insert( XYtoX(i, j, __array_size_x ) + chipIdOffset );
+                    _maskedSet.insert( XYtoX(i, j, __matrix_size_x ) + chipIdOffset );
                 } // leaving unmasked (j + offset_x) % spacing == 0
             }
         } else { // mask the entire column
-            for (int j = 0 ; j < __array_size_y ; j++) {
+            for (int j = 0 ; j < __matrix_size_y ; j++) {
                 spidrcontrol->setPixelMaskMpx3rx(i, j, true);
-                _maskedSet.insert( XYtoX(i, j, __array_size_x ) + chipIdOffset );
+                _maskedSet.insert( XYtoX(i, j, __matrix_size_x ) + chipIdOffset );
             }
         }
     }
@@ -1912,11 +1912,11 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> rework
     int cntr = 0, pix = 0;
     // TODO: this is stupid and inefficient; because all masks are cleaned already
     // you can better just iterate over the reworkPixels directly
-    for (int i = 0 ; i < __array_size_x ; i++) {
+    for (int i = 0 ; i < __matrix_size_x ; i++) {
 
-        for (int j = 0 ; j < __array_size_y ; j++) {
+        for (int j = 0 ; j < __matrix_size_y ; j++) {
 
-            pix = XYtoX(i, j, __array_size_x);
+            pix = XYtoX(i, j, __matrix_size_x);
 
             // The pixels NOT in the reworkPixels set, must be masked
             if ( reworkPixels.find( pix ) == reworkPixels.end() ) {

@@ -337,7 +337,7 @@ void zmqController::setThreshold(QJsonObject obj)
 
     //! May want to handle the failures better
 
-    if (arg1 >= 0 && arg1 < __max_colors) {
+    if (arg1 >= 0 && arg1 < __max_colours) {
         if (arg2 >= 0 && arg2 < __max_DAC_range) {
             //! SUCCESS, this is actually valid input
             emit setThreshold(arg1, arg2);

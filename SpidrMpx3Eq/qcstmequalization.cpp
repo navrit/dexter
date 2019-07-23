@@ -1668,7 +1668,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     // Adjustment bits
     pair<int, int> pix;
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
-        pix = XtoXY(i, __array_size_x);
+        pix = XtoXY(i, __matrix_size_x);
         spidrcontrol->configPixelMpx3rx(pix.first, pix.second, val_L, val_H, testPulseMode ); // 0x1F = 31 is the max adjustment for 5 bits
     }
     spidrcontrol->setPixelConfigMpx3rx( deviceId );
@@ -1694,7 +1694,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
     int testBitsOn = 0;
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
-        pix = XtoXY(i, __array_size_x);
+        pix = XtoXY(i, __matrix_size_x);
         //qDebug() << _eqMap[chipIndex]->GetPixelAdj(i) << _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H);
 
         bool val;
@@ -2172,7 +2172,7 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
     uint pixelSpacing = testPulseEqualisationDialog->getPixelSpacing();
 
     for ( int i = 0; i < __matrix_size; i++ ) {
-        pix = _mpx3gui->XtoXY(i, __array_size_x);
+        pix = _mpx3gui->XtoXY(i, __matrix_size_x);
 
         //! Unmask all pixels that we are going to inject test pulses into.
         //! --> mask all pixels that we aren't using

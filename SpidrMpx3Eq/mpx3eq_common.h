@@ -48,14 +48,12 @@ typedef enum {
 
 const static int __matrix_size_x = 256;
 const static int __matrix_size_y = 256;
-const static int __matrix_size_color_x = 128;
-const static int __matrix_size_color_y = 128;
-const static int __max_colors  = 8;
+const static int __matrix_size_colour_x = 128;
+const static int __matrix_size_colour_y = 128;
+const static int __max_colours = 8;
 
-const static int __array_size_x = __matrix_size_x;
-const static int __array_size_y = __matrix_size_y;
-const static int __matrix_size = (__array_size_x*__array_size_y);
-const static int __matrix_size_color = (__matrix_size_color_x*__matrix_size_color_y);
+const static int __matrix_size = (__matrix_size_x * __matrix_size_y);
+const static int __matrix_size_colour = (__matrix_size_colour_x * __matrix_size_colour_y);
 
 const static int __max_adj_val = 0x1F; // 0x1F = 31 is the max adjustment with 5 bits
 
