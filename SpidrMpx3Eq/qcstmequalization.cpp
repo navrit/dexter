@@ -512,7 +512,7 @@ void QCstmEqualization::InitializeBarChartsEqualization() {
         // save the pointers
         _checkBoxes.push_back( chipOn );
         // And connect them
-        connect( chipOn, SIGNAL(toggled(bool)), this, SLOT( ShowEqualizationForChip(bool) ) );
+        connect( chipOn, SIGNAL(toggled(bool)), this, SLOT( ShowEqualizationForChip() ) );
     }
 
     // Leave the check box corresponding to chipId=2 checked
@@ -2304,28 +2304,30 @@ bool QCstmEqualization::makeTeaCoffeeDialog()
     msgBox.addButton(QMessageBox::Ok);
     msgBox.addButton(QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.setStyleSheet("QPushButton { \
-                         background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgb(0,127,255), stop:1 rgb(0, 110, 200)); \
+    msgBox.setStyleSheet("\
+        QPushButton { \
+            background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgb(0,127,255), stop:1 rgb(0, 110, 200)); \
             font : 16px 'Helvetica Neue'; \
-    border-radius : 10px; \
-padding : 5px; \
-margin : 3px; \
-color : white; \
-}\
-QPushButton:hover { \
-color : #f9f9f9; \
-border : 1px solid transparent; \
-font : bold; \
-} \
-QPushButton:pressed { \
-    background-color : #007acc; \
-} \
-");
+            border-radius : 10px; \
+            padding : 5px; \
+            margin : 3px; \
+            color : white; \
+        }\
+        QPushButton:hover { \
+            color : #f9f9f9; \
+            border : 1px solid transparent; \
+            font : bold; \
+        } \
+        QPushButton:pressed { \
+            background-color : #007acc; \
+        } \
+    ");
 
-if (msgBox.exec() == QMessageBox::Ok){
-    return true;
-} else {
-return false;
+    if (msgBox.exec() == QMessageBox::Ok){
+        return true;
+    } else {
+        return false;
+    }
 }
 }
 

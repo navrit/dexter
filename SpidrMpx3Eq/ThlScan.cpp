@@ -135,7 +135,6 @@ void ThlScan::RewindData(int full_sizex, int full_sizey) {
 
     // Nothing should be masked
     _maskedSet.clear();
-
 }
 
 
@@ -184,11 +183,11 @@ void ThlScan::on_stop_data_taking_thread() {
 void ThlScan::run() {
 
     // The normal scan starting from scratch
-    if(_scanType == __BASIC_SCAN) EqualizationScan( );
+    if (_scanType == __BASIC_SCAN) EqualizationScan();
 
     // This one is a fine tuning scan
-    if(_scanType == __FINE_TUNING1_SCAN) {
-        FineTuning( );
+    if (_scanType == __FINE_TUNING1_SCAN) {
+        FineTuning();
     }
 }
 
