@@ -1,29 +1,11 @@
-/**
- * John Idarraga <idarraga@cern.ch>
- * Nikhef, 2014.
- */
+/** @authors John Idarraga, 2014-2017
+*            Navrit Bal, 2016-2019+
+*/
 
 #include "ThlScan.h"
-#include "SpidrController.h"
-#include "SpidrDaq.h"
-
-#include "barchart.h"
-#include "qcstmplotheatmap.h"
-#include "qcstmequalization.h"
 #include "ui_qcstmequalization.h"
-#include "mpx3dacsdescr.h"
-
-#include "mpx3defs.h"
-#include "mpx3eq_common.h"
 #include "ui_mpx3gui.h"
 
-#include <iostream>
-#include <iterator>
-#include <map>
-#include <vector>
-using namespace std;
-
-#include <fstream>
 //! TODO
 //! 1. Check all instances of __matrix_size_*, __array_size*, _fullsize_*,
 //! 2. Check for (incorrectly) fixed data sizes

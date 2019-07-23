@@ -6,20 +6,23 @@
 #ifndef THLSCAN_H
 #define THLSCAN_H
 
-#include <map>
-#include <set>
-#include <vector>
 #include <QThread>
 #include <QtWidgets>
 
+#include <map>
+#include <set>
+#include <vector>
+#include <iostream>
+#include <iterator>
+
 #include "mpx3gui.h"
-
-
-using namespace std;
+#include "SpidrDaq.h"
+#include "barchart.h"
+#include "mpx3dacsdescr.h"
+#include "mpx3defs.h"
+#include "mpx3eq_common.h"
 
 class SpidrController;
-class SpidrDaq;
-class BarChart;
 class QCstmPlotHeatmap;
 class QCstmEqualization;
 class Mpx3EqualizationResults;
@@ -29,10 +32,6 @@ enum Thl_Status {
     __UNDEFINED = -1,
     __NOT_TESTED_YET = 0,
 };
-
-
-#define __accelerationStartLimit	50
-#define __step_scan_boostfactor		10
 
 class ScanResults {
 public:
@@ -197,6 +196,9 @@ private:
 
     // control
     bool _stop;
+
+    const static int __accelerationStartLimit = 50;
+    const static int __step_scan_boostfactor = 10;
 
 private slots:
     //void UpdateChart(int setId, int thlValue);
