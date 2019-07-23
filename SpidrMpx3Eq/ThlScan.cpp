@@ -10,7 +10,7 @@
 //! 1. Check all instances of __matrix_size_*, __array_size*, _fullsize_*,
 //! 2. Check for (incorrectly) fixed data sizes
 //! 3. Refactor & cleanup
-//! 4. Refactor SetDAC_propagateInGUI()
+//! 4. [DONE] Modify SetDAC_propagateInGUI()
 //! 5. [DONE] Cleanup header file, structure and includes
 //! 6. ClangFormat files?
 //! 7. [DONE] Address all compilation warnings
@@ -759,21 +759,20 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
 
 void ThlScan::SetDAC_propagateInGUI(SpidrController * spidrcontrol, uint devId, int dac_code, int dac_val ){
 
-    // Set Dac
-    spidrcontrol->setDac( int(devId), dac_code, dac_val );
-    // Adjust the sliders and the SpinBoxes to the new value
-    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-    // Get the DAC back just to be sure and then slide&spin
-    //int dacVal = 0;
-    //spidrcontrol->getDac( devId,  dac_code, &dacVal);
-    // SlideAndSpin works with the DAC index, no the code.
-    int dacIndex = _mpx3gui->getDACs()->GetDACIndex( dac_code );
-    //slideAndSpin( dacIndex,  dacVal );
-    slideAndSpin( dacIndex,  dac_val );
-    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    if ( spidrcontrol->setDac( int(devId), dac_code, dac_val ) ) {
 
-    // Set in the local config.  This function also takes the dac_index and not the dac_code
-    _mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
+        // Adjust the sliders and the SpinBoxes to the new value
+        connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+
+        // SlideAndSpin works with the DAC index, no the code.
+        int dacIndex = _mpx3gui->getDACs()->GetDACIndex( dac_code );
+
+        slideAndSpin( dacIndex,  dac_val );
+        disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+
+        // Set in the local config.  This function also takes the dac_index and not the dac_code
+        _mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
+    }
 }
 
 bool ThlScan::ThereIsAFalse(vector<bool> v){
