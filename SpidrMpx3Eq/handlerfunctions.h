@@ -7,16 +7,17 @@
 #include "qcstmconfigmonitoring.h"
 #include "MerlinInterface.h"
 
-
 //handler functions
 void helloHandler(CommandHandler* ch, Command* cmd)
 {
+    Q_UNUSED(ch);
     cmd->setData(_softwareVersion);
     cmd->setError(NO_ERROR);
 }
 
 void byeHandler(CommandHandler* ch, Command* cmd)
 {
+    Q_UNUSED(ch);
     QString tstData = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type ki";
     if(cmd->enoughArguments(1,"Bye"))
         cmd->setData(tstData);
@@ -24,6 +25,7 @@ void byeHandler(CommandHandler* ch, Command* cmd)
 
 void setReadoutModeHandler(CommandHandler* ch, Command* cmd)
 {
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetReadoutMode")) //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -51,6 +53,7 @@ void setReadoutModeHandler(CommandHandler* ch, Command* cmd)
 
 void getReadoutModeHandler(CommandHandler* ch, Command* cmd)
 {
+    Q_UNUSED(ch);
     //here code to get the readout mode
     if(Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 0)
     {
@@ -67,12 +70,11 @@ void getReadoutModeHandler(CommandHandler* ch, Command* cmd)
 
     cmd->setData("-1");
     cmd->setError(UNKNOWN_ERROR);
-
-
 }
 
 void setCounterDepthHandler(CommandHandler* ch, Command* cmd)
 {
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetCounterDepth"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -115,7 +117,8 @@ void setCounterDepthHandler(CommandHandler* ch, Command* cmd)
 
 }
 
-void getCounterDepthHandler(CommandHandler* ch, Command* cmd){
+void getCounterDepthHandler(CommandHandler* ch, Command* cmd) {
+    Q_UNUSED(ch);
     //here code to get the readout mode
     if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 1)
     {
@@ -146,12 +149,13 @@ void getCounterDepthHandler(CommandHandler* ch, Command* cmd){
 }
 
 void getChipTemperatureHandler(CommandHandler* ch, Command* cmd) {
+    Q_UNUSED(ch);
     SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
 
     if (spidrcontrol) {
         int mdegrees;
         if (spidrcontrol->getRemoteTemp(&mdegrees)) {
-            cmd->setData(QString::number(  ((double) mdegrees/1000)));
+            cmd->setData(QString::number((double(mdegrees)/1000.)));
             cmd->setError(NO_ERROR);
         }
     } else {
@@ -160,14 +164,14 @@ void getChipTemperatureHandler(CommandHandler* ch, Command* cmd) {
     }
 }
 
-
  void getBoardTemperatureHandler(CommandHandler* ch, Command* cmd) {
+     Q_UNUSED(ch);
      SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
 
      if (spidrcontrol) {
          int mdegrees;
          if (spidrcontrol->getLocalTemp( &mdegrees )) {
-             cmd->setData(QString::number(((double)mdegrees/1000)));
+             cmd->setData(QString::number((double(mdegrees)/1000.)));
              cmd->setError(NO_ERROR);
          }
      } else {
@@ -176,15 +180,14 @@ void getChipTemperatureHandler(CommandHandler* ch, Command* cmd) {
      }
  }
 
-
-
  void getFpgaTemperatureHandler(CommandHandler* ch, Command* cmd) {
+     Q_UNUSED(ch);
      SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
 
      if (spidrcontrol) {
          int mdegrees;
          if ( spidrcontrol->getFpgaTemp( &mdegrees )) {
-             cmd->setData(QString::number( ((double)mdegrees/1000)));
+             cmd->setData(QString::number((double(mdegrees)/1000.)));
              cmd->setError(NO_ERROR);
          }
      } else {
@@ -193,16 +196,14 @@ void getChipTemperatureHandler(CommandHandler* ch, Command* cmd) {
      }
  }
 
-
-
-
  void getHumidityHandler(CommandHandler* ch, Command* cmd) {
+     Q_UNUSED(ch);
      SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
 
      if (spidrcontrol) {
          int humidityPercentage;
          if (spidrcontrol->getHumidity(&humidityPercentage)) {
-             cmd->setData(QString::number((int) (humidityPercentage)));
+             cmd->setData(QString::number(int((humidityPercentage))));
              cmd->setError(NO_ERROR);
          }
      } else {
@@ -214,6 +215,7 @@ void getChipTemperatureHandler(CommandHandler* ch, Command* cmd) {
 
 
 void setOperationalModeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetOperationalMode"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -239,11 +241,13 @@ void setOperationalModeHandler(CommandHandler* ch, Command* cmd){
 }
 
 void getOperationalModeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     //here code to get the operational mode
     cmd->setData("Getting the operational mode....!");
 
 }
 void openHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(Mpx3GUI::getInstance()->establish_connection()){
         cmd->setError(NO_ERROR);
         cmd->setData("0");
@@ -255,11 +259,13 @@ void openHandler(CommandHandler* ch, Command* cmd){
     }
 }
 void closeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     Mpx3GUI::getInstance()->closeRemotely();
     cmd->setData("0");
     cmd->setError(NO_ERROR);
 }
 void snapHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
 
     ch->startSnap();
     cmd->setData(QString::number(0));
@@ -270,11 +276,13 @@ void snapHandler(CommandHandler* ch, Command* cmd){
 }
 
 void startHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     ch->startLiveCamera(true);
     cmd->setData(QString::number(0));
     cmd->setError(NO_ERROR);
 }
 void stopHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     ch->startLiveCamera(false);
     cmd->setData(QString::number(0));
     cmd->setError(NO_ERROR);
@@ -282,6 +290,7 @@ void stopHandler(CommandHandler* ch, Command* cmd){
 }
 
 void setTriggerModeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     /*
     #define SHUTTERMODE_POS_EXT        0
     #define SHUTTERMODE_NEG_EXT        1
@@ -311,12 +320,14 @@ void setTriggerModeHandler(CommandHandler* ch, Command* cmd){
     cmd->setError(NO_ERROR);
 }
 void getTriggerModeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     int val = ch->getGui()->getConfigMonitoring()->getTriggerModeIndex();
     cmd->setError(NO_ERROR);
     cmd->setData(QString::number(val));
 }
 
 void setGainModeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetGainMode"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -336,6 +347,7 @@ void setGainModeHandler(CommandHandler* ch, Command* cmd){
 }
 
 void getGainModeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     int gainMode = Mpx3GUI::getInstance()->getConfig()->getGainMode();
     //QString gainModeStrTable[] = {"SuperHigh","High","Low","SuperLow"};
     if(gainMode >= 0 && gainMode <= 3){
@@ -349,6 +361,7 @@ void getGainModeHandler(CommandHandler* ch, Command* cmd){
 }
 
 void setPolarityHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetPolarity"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -373,6 +386,7 @@ void setPolarityHandler(CommandHandler* ch, Command* cmd){
     }
 }
 void getPolarityHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(Mpx3GUI::getInstance()->getConfig()->getPolarity())
     {
         cmd->setData("1");
@@ -385,6 +399,7 @@ void getPolarityHandler(CommandHandler* ch, Command* cmd){
     }
 }
 void setCounterSelectFrequencyHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetCounterSelectFrequency"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -397,12 +412,14 @@ void setCounterSelectFrequencyHandler(CommandHandler* ch, Command* cmd){
 
 }
 void getCounterSelectFrequencyHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     int freq = Mpx3GUI::getInstance()->getConfig()->getContRWFreq();
     cmd->setData(QString::number(freq));
     cmd->setError(NO_ERROR);
 }
 
 void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(2,"SetShutterLength"))  //this command comes with two argument {SetShutterLength;{open,down};value
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -417,7 +434,7 @@ void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
         if (cont) {
             double freq = 1000./length.toDouble();
             if(freq >= 1 && freq <= 2034)
-                config->setContRWFreq(freq);
+                config->setContRWFreq(int(freq));
             else
             {
                cmd->setError(INVALID_ARG);
@@ -425,7 +442,7 @@ void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
             }
         } else {
             double val =  length.toDouble();
-            if(val < 0.001 && val != 0)
+            if(val < 0.001 && int(val) != 0)
             {
                 cmd->setError(INVALID_ARG);
                 return;
@@ -440,7 +457,7 @@ void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
         if (cont) {
             cmd->setData("Shutter down length is 0");
         } else {
-            config->setTriggerDowntime((int) (1000. * length.toDouble()));  // us
+            config->setTriggerDowntime(int((1000. * length.toDouble())));  // us
             cmd->setData("Shutter down length is set to " + length);
         }
         cmd->setError(NO_ERROR);
@@ -453,6 +470,7 @@ void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
 }
 
 void setShutterPeriodHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if (!cmd->enoughArguments(1,"SetShutterPeriod"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -470,13 +488,14 @@ void setShutterPeriodHandler(CommandHandler* ch, Command* cmd){
         return;
     } else {
         auto length = cmd->arguments.at(0); //ms
-        int open = config->getTriggerLength_64();
-        config->setTriggerDowntime( length.toDouble() - (double)(open)/1000.0);   // ms
+        int open = int(config->getTriggerLength_64());
+        config->setTriggerDowntime( length.toDouble() - double(open)/1000.0);   // ms
         cmd->setError(NO_ERROR);
     }
 }
 
 void getShutterPeriodHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     auto config = Mpx3GUI::getInstance()->getConfig();
     if (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW) {
         cmd->setData(QString::number(1000.0 / config->getContRWFreq())); //ms
@@ -487,6 +506,7 @@ void getShutterPeriodHandler(CommandHandler* ch, Command* cmd){
 }
 
 void getShutterLengthHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if (!cmd->enoughArguments(1,"GetShutterLength"))  //this command comes with two argument {GetShutterLength;{open,down}
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -515,6 +535,8 @@ void getShutterLengthHandler(CommandHandler* ch, Command* cmd){
 }
 
 void setBothCountersHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
+
     if(!cmd->enoughArguments(1,"SetBothCounters"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -543,6 +565,8 @@ void setBothCountersHandler(CommandHandler* ch, Command* cmd){
 
 }
 void getBothCountersHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
+
     if(Mpx3GUI::getInstance()->getConfig()->getReadBothCounters())
         cmd->setData("1");
     else
@@ -552,6 +576,8 @@ void getBothCountersHandler(CommandHandler* ch, Command* cmd){
 }
 
 void setColourModeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
+
     if(!cmd->enoughArguments(1,"SetColourMode"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -573,6 +599,8 @@ void setColourModeHandler(CommandHandler* ch, Command* cmd){
     }
 }
 void getColourModeHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
+
     if(Mpx3GUI::getInstance()->getConfig()->getColourMode())
         cmd->setData("1");
     else
@@ -580,6 +608,8 @@ void getColourModeHandler(CommandHandler* ch, Command* cmd){
     cmd->setError(NO_ERROR);
 }
 void setChargeSummingHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
+
     if(!cmd->enoughArguments(1,"SetChargeSumming"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -601,6 +631,8 @@ void setChargeSummingHandler(CommandHandler* ch, Command* cmd){
     }
 }
 void getChargeSummingHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
+
     if(Mpx3GUI::getInstance()->getConfig()->getCsmSpm())
         cmd->setData("1");
     else
@@ -675,6 +707,7 @@ void setRecordFormatHandler(CommandHandler* ch, Command* cmd){
 }
 
 void getImageHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     // TODO: this function is broken: it will not produce an image in an understandable format
 
 //    QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(0,false);
@@ -705,6 +738,7 @@ void getImageHandler(CommandHandler* ch, Command* cmd){
 }
 
 void setNumberOfFrameHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetFrameNumber"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -721,6 +755,7 @@ void setNumberOfFrameHandler(CommandHandler* ch, Command* cmd){
 }
 
 void getNumberOfFrameHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     cmd->setData(QString::number(Mpx3GUI::getInstance()->getConfig()->getNTriggers()));
     cmd->setError(NO_ERROR);
 }
@@ -786,12 +821,6 @@ void setThresholdHandler(CommandHandler* ch, Command* cmd){
 
     qDebug() << "[INFO]\tThreshold "<< idx << " of chip 3 converted to : " << dac;
 
-
-
-
-
-
-
     //ch->setThreshold(idx,val);
     cmd->setError(NO_ERROR);
 }
@@ -805,7 +834,7 @@ void getThresholdHandler(CommandHandler* ch, Command* cmd){
     double thr = 0.0;
     int error = ch->getThreshold(idx,&thr);
     cmd->setData(QString::number(thr));
-    cmd->setError((ERROR_TYPE)error);
+    cmd->setError(ERROR_TYPE(error));
 }
 
 
@@ -823,7 +852,7 @@ void setThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
     // No need for the conversion here. Per chip we address the setting in DAC units.
     //int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(chipId,val);
 
-    int dac = val;
+    int dac = int(val);
     saturateThresholdDacValue(&dac);
 
     qDebug() << "[INFO]\tConverted to [Dac value] : " << dac;
@@ -847,11 +876,8 @@ void getThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
     //double energy = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(chipId,val);
     //cmd->setData(QString::number(energy));
     cmd->setData(QString::number(val));
-    cmd->setError((ERROR_TYPE)error);
+    cmd->setError(ERROR_TYPE(error));
 }
-
-
-
 
 void setStartScanHandler(CommandHandler* ch, Command* cmd)
 {
@@ -860,10 +886,10 @@ void setStartScanHandler(CommandHandler* ch, Command* cmd)
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = (int)cmd->arguments.at(0).toDouble();
+    int val = int(cmd->arguments.at(0).toDouble());
     int ret = ch->setStartScan(val);
     cmd->setData(QString::number(ret));
-    cmd->setError((ERROR_TYPE)ret);
+    cmd->setError(ERROR_TYPE(ret));
 }
 
 void getStartScanHandler(CommandHandler* ch, Command* cmd)
@@ -876,10 +902,10 @@ void setStopScanHandler(CommandHandler* ch, Command* cmd)
 {
     if(!cmd->enoughArguments(1,"SetStopScan"))  //this command comes with one argument
         return;
-    int val = (int)cmd->arguments.at(0).toDouble();
+    int val = int(cmd->arguments.at(0).toDouble());
     int ret = ch->setStopScan(val);
     cmd->setData(QString::number(ret));
-    cmd->setError((ERROR_TYPE)ret);
+    cmd->setError(ERROR_TYPE(ret));
 }
 void getStopScanHandler(CommandHandler* ch, Command* cmd)
 {
@@ -894,10 +920,10 @@ void setStepScanHandler(CommandHandler* ch, Command* cmd)
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = (int) cmd->arguments.at(0).toDouble();
+    int val = int(cmd->arguments.at(0).toDouble());
     int ret = ch->setStepScan(val);
     cmd->setData(QString::number(ret));
-    cmd->setError((ERROR_TYPE)ret);
+    cmd->setError(ERROR_TYPE(ret));
 }
 void getStepScanHandler(CommandHandler* ch, Command* cmd)
 {
@@ -912,10 +938,10 @@ void setThresholdScanHandler(CommandHandler* ch, Command* cmd)
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = (int) cmd->arguments.at(0).toDouble();
+    int val = int(cmd->arguments.at(0).toDouble());
     int ret = ch->setThresholdScan(val);
     cmd->setData(QString::number(ret));
-    cmd->setError((ERROR_TYPE)ret);
+    cmd->setError(ERROR_TYPE(ret));
 }
 void getThresholdScanHandler(CommandHandler* ch, Command* cmd)
 {
@@ -929,10 +955,10 @@ void setFramesPerScanHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = (int)cmd->arguments.at(0).toDouble();
+    int val = int(cmd->arguments.at(0).toDouble());
     int ret = ch->setFramesPerScan(val);
     cmd->setData(QString::number(ret));
-    cmd->setError((ERROR_TYPE)ret);
+    cmd->setError(ERROR_TYPE(ret));
 }
 
 void getFramesPerScanHandler(CommandHandler* ch, Command* cmd)
@@ -953,7 +979,7 @@ void setScanPathHandler(CommandHandler* ch, Command* cmd){
     QString path = cmd->arguments.at(0);
     int ret = ch->setScanPath(path);
     cmd->setData(QString::number(ret));
-    cmd->setError((ERROR_TYPE)ret);
+    cmd->setError(ERROR_TYPE(ret));
 }
 
 void getScanPathHandler(CommandHandler* ch, Command* cmd)
@@ -973,6 +999,7 @@ void startScanHandler(CommandHandler* ch, Command* cmd){
 
 
 void setOperatingEnergyHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetOperatingEnergy"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -983,11 +1010,13 @@ void setOperatingEnergyHandler(CommandHandler* ch, Command* cmd){
 }
 
 void getOperatingEnergyHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     cmd->setData(QString::number(20));
     cmd->setError(NO_ERROR);
 }
 
 void setProfileHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     if(!cmd->enoughArguments(1,"SetProfile"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
@@ -997,6 +1026,7 @@ void setProfileHandler(CommandHandler* ch, Command* cmd){
     cmd->setError(NO_ERROR);
 }
 void getProfileHandler(CommandHandler* ch, Command* cmd){
+    Q_UNUSED(ch);
     cmd->setData(QString::number(1));
     cmd->setError(NO_ERROR);
 }
@@ -1042,15 +1072,13 @@ void setEqualizationHandler(CommandHandler* ch, Command* cmd){
     }
     QString path = cmd->arguments.at(0);
     int error = ch->loadEqualizationRemotely(path);
-    cmd->setError((ERROR_TYPE) error);
+    cmd->setError(ERROR_TYPE(error));
 }
 
 void getEqualizationHandler(CommandHandler* ch, Command* cmd){
     cmd->setData(ch->getEqualizationPath());
     cmd->setError(NO_ERROR);
 }
-
-
 
 void setDoEqualizationHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetDoEqualization"))  //this command comes with one argument
@@ -1059,14 +1087,14 @@ void setDoEqualizationHandler(CommandHandler* ch, Command* cmd){
         return;
     }
     QString path = cmd->arguments.at(0);
-    cmd->setError((ERROR_TYPE)ch->doEqualizationRemotely(path));
+    cmd->setError(ERROR_TYPE(ch->doEqualizationRemotely(path)));
 
 }
+
 void stopEqualizationHandler(CommandHandler *ch, Command *cmd){
+    Q_UNUSED(cmd);
     ch->stopEqualization();
-
 }
-
 
 void setConfigHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetConfig"))  //this command comes with one argument
@@ -1076,7 +1104,7 @@ void setConfigHandler(CommandHandler* ch, Command* cmd){
     }
     QString path = cmd->arguments.at(0);
     int error = ch->loadConfigRemotely(path);
-    cmd->setError(((ERROR_TYPE)error));
+    cmd->setError((ERROR_TYPE(error)));
 
 }
 
@@ -1094,7 +1122,7 @@ void saveConfigHandler(CommandHandler* ch, Command* cmd){
     }
     QString path = cmd->arguments.at(0);
     int error = ch->saveConfigRemotely(path);
-    cmd->setError(((ERROR_TYPE)error));
+    cmd->setError((ERROR_TYPE(error)));
 
 }
 
@@ -1116,12 +1144,12 @@ void setInhibitShutterHandler(CommandHandler* ch, Command* cmd){
     if(cmd->arguments.at(0) == "enable"){
         int error = ch->setInhibitShutter(true);
         cmd->setData("Inhibit_shutter is enabled");
-        cmd->setError((ERROR_TYPE)error);
+        cmd->setError(ERROR_TYPE(error));
     }
     else if(cmd->arguments.at(0) == "disable"){
         int error = ch->setInhibitShutter(false);
         cmd->setData("Inhibit_shutter is disabled");
-        cmd->setError((ERROR_TYPE) error);
+        cmd->setError(ERROR_TYPE( error));
     }
     else
     {
@@ -1151,7 +1179,7 @@ void setSlopeHandler(CommandHandler* ch, Command* cmd){
     }
     int error = ch->setSlope(cmd->arguments.at(0).toInt(),cmd->arguments.at(1).toDouble());
     cmd->setData("1");
-    cmd->setError((ERROR_TYPE) error);
+    cmd->setError(ERROR_TYPE( error));
 }
 
 void getSlopeHandler(CommandHandler* ch, Command* cmd){
@@ -1160,7 +1188,7 @@ void getSlopeHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int chipNum = cmd->arguments.at(0).toDouble();
+    int chipNum = int(cmd->arguments.at(0).toDouble());
     if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS){
         cmd->setError(ARG_VAL_OUT_RANGE );
         return;
@@ -1179,7 +1207,7 @@ void setOffsetHandler(CommandHandler* ch, Command* cmd){
     }
     int error = ch->setOffset(cmd->arguments.at(0).toInt(),cmd->arguments.at(1).toDouble());
     cmd->setData("1");
-    cmd->setError((ERROR_TYPE) error);
+    cmd->setError(ERROR_TYPE( error));
 }
 
 void getOffsetHandler(CommandHandler* ch, Command* cmd){
@@ -1188,7 +1216,7 @@ void getOffsetHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int chipNum = cmd->arguments.at(0).toDouble();
+    int chipNum = int(cmd->arguments.at(0).toDouble());
     if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS){
         cmd->setError(ARG_VAL_OUT_RANGE );
         return;
@@ -1201,7 +1229,7 @@ void getOffsetHandler(CommandHandler* ch, Command* cmd){
 void resetSlopesAndOffsetsHandler(CommandHandler* ch, Command* cmd){
     int error = ch->resetSlopesAndOffsets();
     cmd->setData("1");
-    cmd->setError((ERROR_TYPE)error);
+    cmd->setError(ERROR_TYPE(error));
 }
 
 void getServerStatusHandler(CommandHandler* ch, Command* cmd){
@@ -1210,10 +1238,6 @@ void getServerStatusHandler(CommandHandler* ch, Command* cmd){
 }
 
 //end of handler functions
-
-
-
-
 
 
 #endif // HANDLERFUNCTIONS_H

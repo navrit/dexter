@@ -209,7 +209,7 @@ public:
     void SetupSignalsAndSlots();
     void SetLimits();
     void Configuration(int devId, int THx, bool reset);
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int devId, int val_L, int val_H);
+    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, int val_L, int val_H);
     void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false, bool testbit = false);
     void SetAllAdjustmentBits(SpidrController * spidrcontrol);
     void SetAllAdjustmentBits();
@@ -345,9 +345,9 @@ private:
     int _nchipsY;
     int _fullsize_x;
     int _fullsize_y;
-    vector<int> _workChipsIndx;
-    unsigned int _eqStatus; //! Important state machine variable
-    unsigned int _scanIndex;
+    vector<uint> _workChipsIndx;
+    uint _eqStatus; //! Important state machine variable
+    uint _scanIndex;
     enum {
         __THLandTHH = 0,
         __OnlyTHL,
@@ -406,7 +406,7 @@ private slots:
     void setEqualizationTHLTHH(int);
     void setEqualizationShowTHLTHH(int);
     void setEqualizationTHLType(int);
-    void ShowEqualizationForChip(bool checked);
+    void ShowEqualizationForChip();
 
     void on_pushButton_testPulses_clicked();
 

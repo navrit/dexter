@@ -285,8 +285,8 @@ public slots:
             if (newVal == __operationMode_ContinuousRW) {
                 setReadBothCounters(false);
             }
-            for(int i = 0 ; i<getNActiveDevices(); i++){
-                _controller->setDiscCsmSpm(i,1);
+            for(uint i = 0 ; i < getNActiveDevices(); i++){
+                _controller->setDiscCsmSpm(int(i), 1);
             }
         }
     }
@@ -296,8 +296,8 @@ public slots:
         if ( newVal != PixelDepth ) {
             PixelDepth = newVal; emit pixelDepthChanged( newVal );
             SendConfiguration( __pixelDepth );
-            for(int i = 0 ; i<getNActiveDevices(); i++){
-                _controller->setDiscCsmSpm(i,1);
+            for(uint i = 0 ; i < getNActiveDevices(); i++){
+                _controller->setDiscCsmSpm(int(i), 1);
             }
         }
     }

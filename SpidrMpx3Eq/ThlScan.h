@@ -39,7 +39,7 @@ class ScanResults {
         double sigma;
         int DAC_DISC_setting;
         int global_adj;
-        int chipIndx;
+        uint chipIndx;
         int equalisationTarget;
 };
 
@@ -94,7 +94,7 @@ public:
     int lastEqualisationTarget = 0;
     void FineTuning();
     void EqualizationScan();
-    void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val );
+    void SetDAC_propagateInGUI(SpidrController * spidrcontrol, uint devId, int dac_code, int dac_val );
 
     void SetScanType(scan_type st) { _scanType = st; }
     scan_type GetScanType() { return _scanType; }
@@ -115,8 +115,8 @@ public:
     void SetSetId(int si) { _setId = si; }
     int GetSetId() { return _setId; }
 
-    void SetWorkChipIndexes(vector<int> v, vector<equalizationSteeringInfo *> st);
-    vector<int> GetWorkChipIndexes() { return _workChipsIndx; }
+    void SetWorkChipIndexes(vector<uint> v, vector<equalizationSteeringInfo *> st);
+    vector<uint> GetWorkChipIndexes() { return _workChipsIndx; }
 
     void InitializeScanResults(vector<equalizationSteeringInfo *> st);
     ScanResults * GetScanResults(int chipIdx);
@@ -133,7 +133,7 @@ private:
     QCstmPlotHeatmap *_heatmap = nullptr;
 
     vector<ScanResults *> _results = {nullptr};		//! results for all chips
-    vector<int> _workChipsIndx;
+    vector<uint> _workChipsIndx;
     Dataset *_dataset = nullptr;
 
     // pixelId, counts map

@@ -209,25 +209,23 @@ void QCstmEqualization::SetLimits(){
 void QCstmEqualization::on_h1LogyCheckBox_toggled(bool checked) {
 
     // All of them
-    int chipListSize = int(_workChipsIndx.size());
+    ulong chipListSize = _workChipsIndx.size();
     // Report the pixels scheduled for equalization
-    for ( int i = 0 ; i < chipListSize ; i++ ) {
+    for ( ulong i = 0 ; i < chipListSize ; i++ ) {
         if ( checked ) {
-            GetBarChart(_workChipsIndx[std::size_t(i)])->SetLogY( true );
+            GetBarChart(int(_workChipsIndx[i]))->SetLogY( true );
         } else {
-            GetBarChart(_workChipsIndx[std::size_t(i)])->SetLogY( false );
+            GetBarChart(int(_workChipsIndx[i]))->SetLogY( false );
         }
-        GetBarChart(_workChipsIndx[std::size_t(i)])->replot( QCustomPlot::rpQueued );
+        GetBarChart(int(_workChipsIndx[i]))->replot( QCustomPlot::rpQueued );
     }
-
-
 }
 
 void QCstmEqualization::setFineTuningLoops(int nLoops) {
     _fineTuningLoops = nLoops;
 }
 
-void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
+void QCstmEqualization::ShowEqualizationForChip() {
 
     // At least one has to be checked, otherwise refuse
     bool nothingChecked = true;
@@ -247,16 +245,15 @@ void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
 
     // And now go ahead. Hide all widgets
     for ( int i = int(_workChipsIndx.size() - 1); i >= 0 ; i-- ) {
-        GetBarChart( _workChipsIndx[std::size_t(i)] )->hide();
+        GetBarChart(int(_workChipsIndx[ulong(i)]))->hide();
     }
 
     // Show the new ones
-    for ( int i = 0 ; i < int(_checkBoxes.size()); i++ ) {
-        if ( _checkBoxes[std::size_t(i)]->isChecked() ) {
-            GetBarChart( _workChipsIndx[std::size_t(i)] )->show();
+    for ( ulong i = 0 ; i < _checkBoxes.size(); i++ ) {
+        if ( _checkBoxes[i]->isChecked() ) {
+            GetBarChart(int(_workChipsIndx[i]))->show();
         }
     }
-
 }
 
 void QCstmEqualization::NewRunInitEqualization() {
@@ -371,7 +368,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
             return false;   // NOTHING TO WORK WITH
         }
         // Only this chip
-        _workChipsIndx.push_back( chipId );
+        _workChipsIndx.push_back(uint( chipId ));
     } else {
         // Check if at least one chip is ON.
         // In this case the routine will equalize all pixels present.
@@ -380,7 +377,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
         for ( int devIdx = 0 ; devIdx < nChips ; devIdx++ ) {
             if ( ! _mpx3gui->getConfig()->detectorResponds( devIdx ) ) continue;
             // push back the indexes of the good chips
-            _workChipsIndx.push_back( devIdx );
+            _workChipsIndx.push_back(uint(  devIdx ));
         }
         if ( _workChipsIndx.size() == 0 ) return false;   // NOTHING TO WORK WITH
     }
@@ -390,7 +387,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
 
     // Create a steering structure for each chip
     // How many chips to equalize
-    int chipListSize = int(_workChipsIndx.size());
+    ulong chipListSize = _workChipsIndx.size();
 
     // Check if the structures are already there. For instance after a stop.
     for ( int i = 0 ; i < chipListSize ; i++ ) {
@@ -443,7 +440,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
 
     // Report the pixels scheduled for equalization
     startS += " CHIP ";
-    for ( int i = 0 ; i < chipListSize ; i++ ) {
+    for ( ulong i = 0 ; i < chipListSize ; i++ ) {
         startS += "[";
         startS += QString::number(_workChipsIndx[std::size_t(i)], 'd', 0);
         startS += "] ";
@@ -452,19 +449,18 @@ bool QCstmEqualization::InitEqualization(int chipId) {
 
     AppendToTextBrowser( startS );
 
-    // Pick what to show
-    ShowEqualizationForChip( true );
+    ShowEqualizationForChip();
 
-    _nchipsX = 2; //_mpx3gui->getDataset()->getNChipsX();
-    _nchipsY = 2; //_mpx3gui->getDataset()->getNChipsY();
-    // TODO.  When one chips is connected the dataset returns 2,1 (which is good)
+    _nchipsX = 2;
+    _nchipsY = 2;
+
     _fullsize_x = __matrix_size_x * _nchipsX;
     _fullsize_y = __matrix_size_y * _nchipsY;
 
 
     // Create an equalization per chip
-    for ( int i = 0 ; i < chipListSize ; i++ ) {
-        _eqMap[_workChipsIndx[std::size_t(i)]] = new Mpx3EqualizationResults;
+    for ( ulong i = 0 ; i < chipListSize ; i++ ) {
+        _eqMap[int(_workChipsIndx[i])] = new Mpx3EqualizationResults;
     }
 
     return true;
@@ -473,8 +469,8 @@ bool QCstmEqualization::InitEqualization(int chipId) {
 void QCstmEqualization::InitializeBarChartsEqualization() {
 
     // Otherwise push the rest
-    vector<int>::iterator i  = _workChipsIndx.begin();
-    vector<int>::iterator iE = _workChipsIndx.end();
+    vector<uint>::iterator i  = _workChipsIndx.begin();
+    vector<uint>::iterator iE = _workChipsIndx.end();
 
     // The one built in the constructor will be erased here
     _ui->horizontalLayoutEqHistos->removeWidget( _chart[0] );
@@ -542,10 +538,10 @@ QCheckBox * QCstmEqualization::GetCheckBox(int chipIdx) {
     if ( _workChipsIndx.size() != _checkBoxes.size() ) return nullptr;
 
     // Find the index
-    for (int i = 0; i < int(_workChipsIndx.size()); i++ ) {
+    for (ulong i = 0; i < _workChipsIndx.size(); i++ ) {
         // return the corresponding results Ptr
-        if ( _workChipsIndx[std::size_t(i)] == chipIdx ) {
-            return _checkBoxes[std::size_t(i)];
+        if ( _workChipsIndx[i] == uint(chipIdx)) {
+            return _checkBoxes[i];
         }
     }
 
@@ -600,10 +596,10 @@ BarChart * QCstmEqualization::GetBarChart(int chipIdx) {
     }
 
     // Find the index
-    for (unsigned long i = 0; i < _workChipsIndx.size(); i++ ) {
+    for (ulong i = 0; i < _workChipsIndx.size(); i++ ) {
         // return the corresponding results Ptr
-        if ( _workChipsIndx[std::size_t(i)] == chipIdx ) {
-            return _chart[std::size_t(i)];
+        if ( _workChipsIndx[i] == uint(chipIdx) ) {
+            return _chart[i];
         }
     }
 
@@ -1662,15 +1658,12 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
     }
 }
 
-void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int devId, int val_L, int val_H) {
-
-    //SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, int val_L, int val_H) {
 
     if( !spidrcontrol ) {
         QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
         return;
     }
-
 
     // Adjustment bits
     pair<int, int> pix;
@@ -1678,8 +1671,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         pix = XtoXY(i, __array_size_x);
         spidrcontrol->configPixelMpx3rx(pix.first, pix.second, val_L, val_H, testPulseMode ); // 0x1F = 31 is the max adjustment for 5 bits
     }
-    spidrcontrol->setPixelConfigMpx3rx( devId );
-
+    spidrcontrol->setPixelConfigMpx3rx( deviceId );
 }
 
 void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex, bool applymask, bool testbit) {
