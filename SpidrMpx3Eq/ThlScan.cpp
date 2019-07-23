@@ -6,14 +6,11 @@
 #include "ui_qcstmequalization.h"
 #include "ui_mpx3gui.h"
 
-//! TODO
-//! 1. Check all instances of __matrix_size_*, __array_size*, _fullsize_*,
-//! 2. Check for (incorrectly) fixed data sizes
-//! 3. Refactor & cleanup
-//! 4. [DONE] Modify SetDAC_propagateInGUI()
-//! 5. [DONE] Cleanup header file, structure and includes
-//! 6. ClangFormat files?
-//! 7. [DONE] Address all compilation warnings
+//! TODO - Reviewed equalisation now
+//!
+//! 1. Investigate why data doesn't appear in the equalisation preview when colour mode is on
+//! 2. Refactor & cleanup
+//! 3. ClangFormat files?
 
 ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 

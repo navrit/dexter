@@ -2329,7 +2329,6 @@ bool QCstmEqualization::makeTeaCoffeeDialog()
         return false;
     }
 }
-}
 
 void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString path) {
 
