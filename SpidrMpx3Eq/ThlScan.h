@@ -34,15 +34,14 @@ enum Thl_Status {
 };
 
 class ScanResults {
-public:
-    double weighted_arithmetic_mean;
-    double sigma;
-    int DAC_DISC_setting;
-    int global_adj;
-    int chipIndx;
-    int equalisationTarget;
+    public:
+        double weighted_arithmetic_mean;
+        double sigma;
+        int DAC_DISC_setting;
+        int global_adj;
+        int chipIndx;
+        int equalisationTarget;
 };
-
 
 class ThlScan : public QThread {
 
@@ -82,8 +81,6 @@ public:
     int NumberOfNonReactingPixels();
     vector<int> GetNonReactingPixels();
 
-    //! UNUSED FUNCTION
-    void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
     void SetStopWhenPlateau(bool b) { _stopWhenPlateau = b; }
 
     void DeliverPreliminaryEqualization(int devId, int currentDAC_DISC, Mpx3EqualizationResults *, int global_adj);
@@ -128,16 +125,16 @@ private:
 
     void run();
 
-    Mpx3GUI * _mpx3gui;
-    QCstmEqualization * _equalization;
+    Mpx3GUI *_mpx3gui = nullptr;
+    QCstmEqualization *_equalization = nullptr;
 
-    SpidrController * _spidrcontrol;
-    SpidrDaq * _spidrdaq;
-    QCstmPlotHeatmap * _heatmap;
+    SpidrController *_spidrcontrol = nullptr;
+    SpidrDaq *_spidrdaq = nullptr;
+    QCstmPlotHeatmap *_heatmap = nullptr;
 
-    vector<ScanResults *> _results;		//! results for all chips
+    vector<ScanResults *> _results = {nullptr};		//! results for all chips
     vector<int> _workChipsIndx;
-    Dataset * _dataset;
+    Dataset *_dataset = nullptr;
 
     // pixelId, counts map
     map<int, int> _pixelCountsMap;
@@ -188,8 +185,8 @@ private:
     ofstream file_fineTuningStats;
 
     // For data taking
-    int * _data;
-    int * _plotdata;
+    int * _data = nullptr;
+    int * _plotdata = nullptr;
     int _frameId;
     int _thlItr;
     int _pixelReactiveInScan;
@@ -201,7 +198,6 @@ private:
     const static int __step_scan_boostfactor = 10;
 
 private slots:
-    //void UpdateChart(int setId, int thlValue);
     void UpdateChart(int devId, int setId, int thlValue);
     void UpdateChartPixelsReady(int devId, int setId);
     void UpdateHeatMap(int sizex, int sizey);
@@ -213,7 +209,6 @@ signals:
     void UpdateHeatMapSignal(int sizex, int sizey);
     void fillText(QString);
     void slideAndSpin(int, int);
-
 };
 
 #endif

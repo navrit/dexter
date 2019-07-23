@@ -645,7 +645,7 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 
         //! Set all the thresholds to the same value. If we're not in colour mode then they aren't connected anyway so it doesn't matter
         for (int DAC_CODE = MPX3RX_DAC_THRESH_0; DAC_CODE <= MPX3RX_DAC_THRESH_7; DAC_CODE++) {
-            SetDAC_propagateInGUI( spidrcontrol, idx, DAC_CODE, __low_but_above_noise_threshold);
+            SetDAC_propagateInGUI( spidrcontrol, idx, DAC_CODE, __above_noise_threshold);
         }
     }
 }
