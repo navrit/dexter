@@ -535,7 +535,7 @@ int Mpx3Config::getDacCount() {
 
 int Mpx3Config::getDACValue(uint chip, int dacIndex) {
     if (_dacVals->length() > 0) {
-        return _dacVals[dacIndex][chip];
+        return _dacVals[dacIndex][int(chip)];
     }
     //! Error otherwise. Most likely this function is called too early by a fool!
     //! Deal with it elsewhere
@@ -544,7 +544,7 @@ int Mpx3Config::getDACValue(uint chip, int dacIndex) {
 
 void Mpx3Config::setDACValue(uint chip, int dacIndex, int dac_value) {
     if (_dacVals->length() > 0) {
-        _dacVals[dacIndex][chip] = dac_value;
+        _dacVals[dacIndex][int(chip)] = dac_value;
     } else {
         qDebug() << "[WARN]\tMpx3Config::setDACValue failed. _dacVals is empty - report this bug. chip =" << chip << " dac_index =" << dacIndex << " dac_value =" << dac_value;
     }

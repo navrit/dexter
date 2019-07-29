@@ -219,6 +219,9 @@ public:
     void SetupSignalsAndSlots();
     void SetLimits();
     void stopEqualizationRemotely();
+    void clearPreviousData(uint chipListSize);
+    void printNonReactiveWarning(uint chipListSize);
+    void updateTestpulseVariables();
     bool pixelInScheduledChips(int pixels);
     double EvalLinear(double eta, double cut, double x);
 

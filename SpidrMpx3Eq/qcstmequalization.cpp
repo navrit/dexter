@@ -212,10 +212,11 @@ void QCstmEqualization::on_h1LogyCheckBox_toggled(bool checked) {
     for ( ulong i = 0 ; i < chipListSize ; i++ ) {
         if ( checked ) {
             GetBarChart(int(int(_workChipsIndx[i])))->SetLogY( true );
+            GetBarChart(int(_workChipsIndx[i]))->SetLogY( true );
         } else {
-            GetBarChart(int(int(_workChipsIndx[i])))->SetLogY( false );
+            GetBarChart(int(_workChipsIndx[i]))->SetLogY( false );
         }
-        GetBarChart(int(int(_workChipsIndx[i])))->replot( QCustomPlot::rpQueued );
+        GetBarChart(int(_workChipsIndx[i]))->replot( QCustomPlot::rpQueued );
     }
 }
 
@@ -309,7 +310,6 @@ void QCstmEqualization::NewRunInitEqualization() {
         // Eta and Cut for the Adj_THL function (Adj extrapolation)
         _steeringInfo[std::size_t(i)]->currentEta_Adj_THx = 0.;
         _steeringInfo[std::size_t(i)]->currentCut_Adj_THx = 0.;
-
     }
 
     // Clean all the BarCharts
@@ -484,7 +484,6 @@ void QCstmEqualization::InitializeBarChartsEqualization() {
         nbc->setObjectName(barChartName);
         nbc->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
 
-        //
         _ui->horizontalLayoutEqHistos->addWidget( nbc );
 
         _chart.push_back( nbc ); // set as parent the same as the one delivered in the UI
@@ -702,7 +701,6 @@ void QCstmEqualization::StartEqualizationSingleChip() {
 
 void QCstmEqualization::StartEqualizationSequentialSingleChips()
 {
-
     // Only the first time
     // Start with chip 0
     if ( ! _isSequentialAllChipsEqualization ) {
@@ -752,10 +750,9 @@ void QCstmEqualization::StartEqualizationAllChips() {
 }
 
 void QCstmEqualization::StartEqualization() {
-    emit busy(SB_EQUALIZATION);
-
     //! So that the equalisation won't save the mask file to the wrong folder during equalisation
     emit equalizationPathExported("");
+    emit busy(SB_EQUALIZATION);
 
     // I need to do this here and not when already running the thread
     // Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
@@ -763,20 +760,12 @@ void QCstmEqualization::StartEqualization() {
     if( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
     else { _srcAddr = 0; }
 
-    // how many chips to equalize
-    uint chipListSize = uint(_workChipsIndx.size());
-    //qDebug() << "... " << chipListSize;
-
-    if (testPulseEqualisationDialog != nullptr) {
-        defaultNoiseEqualisationTarget = testPulseEqualisationDialog->getEqualisationTarget();
-        DAC_DISC_1_value = testPulseEqualisationDialog->get_1st_DAC_DISC_val();
-        DAC_DISC_2_value = testPulseEqualisationDialog->get_2nd_DAC_DISC_val();
-    }
+    const uint chipListSize = uint(_workChipsIndx.size()); //! How many chips to equalise
+    updateTestpulseVariables();
 
     // Preliminary) Find out the equalization range
-
     // First) DAC_Disc Optimization
-    if( EQ_NEXT_STEP( __INIT) ) {
+    if ( EQ_NEXT_STEP( __INIT) ) {
         //! We only want to update this the first time
         if (_steeringInfo[0]->currentDAC_DISC_String == "DAC_DISC_L") {
             _firstMinScanTHL = _minScanTHL; //! This is used exclusively to guide the THH scan for noisy chip/sensor combos
@@ -791,6 +780,7 @@ void QCstmEqualization::StartEqualization() {
         titleInit += " optimization ...";
         AppendToTextBrowser( titleInit );
 
+        //! Print useful equalisation informationto console, useful for analysis later
         qDebug() << "[INFO]\tEqualisation algorithm =" << _ui->equalizationTypeCombo->currentText();
         qDebug() << "[INFO]\tEqualisation THL/THH choice =" << _ui->equalizationTHLTHHCombo->currentText();
 
@@ -806,12 +796,9 @@ void QCstmEqualization::StartEqualization() {
         setSpacing(2); //! For decent statistics on higher spacings, need to have _spacing = 2 until __PrepareInterpolation_0x0
         qDebug().nospace() << QString("[INFO] \tEqualisation setting pixel spacing to %1 until Interpolation preparation with adj bits = 0").arg(GetSpacing());
 
-        // Prepare and launch the thread
-        DAC_Disc_Optimization_100( );
+        DAC_Disc_Optimization_100(); // Prepare and launch the thread
 
     } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100) ) {
-
-        // Check if the previous scan has been stopped by the user
 
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
             // Extract results from immediately previous scan. Calc the stats now (this is quick)
@@ -852,34 +839,20 @@ void QCstmEqualization::StartEqualization() {
 
     } else if ( EQ_NEXT_STEP(__PrepareInterpolation_0x0) ) {
 
-        // Results
-        int nNonReactive = _scans[int(_scanIndex - 1)]->NumberOfNonReactingPixels();
-        // Correct in case not all chips are active
-        nNonReactive -= (uint(_mpx3gui->getConfig()->getNDevicesSupported()) - chipListSize) * __matrix_size;
-        if ( nNonReactive > 0 ) {
-            qDebug() << "[WARNING] there are non reactive (maybe dead) pixels : " << nNonReactive << "\n";
-        }
-
+        printNonReactiveWarning(chipListSize);
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
-            // Results
             _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
             DisplayStatsInTextBrowser(_steeringInfo[i]->globalAdj,_steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
             _steeringInfo[i]->globalAdj = 5; // Global adjustment changed !
         }
-        // Now adj=0x5
+
         PrepareInterpolation_0x5();
 
     } else if ( EQ_NEXT_STEP(__PrepareInterpolation_0x5) ) {
 
-        // Results
-        int nNonReactive = _scans[int(_scanIndex - 1)]->NumberOfNonReactingPixels();
-        // Correct in case not all chips are active
-        nNonReactive -= (uint(_mpx3gui->getConfig()->getNDevicesSupported()) - chipListSize) * __matrix_size;
-        if ( nNonReactive > 0 ) {
-            qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
-        }
+        printNonReactiveWarning(chipListSize);
 
-        // Use a data set to put the adj matrixes together
+        // Use a Dataset to put the adj matrixes together
         if ( ! _resdataset ) _resdataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
         _resdataset->clear();
 
@@ -893,16 +866,10 @@ void QCstmEqualization::StartEqualization() {
 
             //! The equalisation target is noise based at this point
             int * adjdata = CalculateInterpolation( int(_workChipsIndx[i]), scan_x0, scan_x5 );
-            // Stack
-            _resdataset->setFrame(adjdata, int(_workChipsIndx[i]), 0);
-
+            _resdataset->setFrame(adjdata, int(_workChipsIndx[i]), 0); // Stack
         }
 
-        // Once the frame is complete, extract info
-        int * fulladjdata = _resdataset->getLayer( 0 );
-        UpdateHeatMap(fulladjdata, _fullsize_x, _fullsize_y);
-
-        setSpacing(_ui->spacingSpinBox->value()); //! Change the spacing back to the GUI content
+        UpdateHeatMap(_resdataset->getLayer( 0 ), _fullsize_x, _fullsize_y);
 
         // Perform now a scan with the extrapolated adjustments
         //    Here there's absolutely no need to go through the THL range.
@@ -913,40 +880,26 @@ void QCstmEqualization::StartEqualization() {
 
     } else if ( EQ_NEXT_STEP( __ScanOnInterpolation) ) {
 
-        // Results
-        int nNonReactive = _scans[int(_scanIndex - 1)]->NumberOfNonReactingPixels();
-        // Correct in case not all chips are active
-        nNonReactive -= (uint(_mpx3gui->getConfig()->getNDevicesSupported()) - chipListSize) * __matrix_size;
-
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
             _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
             DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
         }
 
-        if ( nNonReactive > 0 ) {
-            qDebug() << "[WARNING]\tThere are non reactive pixels : " << nNonReactive << endl;
-        }
-
+        printNonReactiveWarning(chipListSize);
         estimateEqualisationTarget();
 
     } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
 
         if (testPulseMode) {
-            // Results
-            int nNonReactive = _scans[int(_scanIndex - 1)]->NumberOfNonReactingPixels();
-            // Correct in case not all chips are active
-            nNonReactive -= (uint(_mpx3gui->getConfig()->getNDevicesSupported()) - chipListSize) * __matrix_size;
 
-            if ( nNonReactive > 0 ) {
-                qDebug() << "[WARNING]\tThere are non reactive pixels : " << nNonReactive << endl;
-            }
+            printNonReactiveWarning(chipListSize);
 
             for ( uint i = 0 ; i < chipListSize ; i++ ) {
                 _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
                 DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
             }
 
-            // If fast equalization, skip finetuning, same for all chips
+            // If fast equalization, skip fine tuning, same for all chips
             if ( _steeringInfo[0]->equalizationType == __NoiseCentroidFAST ||
                 _steeringInfo[0]->equalizationType == __NoiseEdgeFAST ) {
 
@@ -966,16 +919,9 @@ void QCstmEqualization::StartEqualization() {
             qDebug() << "[INFO]\tSkipping test pulse scans";
         }
 
-    }  else if ( EQ_NEXT_STEP( __FineTuning ) ) {
+    } else if ( EQ_NEXT_STEP( __FineTuning ) ) {
 
-        // clear previous data
-        _resdataset->clear();
-        for ( uint i = 0 ; i < chipListSize ; i++ ) {
-            int * da = _eqMap[int(_workChipsIndx[i])]->GetAdjustementMatrix();
-            _resdataset->setFrame(da, int(_workChipsIndx[i]), 0);
-        }
-        int * fulladjdata = _resdataset->getLayer( 0 );
-        UpdateHeatMap(fulladjdata, _fullsize_x, _fullsize_y);
+        clearPreviousData(chipListSize);
 
         // Decide if the equalization needs to be ran again for THH or if we are done
         if ( _equalizationCombination == __THLandTHH ) {
@@ -983,37 +929,29 @@ void QCstmEqualization::StartEqualization() {
             _prevEqualizationCombination = _equalizationCombination;
             _equalizationCombination = __OnlyTHH;
 
-            // partial re-initialization
-            NewRunInitEqualization();
+            NewRunInitEqualization(); // partial re-initialization
 
-            // Good for single chip equalization
-            //! Oooooh, well this would have been amazing to know before...
-            if ( ! _scanAllChips ) KeepOtherChipsQuiet();
+            if ( ! _scanAllChips ) {
+                // For single chip equalization
+                KeepOtherChipsQuiet();
+            }
 
-            // Start again
-            StartEqualization();
+            StartEqualization(); // Start again
 
         } else {
 
             // come back to the initial setting for equalization combination
             _equalizationCombination = _prevEqualizationCombination;
 
-            // If we're done see if we need to continue with the next chip or
-            //  if we're really done.
-            // TODO ! If the active chips are not in a sequence this won't work.
-            //        If all chips are installed there is no problem.
+            // If we're done see if we need to continue with the next chip or if we're really done.
+            // REQUIREMENT: The active chips need to be in sequence.
             if ( _isSequentialAllChipsEqualization && _deviceIndex < int(_mpx3gui->getConfig()->getNActiveDevices()-1) ) {
-
                 SaveEqualization( QDir::currentPath(), true );
-
                 resetForNewEqualisation();
-
                 StartEqualizationSequentialSingleChips();
 
             } else {
-
                 SaveEqualization( "", false, true );
-
                 resetForNewEqualisation();
 
                 AppendToTextBrowser( "[DONE]" );
@@ -1487,7 +1425,6 @@ void QCstmEqualization::ScanOnInterpolation() {
         tscan_opt_ext->SetMaxScan( scan_last->GetDetectedLowScanBoundary() );
     }
 
-
     tscan_opt_ext->ConnectToHardware(spidrcontrol, spidrdaq);
     BarChartProperties cprop_opt_ext;
     cprop_opt_ext.min_x = 0;
@@ -1560,7 +1497,6 @@ void QCstmEqualization::PrepareInterpolation_0x5() {
     _scans.push_back( tscan_opt_adj5 ); _scanIndex++;
     connect( tscan_opt_adj5, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
     tscan_opt_adj5->start();
-
 }
 
 void QCstmEqualization::DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults * res) {
@@ -1570,7 +1506,7 @@ void QCstmEqualization::DisplayStatsInTextBrowser(int adj, int dac_disc, ScanRes
     statsString += "] Adj=";
     if (adj >= 0) statsString += QString::number(adj, 'd', 0);
     else {
-        if (_eqStatus >= __EstimateEqualisationTarget) {
+        if (_eqStatus == __EstimateEqualisationTarget) {
             statsString += "TP";
         } else {
             statsString += "X";
@@ -1597,11 +1533,11 @@ void QCstmEqualization::ScanThreadFinished(){
     _eqStatus++;
 
     // 1) Now revisit the equalization. It knows where to pick up.
-    // 2) Handel when the equalization has been stopped by the user.
-    //    The thread will finish pematurely and then this function gets called.
+    // 2) Handle when the equalization has been stopped by the user.
+    //    The thread will finish prematurely and then this function gets called.
     if ( _stopEq ) {
         // In this case do the big rewind.
-        qDebug() << "[INFO] Equalization stopped --> Rewind.";
+        qDebug() << "[INFO]\tEqualization stopped --> Rewind.";
         _stopEq = false;
         // Full rewind
         FullEqRewind();
@@ -1609,8 +1545,6 @@ void QCstmEqualization::ScanThreadFinished(){
         StartEqualization( );
     }
 }
-
-
 
 double QCstmEqualization::EvalLinear(double eta, double cut, double x){
     return x*eta + cut;
@@ -1642,7 +1576,6 @@ void QCstmEqualization::SetAllAdjustmentBits() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SetAllAdjustmentBits(spidrcontrol);
-
 }
 
 //! Send the configuration to all chips
@@ -2093,8 +2026,8 @@ uint QCstmEqualization::setDACToVoltage(int chipID, int dacCode, double V)
     //! Give them some reasonable starting values to save time
     //! Get these from this existing values in the config unless I know better ;)
     if (dacCode == MPX3RX_DAC_TP_REF)   dac_val = 60;
-    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, MPX3RX_DAC_TP_REF_A-1);
-    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, MPX3RX_DAC_TP_REF_B-1);
+    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = uint(_mpx3gui->getConfig()->getDACValue(uint(chipID), _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_TP_REF_A )));
+    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = uint(_mpx3gui->getConfig()->getDACValue(uint(chipID), _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_TP_REF_B )));
 
     while (!foundTarget) {
         if (dac_val >= 511) {
@@ -2109,7 +2042,7 @@ uint QCstmEqualization::setDACToVoltage(int chipID, int dacCode, double V)
         spidrcontrol->getDacOut(chipID, &adc_val, nSamples);
 
         adc_val /= nSamples;
-        adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (double)adc_val;
+        adc_volt = (__voltage_DACS_MAX/double(__maxADCCounts)) * double(adc_val);
 
         //qDebug() << "adc_volt :" << adc_volt;
 
@@ -2181,7 +2114,7 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
         //! Unmask all pixels that we are going to inject test pulses into.
         //! --> mask all pixels that we aren't using
 
-        if ( (pix.first + offset_x) % pixelSpacing == 0 && (pix.second + offset_y) % pixelSpacing == 0 ) {
+        if ( uint(pix.first + offset_x) % pixelSpacing == 0 && uint(pix.second + offset_y) % pixelSpacing == 0 ) {
             testbit = true;
             testBitsOn++;
             spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
@@ -2216,8 +2149,9 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
     return true;
 }
 
-//! TODO New and untested feature so you can run multiple equalisations without closing the program
-//! Doesn't work...
+/**
+ * @brief QCstmEqualization::resetForNewEqualisation so you can run multiple equalisations without closing the program
+ */
 void QCstmEqualization::resetForNewEqualisation()
 {
     _eqStatus = __INIT;
