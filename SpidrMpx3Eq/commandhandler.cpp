@@ -11,8 +11,6 @@
 #include "qcstmequalization.h"
 
 
-//#include <QTimer> // For the test function
-
 CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
 {
     QCstmGLVisualization * visualisation = ((Mpx3GUI*) parent)-> getVisualization();
@@ -32,8 +30,6 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToSaveConfigRemotely(QString)),QCstmConfigMonitoring::getInstance(),SLOT(saveConfigFileRemotely(QString)));
     connect(this,SIGNAL(requestToChangeGuiforThreshold(int)),QCstmDacs::getInstance(),SLOT(onDevNumChanged(int)));
     initializeCmdTable();
-
-    //QTimer::singleShot(10000, this, SLOT(testSetThreshold_idx_val_chipId())); // Test function to show setting thresholds does work
 }
 
 Mpx3GUI* CommandHandler::getGui() {
@@ -164,7 +160,7 @@ void CommandHandler::initializeCmdTable()
 
 
     cmd_struct startScan {startScanHandler};
-    cmdTable.insert("StarStoptScan",startScan);
+    cmdTable.insert("StartStopScan",startScan);
 
 
     cmd_struct setOperatingEnergy {setOperatingEnergyHandler};
@@ -226,8 +222,6 @@ void CommandHandler::initializeCmdTable()
 
     cmd_struct getServerStatus{getServerStatusHandler};
     cmdTable.insert("GetServerStatus", getServerStatus);
-
-
 }
 
 bool Command::enoughArguments(int argsNum,QString command)
@@ -252,9 +246,7 @@ void Command::setError(ERROR_TYPE et)
 
 void CommandHandler::startLiveCamera(bool takingDataFlag)
 {
-    //emit requestForInfDataTracking(true);
     emit requestForDataTaking(!takingDataFlag);
-    //QCstmGLVisualization::getInstance()->setInfDataTaking(true);
 }
 
 void CommandHandler::startSnap()
@@ -300,12 +292,10 @@ int CommandHandler::setThreshold(int idx, int val, int chipId)
 
     if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
         SpidrController *spidrController = Mpx3GUI::getInstance()->GetSpidrController();
-        //Mpx3GUI::getInstance()->getConfigMonitoring()->protectTriggerMode(spidrController);
         QCstmDacs::getInstance()->setRemoteRequestForSettingThreshold(true);
         // Set actual DAC
         spidrController->setDac(chipId,idx+1,val);
         QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
-        //Mpx3GUI::getInstance()->getConfigMonitoring()->returnLastTriggerMode(spidrController);
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
@@ -323,10 +313,9 @@ void CommandHandler::testSetThreshold_idx_val_chipId() {
 int CommandHandler::getThreshold(int idx,double *val)
 {
     if (idx >= 0 && idx <= 7){
-//        if (QCstmDacs::getInstance()->GetCheckBoxList()[idx]->isChecked())
-//            return QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
-        *val = QCstmGLVisualization::getInstance()->getThresholdVector(0,idx);
-        *val = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(0,*val);
+
+        *val = QCstmGLVisualization::getInstance()->getThresholdVector(0, idx);
+        *val = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(0, *val);
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
@@ -335,12 +324,8 @@ int CommandHandler::getThreshold(int idx,double *val)
 int CommandHandler::getThreshold(int idx,int chipId,int *val)
 {
     if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
-//         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
-//         QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
-//         *val = QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
         *val = QCstmGLVisualization::getInstance()->getThresholdVector(chipId,idx);
-         // no need for conversion here
-         // *val = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(chipId,*val);
+
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
@@ -348,36 +333,38 @@ int CommandHandler::getThreshold(int idx,int chipId,int *val)
 
 int CommandHandler::setStartScan(int val)
 {
+    return UNKNOWN_ERROR;
     if (val < 0 || val > 511)
         return ARG_VAL_OUT_RANGE;
-    thresholdScan::getInstance()->GetUI()->spinBox_minimum->setValue(val);
+    thresholdScan::getInstance()->setStartTH(val);
     return NO_ERROR;
 }
 
 int CommandHandler::setStopScan(int val)
 {
-    if(val < 1 || val > 512)
+    return UNKNOWN_ERROR;
+    if (val < 1 || val > 512)
         return ARG_VAL_OUT_RANGE;
-    thresholdScan::getInstance()->GetUI()->spinBox_maximum->setValue(val);
+    thresholdScan::getInstance()->setEndTH(val);
     return NO_ERROR;
 }
 
 int CommandHandler::setStepScan(int val)
 {
-    if(val < 1 || val > 510)
+    return UNKNOWN_ERROR;
+
+    if (val < 1 || val > 510)
         return ARG_VAL_OUT_RANGE;
-    qDebug() << "step : " << val;
-    thresholdScan::getInstance()->GetUI()->spinBox_spacing->setValue(val);
+    thresholdScan::getInstance()->setStepSize(val);
     return NO_ERROR;
 }
 
+//! TODO change this function so it supports taking a vector of thresholds to scan
 int CommandHandler::setThresholdScan(int val)
 {
-    QComboBox* comboBox = thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan;
-    int max = comboBox->count();
-    if (val >= 0 && val < max)
+    if (val >= 0 && val < 8)
     {
-       comboBox->setCurrentIndex(val);
+       thresholdScan::getInstance()->setThresholdToScan(val, true);
        return NO_ERROR;
     }
     return ARG_VAL_OUT_RANGE;
@@ -385,12 +372,8 @@ int CommandHandler::setThresholdScan(int val)
 
 int CommandHandler::setFramesPerScan(int val)
 {
-    QSpinBox* spinBox = thresholdScan::getInstance()->GetUI()->spinBox_framesPerStep;
-    int max = spinBox->maximum();
-    int min = spinBox->minimum();
-    if (val >= min && val < max)
-    {
-       spinBox->setValue(val);
+    if (val >= 0 ) {
+       thresholdScan::getInstance()->setFramesPerStep(val);
        return NO_ERROR;
     }
     return ARG_VAL_OUT_RANGE;
@@ -399,8 +382,9 @@ int CommandHandler::setFramesPerScan(int val)
 int CommandHandler::setScanPath(QString path)
 {
     QFileInfo outputDir(path);
-    if(!outputDir.exists())
+    if (!outputDir.exists() && outputDir.isWritable()) {
         return UNKNOWN_COMMAND;
+    }
     thresholdScan::getInstance()->GetUI()->lineEdit_path->setText(path);
     return NO_ERROR;
 
@@ -408,27 +392,28 @@ int CommandHandler::setScanPath(QString path)
 
 int CommandHandler::getStartScan()
 {
-    return thresholdScan::getInstance()->GetUI()->spinBox_minimum->value();
+    return thresholdScan::getInstance()->getStartTH();
 }
 
 int CommandHandler::getStopScan()
 {
-    return thresholdScan::getInstance()->GetUI()->spinBox_maximum->value();
+    return thresholdScan::getInstance()->getEndTH();
 }
 
 int CommandHandler::getStepScan()
 {
-    return thresholdScan::getInstance()->GetUI()->spinBox_spacing->value();
+    return thresholdScan::getInstance()->getStepSize();
 }
 
+//! TODO change this function so it supports returning a vector of enabled thresholds to scan
 int CommandHandler::getThresholdScan()
 {
-    return thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan->currentIndex();
+    return thresholdScan::getInstance()->getThresholdScanEnabled(0);
 }
 
 int CommandHandler::getFramesPerScan()
 {
-    return thresholdScan::getInstance()->GetUI()->spinBox_framesPerStep->value();
+    return thresholdScan::getInstance()->getFramesPerStep();
 }
 
 QString CommandHandler::getScanPath()
@@ -622,14 +607,14 @@ void CommandHandler::getImage()
 //        }
 //        len = zeros + len;
 //        QString firstPart = "MPX,"+ len + ",MQ1," + hd;
-//        ba += firstPart.toLatin1();
+//        ba += firstPart.toUtf8();
 //        ba += frame;
 //        emit imageIsReady(ba);
 //        frameCounter++;
 
 //    }
 //    FrameHeaderDataStruct frameHeader;
-//    QByteArray ba = generateMerlinFrameHeader(frameHeader).toLatin1().data();
+//    QByteArray ba = generateMerlinFrameHeader(frameHeader).toUtf8().data();
 //    ba += Mpx3GUI::getInstance()->getDataset()->toSocketData();
 //    commandIsDecoded("",ba,true);
     return;
@@ -801,7 +786,7 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
         size += hd.length();
         auto len = QString("%1").arg(size, 10, 10, QChar('0'));
         QString firstPart = "MPX," + len + "," + hd;
-        emit imageIsReady(firstPart.toLatin1(), frame);
+        emit imageIsReady(firstPart.toUtf8(), frame);
     }
 }
 
@@ -842,7 +827,7 @@ void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
                 setError(SERVER_BUSY_DATA_TAKING);
                 return;
             }
-            if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StarStoptScan"){
+            if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StartStopScan"){
                 qDebug () << "Server is busy." << serverStatus;
                 setError(SERVER_BUSY_THRESHOLD_SCAN);
                 return;

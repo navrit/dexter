@@ -9,7 +9,7 @@ GeneralSettings::GeneralSettings(QObject *parent) : QObject(parent)
 
 }
 
-void GeneralSettings::setEqualizationPath(QString path)
+void GeneralSettings::setEqualisationPath(QString path)
 {
     _equalizationPath = path;
     writeSetting();
@@ -21,7 +21,7 @@ void GeneralSettings::setConfigPath(QString path)
     writeSetting();
 }
 
-QString GeneralSettings::getEqualizationPath()
+QString GeneralSettings::getEqualisationPath()
 {
     readSetting();
     return _equalizationPath;
@@ -68,11 +68,31 @@ double GeneralSettings::getSlope(int chipNum)
     return 0.0;
 }
 
+void GeneralSettings::setLastThresholdPath(QString folder)
+{
+    const QFileInfo info = QFileInfo(folder);
+    if (info.isDir() && info.isAbsolute() && info.isWritable()) {
+        _lastThresholdScanPath = folder;
+        writeSetting();
+        qDebug() << "[INFO]\tWritten last threshold path to file: " << _lastThresholdScanPath;
+    } else {
+        qDebug() << "[ERROR]\tCould not set last threshold path to General Settings";
+    }
+}
+
+QString GeneralSettings::getLastThresholdPath()
+{
+    readSetting();
+    qDebug() << "[INFO]\tRead last threshold path from file: " << _lastThresholdScanPath;
+    return _lastThresholdScanPath;
+}
+
 void GeneralSettings::writeSetting()
 {
-    QSettings settings(COMPANY_NAME, SOFTWARE_NAME);
-    settings.setValue(EQUALIZATION_PATH, _equalizationPath);
-    settings.setValue(CONFIG_PATH, _configPath);
+    QSettings settings(companyName, softwareName);
+    settings.setValue(equalisationPath, _equalizationPath);
+    settings.setValue(configPath, _configPath);
+    settings.setValue(lastThresholdScanPath, _lastThresholdScanPath);
 
     settings.beginGroup(SLOPE);
     settings.setValue("chip_0", _slopes[0]);
@@ -81,31 +101,28 @@ void GeneralSettings::writeSetting()
     settings.setValue("chip_3", _slopes[3]);
     settings.endGroup();
 
-
     settings.beginGroup(OFFSET);
     settings.setValue("chip_0",_offsets[0]);
     settings.setValue("chip_1",_offsets[1]);
     settings.setValue("chip_2",_offsets[2]);
     settings.setValue("chip_3",_offsets[3]);
     settings.endGroup();
-
 }
-
-
-
-
 
 void GeneralSettings::readSetting()
 {
-    QSettings settings(COMPANY_NAME, SOFTWARE_NAME);
+    QSettings settings(companyName, softwareName);
 
 
-    if(settings.contains(EQUALIZATION_PATH))
-        _equalizationPath = settings.value(EQUALIZATION_PATH).toString();
+    if(settings.contains(equalisationPath))
+        _equalizationPath = settings.value(equalisationPath).toString();
 
-    if(settings.contains(CONFIG_PATH))
-        _configPath = settings.value(CONFIG_PATH).toString();
+    if(settings.contains(configPath))
+        _configPath = settings.value(configPath).toString();
 
+    if ( settings.contains(lastThresholdScanPath) ) {
+        _lastThresholdScanPath = settings.value(lastThresholdScanPath).toString();
+    }
 
     if(settings.contains(SLOPE+"/"+"chip_0"))
         _slopes[0] = settings.value(SLOPE+"/"+"chip_0").toDouble();
@@ -130,6 +147,4 @@ void GeneralSettings::readSetting()
 
     if(settings.contains(OFFSET+"/"+"chip_3"))
         _offsets[3] = settings.value(OFFSET+"/"+"chip_3").toDouble();
-
-
 }

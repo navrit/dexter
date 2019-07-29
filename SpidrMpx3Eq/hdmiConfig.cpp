@@ -189,6 +189,5 @@ void hdmiConfig::on_submitPb_released()
 
 void hdmiConfig::ConnectionStatusChanged(bool con)
 {
-
     this->setEnabled(con);
 }

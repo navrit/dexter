@@ -44,7 +44,7 @@ void CommandHandlerWrapper::on_requestForDataTaking(bool)
 {
     QString acqHeader = commandHandler->getAcquisitionHeader();
     const char* dummy="";
-    emit imageIsReady(acqHeader.toLatin1(), Canvas());
+    emit imageIsReady(acqHeader.toUtf8(), Canvas());
     commandHandler->getImage();
 }
 
@@ -56,5 +56,5 @@ void CommandHandlerWrapper::on_ImageIsReady(QByteArray header, Canvas image)
 void CommandHandlerWrapper::on_serverStatusChanged(SERVER_BUSY_TYPE flag)
 {
     _serverStatus = flag;
-    qDebug() << "[DEBUG]\tBusy state : " << flag;
+    //qDebug() << "[DEBUG]\tBusy state : " << flag;
 }

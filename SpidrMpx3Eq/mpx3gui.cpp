@@ -290,7 +290,7 @@ void Mpx3GUI::loadEqualisationFromPathRemotely(QString path)
 
 void Mpx3GUI::onEqualizationPathExported(QString path)
 {
-    _generalSettings->setEqualizationPath(path);
+    _generalSettings->setEqualisationPath(path);
 }
 
 void Mpx3GUI::sendingShutter()
@@ -424,13 +424,14 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
     // Change me when adding extra views
     // Inform every module of changes in connection status
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget , SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
-    connect(this,SIGNAL(ConnectionStatusChanged(bool)),_ui->hdmiConfigTab,SLOT(ConnectionStatusChanged(bool)));
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget, SLOT( ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->hdmiConfigTab, SLOT(ConnectionStatusChanged(bool)) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->THScan, SLOT(ConnectionStatusChanged(bool)) );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
     connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
@@ -443,11 +444,12 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
 
-    connect( getConfig(), SIGNAL(colourModeChanged(bool)), getTHScan(), SLOT(slot_colourModeChanged(bool)));
+    connect( getConfig(), SIGNAL(colourModeChanged(bool)), getTHScan(), SLOT(slot_colourModeChanged()));
+    connect( getConfig(), SIGNAL(readBothCountersChanged(bool)), getTHScan(), SLOT(slot_doubleCounterModeChanged()));
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,
-                 this, &Mpx3GUI::on_shortcutsSwithPages );
+                 this, &Mpx3GUI::on_shortcutsSwitchPages );
     }
 
 }
@@ -458,7 +460,7 @@ Mpx3GUI *Mpx3GUI::getInstance()
 }
 
 // Change me when adding extra views
-void Mpx3GUI::on_shortcutsSwithPages() {
+void Mpx3GUI::on_shortcutsSwitchPages() {
 
     // figure out who sent it
     QShortcut * sc = static_cast<QShortcut*> ( QObject::sender() );
@@ -1021,10 +1023,10 @@ void Mpx3GUI::initialiseServers()
 
 void Mpx3GUI::_loadEqualizationFromGeneralSettings()
 {
-    QDir eqDir(_generalSettings->getEqualizationPath());
+    QDir eqDir(_generalSettings->getEqualisationPath());
     if(eqDir.exists()){
-        getEqualization()->LoadEqualization(false, false, _generalSettings->getEqualizationPath());
-        qDebug() << "[INFO]\tEqualization loaded from" << _generalSettings->getEqualizationPath();
+        getEqualization()->LoadEqualization(false, false, _generalSettings->getEqualisationPath());
+        qDebug() << "[INFO]\tEqualization loaded from" << _generalSettings->getEqualisationPath();
     }
 }
 
@@ -1088,17 +1090,17 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         if (filename.isNull()){
             return;
         }
-        if (selectedFilter == BIN_FILES && !filename.toLower().toLatin1().contains(".bin")){
+        if (selectedFilter == BIN_FILES && !filename.toLower().toUtf8().contains(".bin")){
             filename.append(".bin");
-        } else if (selectedFilter == SPATIAL_TIFF_FILES && !filename.toLower().toLatin1().contains("_spatialCorrected.tiff")){
+        } else if (selectedFilter == SPATIAL_TIFF_FILES && !filename.toLower().toUtf8().contains("_spatialCorrected.tiff")){
             filename.append("_spatialCorrected.tiff");
-        } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toLatin1().contains("_raw.tiff")){
+        } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toUtf8().contains("_raw.tiff")){
             filename.append("_raw.tiff");
-        } else if (selectedFilter == BOTH_TIFF_FILES && !filename.toLower().toLatin1().contains(".tiff")){
+        } else if (selectedFilter == BOTH_TIFF_FILES && !filename.toLower().toUtf8().contains(".tiff")){
             filename.append("_both.tiff");
-        } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tiff")){
+        } else if (selectedFilter == TIFF_FILES && !filename.toLower().toUtf8().contains(".tiff")){
             filename.append(".tiff");
-        } else if (selectedFilter == ASCII_FILES && !filename.toLower().toLatin1().contains(".txt")){
+        } else if (selectedFilter == ASCII_FILES && !filename.toLower().toUtf8().contains(".txt")){
             filename.append(".txt");
         }
 

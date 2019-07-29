@@ -297,42 +297,89 @@ Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
     return canvas;
 }
 
-/*!
- * \brief Dataset::toTIFF
- * \param filename - absolute file path to save to
- * \remark Writes a 32 bit, greyscale, dynamic sized, vertically flipped TIFF image to `filename`,
+/**
+ * @brief Dataset::toTIFF
+ * @param filename - absolute file path to save to
+ * @param crossCorrection - attempt to correct the cross or not, default is no correction
+ * @param spatialOnly - geometrical correction only. Make the gap between the quadrants, fix the rest in post-processing in external software
+ * @param dateTime - optional - send a date time string through, currently used for threshold scans to categorise measurements in scan folders and ensure uniqueness
+ * @param threshold - optional - specify which threshold should be saved, -1 is the default meaning all existing thresholds should be saved
+ * @param index - optional - measurement index or counter, used in threshold scans to have naturally and numerically ordered files
+ * @param thr_value - optional - the value of the threshold specified by the 'threshold' variable, used in threshold scans because thresholds can have offsets
+ * @remarks Writes a 32 bit, greyscale, dynamic sized, vertically flipped TIFF image to `filename`,
  *          writes all thresholds
- *
- *          Does cross correction for non spectroscopic mode ONLY - spectroscopic images have a non constant ratio??? #SpecialPixels
+ *          Does cross correction for non spectroscopic mode ONLY - spectroscopic images have a non constant ratio #SpecialPixels
  */
-void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
-
-    //----------------------------------------------------
+void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly, QString dateTime, int threshold, uint index, int thr_value) {
 
     if (filename.isEmpty()){
-        qDebug() << ">> ERROR empty filename, cancelling.";
+        qDebug() << "[ERROR]\tEmpty filename, file not saved.";
         return;
     }
 
-    //! Save for all thresholds in separate files
-    //! Note: Could use TIFF pages but this is a much clearer approach for the user and is more compatible cross systems
-    QList<int> thresholds = m_thresholdsToIndices.keys();
-    foreach (int thr, thresholds) {
+    //! Save for all thresholds in separate TIFF files
+    QList<int> thresholds = getThresholds();
 
-        QString tmpFilename = filename;
-        if (thresholds.count() > 1){
-            tmpFilename.replace(".tiff", "-thl" + QString::number(thr) + ".tiff");
-        }
+    //! Save all thresholds (as normal)
+    if (threshold < 0) {
+        foreach (int thr, thresholds) {
+            QString tmpFilename = filename;
+            auto lastIndex = filename.lastIndexOf("/");
+            tmpFilename.insert(lastIndex+1, QString("th" + QString::number(thr) + "-"));
 
-        //! Default mode - do cross and spatial corrections
-        if (crossCorrection){
-            Canvas imageCorrected = createCorrectedImage(thr, spatialOnly);
-            imageCorrected.saveToTiff(tmpFilename.toUtf8().data());
-        } else {
-            Canvas image = getFullImageAsArrayWithLayout(thr, 4);
-            image.saveToTiff(tmpFilename.toUtf8().data());
+            handleTiffSaving(tmpFilename, thr, crossCorrection, spatialOnly);
         }
+    } else {
+        //! Save a single threshold using the agreed upon format for threshold scans
+        //! Buildup the filename using the given optional information
+        filename = filename + buildPathExtension(dateTime, index, threshold, thr_value, "tiff");
+        qDebug() << "[INFO]\tSaving file :" << filename;
+
+        handleTiffSaving(filename, threshold, crossCorrection, spatialOnly);
     }
+}
+
+/**
+ * @brief Dataset::handleTiffSaving
+ * @param filename
+ * @param thr
+ * @param crossCorrection
+ * @param spatialOnly
+ */
+void Dataset::handleTiffSaving(QString filename, int thr, bool crossCorrection, bool spatialOnly)
+{
+    //! Default mode - do cross and spatial corrections
+    if (crossCorrection){
+        Canvas imageCorrected = createCorrectedImage(thr, spatialOnly);
+        imageCorrected.saveToTiff(filename.toUtf8().data());
+    } else {
+        Canvas image = getFullImageAsArrayWithLayout(thr, 4);
+        image.saveToTiff(filename.toUtf8().data());
+    }
+}
+
+/**
+ * @brief Dataset::buildPathExtension
+ * @param dateTime - run start time to ms precision, ISODateWithMs format, basically ISO 8601 with ms
+ * @param index - scan iteration
+ * @param thr - which threshold is being scanned
+ * @param thr_value - value of the threshold being scanned
+ * @param extension - filename extension. This isn't limited to .tiff of course
+ * @return path extension for image saving from threshold scanning specifically
+ * @remark Could be generalised into a FileFactory, ask Bram
+ */
+QString Dataset::buildPathExtension(QString dateTime, int index, int thr, int thr_value, QString extension)
+{
+    return QString("/scan_" +
+                   dateTime +
+                   "/" +
+                   QString::number(index).rightJustified(3, '0') +
+                   "-th" +
+                   QString::number(thr) +
+                   "-" +
+                   QString::number(thr_value).rightJustified(3, '0')
+                   + "."
+                   + extension);
 }
 
 /**
@@ -343,7 +390,6 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly) {
  * @return the Canvas with the frame in 4 bytes per pixel
  */
 Canvas Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spatialOnly) {
-    //----------------------------------------------------
 
     if (crossCorrection) {
         return createCorrectedImage(threshold, spatialOnly);
