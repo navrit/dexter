@@ -380,6 +380,8 @@ private:
 
     bool makeTeaCoffeeDialog();
 
+    void safeCopy(QString copyFrom, QString copyTo, QString files);
+
 public slots:
     void SaveEqualization(QString path = "", bool toTempDir = false, bool fetchfromtempdir = false);
     void on_h1LogyCheckBox_toggled(bool checked);

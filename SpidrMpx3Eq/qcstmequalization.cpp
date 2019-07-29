@@ -1351,7 +1351,11 @@ void QCstmEqualization::SaveEqualization(QString path, bool toTempDir, bool fetc
     resetThresholds();
 
     //! Save equalisations with DACs when you run an equalisation
-    _mpx3gui->getConfig()->toJsonFile(filenameEqualisation, true);
+    if (_mpx3gui->getConfig()->toJsonFile(filenameEqualisation, true)) {
+        qDebug() << "[INFO] [Equalisation]\tJSON configuration file saved:" << filenameEqualisation;
+    } else {
+        qDebug() << "[ERROR] [Equalisation]\tJSON configuration file NOT saved:" << filenameEqualisation;
+    }
 
     const ulong chipListSize = _workChipsIndx.size();
 
@@ -1372,39 +1376,19 @@ void QCstmEqualization::SaveEqualization(QString path, bool toTempDir, bool fetc
 
     qDebug() << "[INFO] [Equalisation]\tSave path:" << savePath;
 
-        // move everything from temp dir to the current savepath(could be just selected by the user)
-        // except the config. Only the last one is interesting.
-        QString copyfrom = _tempEqSaveDir;
-        copyfrom.append( QDir::separator() );
-        copyfrom += "adj_*";
     //! When you need to get the rest from a temporary directory
     if (fetchFromTempDir) {
         qDebug() << "[INFO] [Equalisation]\tStart copying files from temporary directory" << _tempEqSaveDir << " to " << savePath;
 
-        QString copyto = savepath;
-        QString command = "cp -f " +copyfrom+" "+copyto;
+        //! Move everything from temporary directory to the current savepath (could be just selected by the user) except the config.
+        //! Only the last one is interesting.
 
-        // copy adj
-        QProcess proc;
-        proc.start("sh", QStringList() << "-c" << command);
-        proc.waitForFinished(5000);
+        QString copyTo = savePath;
 
-        copyfrom = _tempEqSaveDir;
-        copyfrom.append( QDir::separator() );
-        copyfrom += "mask_*";
-        command = "cp -f " +copyfrom+" "+copyto;
-
-        // copy masks
-        proc.start("sh", QStringList() << "-c" << command);
-        proc.waitForFinished(5000);
-
-        copyfrom = _tempEqSaveDir;
-        copyfrom.append( QDir::separator() );
-        copyfrom += "chip_*";
-        command = "cp -f " +copyfrom+" "+copyto;
-
-        proc.start("sh", QStringList() << "-c" << command);
-        proc.waitForFinished(5000);
+        const QStringList filesList { "adj_*", "mask_*", "chips_*" };
+        for (const auto& i : filesList) {
+            safeCopy(QString(_tempEqSaveDir + QDir::separator() + i), copyTo, i);
+        }
     }
 }
 
@@ -2324,6 +2308,34 @@ if (msgBox.exec() == QMessageBox::Ok){
 } else {
 return false;
 }
+}
+
+void QCstmEqualization::safeCopy(QString copyFrom, QString copyTo, QString files)
+{
+    qDebug().noquote() << QString("[INFO] [Equalisation]\tExecuting command, copy %1 files").arg(files);
+
+    if (QFileInfo(copyTo).isDir() && QDir(copyTo).isReadable() && QFileInfo(copyTo).isWritable()) {
+
+        if (QFile::copy(copyFrom, copyTo)) {
+            qDebug().noquote() << QString("[INFO] [Equalisation]\tFinished command, copy %1 files").arg(files);
+
+        } else {
+            //! This is because copying to a folder does copy the files
+            if (!QFileInfo(copyTo).exists()) {
+                qDebug().noquote() << QString("[ERROR] [Equalisation]\tFAILED command, copy %1 files").arg(files);
+
+                //! Handle error
+                if (!QFile::rename(copyTo, QString(copyTo + "_old"))) {
+                    qDebug("[ERROR] [Equalisation]\tCould not rename the existing file...");
+                }
+            }
+        }
+    } else {
+        qDebug() << "[ERROR] [Equalisation]\tThe directory this is trying to copy to is not good:" << copyTo;
+        qDebug() << "[ERROR] [Equalisation]\t\tisDirectory:" << QFileInfo(copyTo).isDir();
+        qDebug() << "[ERROR] [Equalisation]\t\tisReadable:" << QDir(copyTo).isReadable();
+        qDebug() << "[ERROR] [Equalisation]\t\tisWritable" << QFileInfo(copyTo).isWritable();
+    }
 }
 
 void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString path) {
