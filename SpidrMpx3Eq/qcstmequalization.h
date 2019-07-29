@@ -219,6 +219,8 @@ public:
     void SetupSignalsAndSlots();
     void SetLimits();
     void stopEqualizationRemotely();
+    void temporarilyOverrideUserChosenSpacing();
+    void restoreOveriddenUserChosenSpacing();
     void clearPreviousData(uint chipListSize);
     void printNonReactiveWarning(uint chipListSize);
     void updateTestpulseVariables();
@@ -333,6 +335,7 @@ private:
     int _deviceIndex;
     int _nTriggers;
     int _spacing; //! Pixel spacing. Ie. a pixel spacing of 2 would be scannig 1/4 pixels
+    int _userChosenSpacing = -1;
     int _minScanTHL;
     int _maxScanTHL;
     int _stepScan;

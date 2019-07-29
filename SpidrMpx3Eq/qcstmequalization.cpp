@@ -793,9 +793,7 @@ void QCstmEqualization::StartEqualization() {
             qDebug() << "[INFO]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
 
-        setSpacing(2); //! For decent statistics on higher spacings, need to have _spacing = 2 until __PrepareInterpolation_0x0
-        qDebug().nospace() << QString("[INFO] \tEqualisation setting pixel spacing to %1 until Interpolation preparation with adj bits = 0").arg(GetSpacing());
-
+        temporarilyOverrideUserChosenSpacing();
         DAC_Disc_Optimization_100(); // Prepare and launch the thread
 
     } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100) ) {
@@ -834,6 +832,7 @@ void QCstmEqualization::StartEqualization() {
         // STEP 2 //
         // ------ //
 
+        restoreOveriddenUserChosenSpacing();
         AppendToTextBrowser("2) Test adj-bits sensibility and extrapolate to target ...");
         PrepareInterpolation_0x0();
 
@@ -875,8 +874,6 @@ void QCstmEqualization::StartEqualization() {
         //    Here there's absolutely no need to go through the THL range.
         // New limits --> ask the last scan
         ScanOnInterpolation();
-        setSpacing(_ui->spacingSpinBox->value()); //! Change the spacing back to the GUI content
-
 
     } else if ( EQ_NEXT_STEP( __ScanOnInterpolation) ) {
 
@@ -1568,6 +1565,64 @@ void QCstmEqualization::GetSlopeAndCut_Adj_THL(ScanResults * r1, ScanResults * r
 void QCstmEqualization::stopEqualizationRemotely()
 {
     StopEqualization();
+}
+
+/**
+ * @brief QCstmEqualization::temporarilyOverrideUserChosenSpacing
+ * @remark Get user chosen spacing, restore later just before __PrepareInterpolation_0x0
+ *          This improves the quality of the scan but maintains speed.
+ */
+void QCstmEqualization::temporarilyOverrideUserChosenSpacing()
+{
+    //! For decent statistics on higher spacings, need to have _spacing ~= 2 until __PrepareInterpolation_0x0
+
+    _userChosenSpacing = _ui->spacingSpinBox->value();
+    setSpacing(2);
+    qDebug().noquote() << QString("[INFO] [Equalisation]\tSetting pixel spacing to %1 until Interpolation preparation with adj bits = 0").arg(GetSpacing());
+}
+
+/**
+ * @brief QCstmEqualization::restoreOveriddenUserChosenSpacing
+ * @remark Restore the originally selected spacing by the user.
+            This improves the quality of the scan but maintains speed.
+ */
+void QCstmEqualization::restoreOveriddenUserChosenSpacing()
+{
+    setSpacing(_userChosenSpacing);
+    qDebug().nospace() << QString("[INFO] [Equalisation]\tRestoring pixel spacing to %1 as selected").arg(GetSpacing());
+}
+
+void QCstmEqualization::clearPreviousData(uint chipListSize)
+{
+    _resdataset->clear();
+    for ( uint i = 0 ; i < chipListSize ; i++ ) {
+        int * da = _eqMap[int(_workChipsIndx[i])]->GetAdjustementMatrix();
+        _resdataset->setFrame(da, int(_workChipsIndx[i]), 0);
+    }
+    int * fulladjdata = _resdataset->getLayer( 0 );
+    UpdateHeatMap(fulladjdata, _fullsize_x, _fullsize_y);
+}
+
+void QCstmEqualization::printNonReactiveWarning(uint chipListSize)
+{
+    // Results
+    int nNonReactive = _scans[int(_scanIndex - 1)]->NumberOfNonReactingPixels();
+
+    // Correct in case not all chips are active
+    nNonReactive -= (uint(_mpx3gui->getConfig()->getNDevicesSupported()) - chipListSize) * __matrix_size;
+
+    if ( nNonReactive > 0 ) {
+        qDebug() << "[WARNING]\tNumber of non-reactive pixels :" << nNonReactive;
+    }
+}
+
+void QCstmEqualization::updateTestpulseVariables()
+{
+    if (testPulseEqualisationDialog != nullptr) {
+        defaultNoiseEqualisationTarget = testPulseEqualisationDialog->getEqualisationTarget();
+        DAC_DISC_1_value = testPulseEqualisationDialog->get_1st_DAC_DISC_val();
+        DAC_DISC_2_value = testPulseEqualisationDialog->get_2nd_DAC_DISC_val();
+    }
 }
 
 //! The way the next two functions relate looks redundant but I need
