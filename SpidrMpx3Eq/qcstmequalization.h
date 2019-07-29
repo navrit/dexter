@@ -381,7 +381,7 @@ private:
     bool makeTeaCoffeeDialog();
 
 public slots:
-    void SaveEqualization(QString path="", bool totempdir = false, bool fetchfromtempdir = false );
+    void SaveEqualization(QString path = "", bool toTempDir = false, bool fetchfromtempdir = false);
     void on_h1LogyCheckBox_toggled(bool checked);
 
 private slots:

@@ -1291,56 +1291,61 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
     AppendToTextBrowser(statsString);
 }
 
-void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetchfromtempdir) {
+void QCstmEqualization::SaveEqualization(QString path, bool toTempDir, bool fetchFromTempDir) {
 
     QString filenameEqualisation = "";
-    QString savepath = path;
+    QString savePath = path;
 
-    if ( savepath == "" ) {
-        //! Get folder to save equalisation files to
-        if(!_isRemotePath)
-            savepath = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
+    //! Get folder to save equalisation files to
+    if ( savePath == "" ) {
+
+        //! Handle local and remote mode
+        if (!_isRemotePath) {
+            savePath = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
                                                          QDir::currentPath(),
                                                          QFileDialog::ShowDirsOnly);
-        else
-        {
-            savepath = _remotePath;
+        } else {
+            savePath = _remotePath;
             _isRemotePath = false;
         }
+
         //! User pressed cancel, offer another go at saving
-        if (savepath.isEmpty()){
+        if (savePath.isEmpty()) {
             QMessageBox::StandardButton reply;
             reply = QMessageBox::warning(this,
                                          tr("Warning"),
                                          tr("Are you sure you do not want to save equalisations and config files?"),
                                          QMessageBox::Save|QMessageBox::Cancel);
             if (reply == QMessageBox::Save) {
-                savepath = QFileDialog::getExistingDirectory(this,
+                savePath = QFileDialog::getExistingDirectory(this,
                                                              tr("Open Directory to save equalisations to"),
                                                              QDir::currentPath(),
                                                              QFileDialog::ShowDirsOnly);
             } else {
-                sig_statusBarAppend(tr("Equalisation not saved, you may save them manually"),"red");
+                sig_statusBarAppend(tr("Equalisation not saved, you may save them manually"), "red");
                 return;
             }
         }
     } else {
-        savepath = path;
-        if ( totempdir ) {
-            savepath.append( QDir::separator() );
-            savepath += "tmp";
-            _tempEqSaveDir = savepath;
+        savePath = path;
+
+        if ( toTempDir ) {
+            savePath.append( QDir::separator() );
+            savePath += "tmp";
+            _tempEqSaveDir = savePath;
         }
-        // Create the folder if it doesn't exist
-        if ( ! QDir( savepath ).exists() ) {
-            _tempEqSaveDir = savepath;
-            qDebug() << "[INFO] [Equalisation] creating temporary directory : " << savepath;
-            QDir().mkdir( savepath );
+        //! Create the folder if it doesn't exist
+        if ( ! QDir( savePath ).exists() ) {
+            _tempEqSaveDir = savePath;
+            qDebug() << "[INFO] [Equalisation]\tCreating temporary directory: " << savePath;
+            QDir().mkdir( savePath );
+        } else {
+            qDebug() << "[INFO] [Equalisation]\tTemporary directory already exists, continuing:" << savePath;
         }
     }
 
-    savepath.append( QDir::separator() );
-    filenameEqualisation = savepath;
+    savePath.append( QDir::separator() );
+    filenameEqualisation = savePath;
     filenameEqualisation.append("config.json"); //! Ie. all chips
 
     resetThresholds();
@@ -1348,49 +1353,33 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
     //! Save equalisations with DACs when you run an equalisation
     _mpx3gui->getConfig()->toJsonFile(filenameEqualisation, true);
 
-    unsigned long chipListSize = _workChipsIndx.size();
+    const ulong chipListSize = _workChipsIndx.size();
 
     //! Save adj and mask path+filename strings and save them
-    for ( unsigned long i = 0 ; i < chipListSize ; i++ ) {
-        // Binary file
-        _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile( QString( savepath + "adj_" + QString::number(_workChipsIndx[i])) );
+    for (ulong i = 0 ; i < chipListSize; i++) {
+        // Binary file - adjustment bits
+        _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile(QString( savePath + "adj_" + QString::number(_workChipsIndx[i])));
 
         // Masked pixels
-        _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( QString( savepath + "mask_" + QString::number(_workChipsIndx[i])) );
+        _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile(QString( savePath + "mask_" + QString::number(_workChipsIndx[i])));
+
+        if (GetBarChart(int(i)) == nullptr) {
+            qDebug() << "[INFO] [Equalisation]\tPlot" << i << "does not exist. Did not save the equalisation plot :(";
+        } else {
+            GetBarChart(int(i))->savePng(savePath + "chip_" + QString::number(i) + ".png", 1024, 1024, 2.0);
+        }
     }
 
-
-    if(GetBarChart(0) == nullptr) {
-        qDebug() << "[Equalisation] Plot" << 0 << "does not exist. Could not save the equalisation plot :(";
-    } else {
-        GetBarChart(0)->savePng(savepath + "chip_" + QString::number(0) + ".png", 1024, 1024, 2.0);
-    }
-    if(GetBarChart(1) == nullptr) {
-        qDebug() << "[Equalisation] Plot" << 1 << "does not exist. Could not save the equalisation plot :(";
-    } else {
-        GetBarChart(1)->savePng(savepath + "chip_" + QString::number(1) + ".png", 1024, 1024, 2.0);
-    }
-    if(GetBarChart(2) == nullptr) {
-        qDebug() << "[Equalisation] Plot" << 2 << "does not exist. Could not save the equalisation plot :(";
-    } else {
-        GetBarChart(2)->savePng(savepath + "chip_" + QString::number(2) + ".png", 1024, 1024, 2.0);
-    }
-    if(GetBarChart(3) == nullptr) {
-        qDebug() << "[Equalisation] Plot" << 3 << "does not exist. Could not save the equalisation plot :(";
-    } else {
-        GetBarChart(3)->savePng(savepath + "chip_" + QString::number(3) + ".png", 1024, 1024, 2.0);
-    }
-
-    qDebug() << "[Equalisation] Save path: " << savepath;
-
-    // use this when you need to get the rest from a temp dir
-    if ( fetchfromtempdir ) {
+    qDebug() << "[INFO] [Equalisation]\tSave path:" << savePath;
 
         // move everything from temp dir to the current savepath(could be just selected by the user)
         // except the config. Only the last one is interesting.
         QString copyfrom = _tempEqSaveDir;
         copyfrom.append( QDir::separator() );
         copyfrom += "adj_*";
+    //! When you need to get the rest from a temporary directory
+    if (fetchFromTempDir) {
+        qDebug() << "[INFO] [Equalisation]\tStart copying files from temporary directory" << _tempEqSaveDir << " to " << savePath;
 
         QString copyto = savepath;
         QString command = "cp -f " +copyfrom+" "+copyto;
