@@ -128,8 +128,6 @@ void QCstmEqualization::FullEqRewind()
     nbc->setHidden(true);
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    _checkBoxes.clear();
-
     _eqStatus = __INIT;
     _scanIndex = 0;
     for(int i = 0 ; i < __EQStatus_Count ; i++) {
@@ -147,6 +145,13 @@ void QCstmEqualization::FullEqRewind()
 
     _steeringInfo.clear();
     _chart.clear();
+
+    //! Clear and hide the checkboxes
+    for ( uint i = 0 ; i < _checkBoxes.size(); ++i ) {
+        if ( _checkBoxes[i] != nullptr ) {
+            _checkBoxes[i]->setVisible(false);
+        }
+    }
     _checkBoxes.clear();
 }
 
@@ -1589,7 +1594,7 @@ void QCstmEqualization::temporarilyOverrideUserChosenSpacing()
 void QCstmEqualization::restoreOveriddenUserChosenSpacing()
 {
     setSpacing(_userChosenSpacing);
-    qDebug().nospace() << QString("[INFO] [Equalisation]\tRestoring pixel spacing to %1 as selected").arg(GetSpacing());
+    qDebug().noquote() << QString("[INFO] [Equalisation]\tRestoring pixel spacing to %1 as selected").arg(GetSpacing());
 }
 
 void QCstmEqualization::clearPreviousData(uint chipListSize)
