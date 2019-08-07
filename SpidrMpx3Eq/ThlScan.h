@@ -198,6 +198,9 @@ private:
     // control
     bool _stop;
 
+    //! Units: milliseconds. This needs to be about this value or longer because the noise varies in the 100-10000 Hz regime
+    const static uint _timeOut = 50;
+
 private slots:
     //void UpdateChart(int setId, int thlValue);
     void UpdateChart(int devId, int setId, int thlValue);

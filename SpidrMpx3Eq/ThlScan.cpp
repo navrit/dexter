@@ -484,8 +484,7 @@ void ThlScan::FineTuning() {
                     //! Assume the frame won't come
                     doReadFrames = false;
 
-                    //! This needs to be high because of Debug mode running slow AF
-                    while ( _spidrdaq->hasFrame( 100 ) ) {
+                    while ( _spidrdaq->hasFrame( _timeOut ) ) {
 
                         doReadFrames = true;// A frame is here
 
@@ -973,12 +972,11 @@ void ThlScan::EqualizationScan() {
 
                 // See if there is a frame available.  I should get as many frames as triggers
                 int framesCntr = 0;
-                unsigned long timeOutTime = 100; //ms
 
                 // Start the trigger as configured
                 spidrcontrol->startAutoTrigger();
 
-                while ( _spidrdaq->hasFrame( timeOutTime ) ) {
+                while ( _spidrdaq->hasFrame( _timeOut ) ) {
 
                     // assume a good frame
                     doReadFrames.push_back( true );
@@ -1004,7 +1002,6 @@ void ThlScan::EqualizationScan() {
 
                             // Stack
                             _dataset->setFrame(frameSet, idx, 0);
-
                         }
 
                         // Once the frame is complete, extract info
