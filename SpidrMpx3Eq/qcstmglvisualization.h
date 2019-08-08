@@ -189,7 +189,7 @@ private:
     } extra_widgets;
 
     stats_str _statsString;
-    scoring _score;
+    scoring _score = {0, 0, 0, 0, 0};
     extra_widgets _extraWidgets;
     int _timerId;
 

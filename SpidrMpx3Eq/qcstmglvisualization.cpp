@@ -112,28 +112,26 @@ void QCstmGLVisualization::refreshScoringInfo()
 {
     updateETA();
 
-    // Progress
-    QString prog = "";
+    const int nTriggers = _mpx3gui->getConfig()->getNTriggers();
+    const uint nFramesKept = _score.nFramesKept;
+    const uint lostFrames = _score.lostFrames;
+    QString frameCounterLabel = QString::number(nFramesKept);
 
-    int nTriggers = _mpx3gui->getConfig()->getNTriggers();
-    uint nFramesKept = _score.nFramesKept;
     /* Not necessary to do this, nFramesKept is not modified in DataTakingThread for colour mode
      * if ( _mpx3gui->getConfig()->getColourMode() ) {
      *    nFramesKept /= 4;
     }*/
 
-    if ( nTriggers > 0 ) {
-        prog = QString("%1").arg( nFramesKept );
-        if ( _score.lostFrames != 0 ) prog += QString("<font color=\"red\">(%1)</font>").arg( _score.lostFrames );
-        prog += QString("/%1").arg( nTriggers );
-    } else {
-        prog = QString("%1").arg( _score.nFramesKept ); // nTriggers=0 is keep taking data forever
-        if ( _score.lostFrames != 0 ) prog += QString("<font color=\"red\">(%1)</font>").arg( _score.lostFrames );
+    if ( lostFrames > 0 && _score.nFramesReceived > 0 ) {
+        frameCounterLabel += QString("<font color=\"red\">(%1)</font>").arg( lostFrames );
     }
-    ui->frameCntr->setText( prog );
+    if ( nTriggers > 0 ) {
+        frameCounterLabel += QString("/%1").arg( nTriggers );
+    }
+    ui->frameCntr->setText( frameCounterLabel );
 
     // FPS
-    fps_update(int(_score.nFramesReceived));
+    fps_update(_score.nFramesReceived);
     BuildStatsStringLostFrames( _score.lostFrames );
     BuildStatsStringLostPackets( _score.lostPackets );
     BuildStatsString();
