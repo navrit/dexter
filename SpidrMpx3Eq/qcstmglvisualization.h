@@ -199,6 +199,7 @@ private:
     void BuildStatsStringLostFrames(uint64_t lostFrames);
     void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
+    void predictAcquisitionTime();
 
     //! Adds the specified threshold to the layerselector combobox
     void addThresholdToSelector(int threshold);
