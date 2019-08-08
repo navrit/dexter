@@ -596,6 +596,7 @@ BarChart * QCstmEqualization::GetBarChart(int chipIdx) {
 
     // There should be as results objects as chips to be equalized
     if ( _workChipsIndx.size() != _chart.size() ) {
+        qDebug() << "[DEBUG] [Equalisation]\t_workChipsIndx.size() != _chart.size() | " << _workChipsIndx.size() << " | " << _chart.size();
         return nullptr;
     }
 
@@ -1357,19 +1358,15 @@ void QCstmEqualization::SaveEqualization(QString path, bool toTempDir, bool fetc
         qDebug() << "[ERROR] [Equalisation]\tJSON configuration file NOT saved:" << filenameEqualisation;
     }
 
-    const ulong chipListSize = _workChipsIndx.size();
-
     //! Save adj and mask path+filename strings and save them
-    for (ulong i = 0 ; i < chipListSize; i++) {
-        // Binary file - adjustment bits
-        _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile(QString( savePath + "adj_" + QString::number(_workChipsIndx[i])));
+    for (ulong i = 0 ; i < 4; i++) {
+        if (GetBarChart(int(i)) != nullptr) {
+            // Binary file - adjustment bits
+            _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile(QString( savePath + "adj_" + QString::number(_workChipsIndx[i])));
 
-        // Masked pixels
-        _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile(QString( savePath + "mask_" + QString::number(_workChipsIndx[i])));
+            // Masked pixels
+            _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile(QString( savePath + "mask_" + QString::number(_workChipsIndx[i])));
 
-        if (GetBarChart(int(i)) == nullptr) {
-            qDebug() << "[INFO] [Equalisation]\tPlot" << i << "does not exist. Did not save the equalisation plot :(";
-        } else {
             GetBarChart(int(i))->savePng(savePath + "chip_" + QString::number(i) + ".png", 1024, 1024, 2.0);
         }
     }
