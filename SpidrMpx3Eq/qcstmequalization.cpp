@@ -1375,16 +1375,14 @@ void QCstmEqualization::SaveEqualization(QString path, bool toTempDir, bool fetc
 
     //! When you need to get the rest from a temporary directory
     if (fetchFromTempDir) {
-        qDebug() << "[INFO] [Equalisation]\tStart copying files from temporary directory" << _tempEqSaveDir << " to " << savePath;
+        //qDebug() << "[INFO] [Equalisation]\tStart copying files from temporary directory" << _tempEqSaveDir << " to " << savePath;
 
         //! Move everything from temporary directory to the current savepath (could be just selected by the user) except the config.
-        //! Only the last one is interesting.
 
-        QString copyTo = savePath;
+        const QStringList filesList { "adj_0", "adj_1", "adj_2", "adj_3", "mask_0", "mask_1", "mask_2", "mask_3", "chip_0.png", "chip_1.png", "chip_2.png", "chip_3.png" };
 
-        const QStringList filesList { "adj_*", "mask_*", "chips_*" };
         for (const auto& i : filesList) {
-            safeCopy(QString(_tempEqSaveDir + QDir::separator() + i), copyTo, i);
+            safeCopy(QString(_tempEqSaveDir + QDir::separator() + i), savePath, i);
         }
     }
 }
@@ -2307,24 +2305,41 @@ return false;
 }
 }
 
-void QCstmEqualization::safeCopy(QString copyFrom, QString copyTo, QString files)
+void QCstmEqualization::safeCopy(QString copyFrom, QString copyTo, QString file)
 {
-    qDebug().noquote() << QString("[INFO] [Equalisation]\tExecuting command, copy %1 files").arg(files);
+    //qDebug().noquote() << QString("[INFO] [Equalisation]\tExecuting command, copy %1 file").arg(file);
+
+    const QFile source(copyFrom);
 
     if (QFileInfo(copyTo).isDir() && QDir(copyTo).isReadable() && QFileInfo(copyTo).isWritable()) {
 
-        if (QFile::copy(copyFrom, copyTo)) {
-            qDebug().noquote() << QString("[INFO] [Equalisation]\tFinished command, copy %1 files").arg(files);
+        if (source.copy(copyFrom, (copyTo + file))) {
+            #ifdef QT_DEBUG
+            qDebug().noquote() << QString("[DEBUG] [Equalisation]\tFinished command, copy %1 file").arg(file);
+            #endif
 
         } else {
-            //! This is because copying to a folder does copy the files
-            if (!QFileInfo(copyTo).exists()) {
-                qDebug().noquote() << QString("[ERROR] [Equalisation]\tFAILED command, copy %1 files").arg(files);
+
+            if (!source.exists()) {
+
+                //! adj_3, mask_3 and chip_3.png are not yet saved to the tmp directory, only print the warning for the other files
+                if (!file.contains("3")) {
+                    qDebug().noquote() << QString("[WARN] [Equalisation]\tFile does not exist: %1").arg(copyFrom);
+                }
+                return;
+            }
+
+            qDebug().noquote() << QString("[ERROR] [Equalisation]\tCopy failed. File error = %1").arg(source.errorString());
+
+            if (QFileInfo(copyTo).exists()) {
+                qDebug().noquote() << QString("[ERROR] [Equalisation]\tFAILED command, copy %1 file").arg(file);
 
                 //! Handle error
                 if (!QFile::rename(copyTo, QString(copyTo + "_old"))) {
-                    qDebug("[ERROR] [Equalisation]\tCould not rename the existing file...");
+                    qDebug().noquote() << QString("[ERROR] [Equalisation]\tCould not rename the existing file: %1").arg(copyTo);
                 }
+            } else {
+                qDebug().noquote() << QString("[INFO] [Equalisation]\tCopy failed and the file did not exist before, %1").arg(file);
             }
         }
     } else {
