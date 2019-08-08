@@ -714,19 +714,17 @@ void QCstmGLVisualization::changeBinCount(int count) {
     }
 }
 
-void QCstmGLVisualization::fps_update(int nframes_done) {
+void QCstmGLVisualization::fps_update(uint nframes_done) {
 
-    // check if there is a datataking thread is running
-    if ( ! _dataTakingThread->isRunning() ) return;
+    if (! _dataTakingThread->isRunning()) return;
     if (! _etatimer) return;
 
-    double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
+    const double fpsVal = (double(nframes_done)) / (double(_etatimer->elapsed())/1000.); // elapsed() comes in milliseconds
 
     QString fpsS = QString::number( round( fpsVal ) , 'd', 0 );
     fpsS += " fps";
 
     ui->fpsLabel->setText( fpsS );
-
 }
 
 void QCstmGLVisualization::overflow_update(int ovf_cntr) {

@@ -296,7 +296,7 @@ public slots:
     void mpx3clock_stops(int);
 
 
-    void fps_update(int);
+    void fps_update(uint);
     void overflow_update(int);
 
     void user_accepted_profile(); //! Deleting profile dialog
