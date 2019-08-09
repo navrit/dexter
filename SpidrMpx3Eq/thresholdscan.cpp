@@ -326,7 +326,7 @@ void thresholdScan::changeAllDACs(int val)
         for (int dacCode = MPX3RX_DAC_THRESH_0; dacCode <= MPX3RX_DAC_THRESH_7; dacCode++ ) {
             int i = val;
 
-            if (get_changeOtherThresholds() == true) {
+            if (get_changeOtherThresholds()) {
                 if ( dacCode == MPX3RX_DAC_THRESH_0 ) {
                     SetDAC_propagateInGUI(chipID, dacCode, i);
                 } else if ( dacCode == MPX3RX_DAC_THRESH_1 ) {

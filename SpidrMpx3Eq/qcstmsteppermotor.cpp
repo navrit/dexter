@@ -168,7 +168,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
     // the missing boolean (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
     // On turn on --> setup, on turn off --> close
-    if ( checked == true ) {
+    if (checked) {
 
         if ( ! _stepper->arm_stepper() ) {
             ui->stepperMotorCheckBox->setChecked(false);
@@ -282,7 +282,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
 void QCstmStepperMotor::on_stepperUseCalibCheckBox_toggled(bool checked)
 {
     // On turn on --> verify and use calib, on turn off --> stop using calibration
-    if ( checked == true ) {
+    if (checked) {
 
         QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
         int columns = model->columnCount();

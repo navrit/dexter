@@ -773,12 +773,7 @@ void ThlScan::SetDAC_propagateInGUI(SpidrController * spidrcontrol, uint devId, 
 
 bool ThlScan::ThereIsAFalse(vector<bool> v){
 
-    vector<bool>::iterator i  = v.begin();
-    vector<bool>::iterator iE = v.end();
-
-    for ( ; i != iE ; i++ ) {
-        if ( (*i) == false ) return true;
-    }
+    for (auto b: v) if (! b) return true;
     return false;
 }
 
