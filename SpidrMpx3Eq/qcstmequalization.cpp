@@ -113,7 +113,7 @@ void QCstmEqualization::FullEqRewind()
     _resdataset = nullptr;
     _gridLayoutHistograms = nullptr;
 
-    _stepScan = _ui->eqStepSpinBox->value(); //__default_step_scan;
+    _stepScan = _ui->eqStepSpinBox->value();
     _setId = 0;
     _nChips = 1;
     // List of chip indexes to equalize
@@ -1572,11 +1572,11 @@ void QCstmEqualization::ScanThreadFinished(){
     _eqStatus++;
 
     // 1) Now revisit the equalization. It knows where to pick up.
-    // 2) Handel when the equalization has been stopped by the user.
-    //    The thread will finish pematurely and then this function gets called.
+    // 2) Handle when the equalization has been stopped by the user.
+    //    The thread will finish prematurely and then this function gets called.
     if ( _stopEq ) {
-        // In this case do the big rewind.
-        qDebug() << "[INFO] Equalization stopped --> Rewind.";
+
+        qDebug() << "[INFO]\tEqualisation stopped --> Rewind.";
         _stopEq = false;
         // Full rewind
         FullEqRewind();
@@ -1584,8 +1584,6 @@ void QCstmEqualization::ScanThreadFinished(){
         StartEqualization( );
     }
 }
-
-
 
 double QCstmEqualization::EvalLinear(double eta, double cut, double x){
     return x*eta + cut;
@@ -1596,7 +1594,6 @@ void QCstmEqualization::GetSlopeAndCut_IDAC_DISC_THL(ScanResults * r1, ScanResul
     // The slope is =  (THLmean2 - THLmean1) / (DAC_DISC_L_setting_2 - DAC_DISC_L_setting_1)
     eta = (r2->DAC_DISC_setting - r1->DAC_DISC_setting) / (r2->weighted_arithmetic_mean - r1->weighted_arithmetic_mean);
     cut = r2->DAC_DISC_setting - (eta * r2->weighted_arithmetic_mean);
-
 }
 
 void QCstmEqualization::GetSlopeAndCut_Adj_THL(ScanResults * r1, ScanResults * r2, double & eta, double & cut) {
@@ -2192,8 +2189,7 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
     return true;
 }
 
-//! TODO New and untested feature so you can run multiple equalisations without closing the program
-//! Doesn't work...
+//! So you can run multiple equalisations without closing the program
 void QCstmEqualization::resetForNewEqualisation()
 {
     _eqStatus = __INIT;
