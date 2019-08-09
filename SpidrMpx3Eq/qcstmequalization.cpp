@@ -44,6 +44,8 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     // Defaults -> init and full-rewindable
     FullEqRewind();
 
+    _spacing = 2;
+
     _fineTuningLoops = 10;
     _ui->fineTuningLoopsSpinBox->setValue( _fineTuningLoops );
 
@@ -93,7 +95,9 @@ void QCstmEqualization::FullEqRewind()
 
     _deviceIndex = 0;
     _nTriggers = 1;
-    _spacing = 2;
+
+    //! This is overidden when called via the initialisation. When called by scanThreadFinished, it will use the user selected spacing exclusively and not the default initial value.
+    _spacing = _ui->spacingSpinBox->value();
 
     // This will be recalculated
     _nchipsX = 2;
