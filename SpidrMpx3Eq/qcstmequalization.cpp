@@ -44,6 +44,8 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     // Defaults -> init and full-rewindable
     FullEqRewind();
 
+    _spacing = 2;
+
     _fineTuningLoops = 10;
     _ui->fineTuningLoopsSpinBox->setValue( _fineTuningLoops );
 
@@ -92,7 +94,9 @@ void QCstmEqualization::FullEqRewind()
 
     _deviceIndex = 0;
     _nTriggers = 1;
-    _spacing = 2;
+
+    //! This is overidden when called via the initialisation. When called by scanThreadFinished, it will use the user selected spacing exclusively and not the default initial value.
+    _spacing = _ui->spacingSpinBox->value();
 
     // This will be recalculated
     _nchipsX = 2;
@@ -108,7 +112,7 @@ void QCstmEqualization::FullEqRewind()
     _resdataset = nullptr;
     _gridLayoutHistograms = nullptr;
 
-    _stepScan = _ui->eqStepSpinBox->value(); //__default_step_scan;
+    _stepScan = _ui->eqStepSpinBox->value();
     _setId = 0;
     _nChips = 1;
     // List of chip indexes to equalize
@@ -594,6 +598,7 @@ BarChart * QCstmEqualization::GetBarChart(int chipIdx) {
 
     // There should be as results objects as chips to be equalized
     if ( _workChipsIndx.size() != _chart.size() ) {
+        qDebug() << "[DEBUG] [Equalisation]\t_workChipsIndx.size() != _chart.size() | " << _workChipsIndx.size() << " | " << _chart.size();
         return nullptr;
     }
 
@@ -1294,19 +1299,15 @@ void QCstmEqualization::SaveEqualization(QString path, bool toTempDir, bool fetc
         qDebug() << "[ERROR] [Equalisation]\tJSON configuration file NOT saved:" << filenameEqualisation;
     }
 
-    const ulong chipListSize = _workChipsIndx.size();
-
     //! Save adj and mask path+filename strings and save them
-    for (ulong i = 0 ; i < chipListSize; i++) {
-        // Binary file - adjustment bits
-        _eqMap[int(_workChipsIndx[i])]->WriteAdjBinaryFile( QString( savePath + "adj_" + QString::number(int(_workChipsIndx[i]))) );
+    for (ulong i = 0 ; i < 4; i++) {
+        if (GetBarChart(int(i)) != nullptr) {
+            // Binary file - adjustment bits
+            _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile(QString( savePath + "adj_" + QString::number(_workChipsIndx[i])));
 
-        // Masked pixels
-        _eqMap[int(_workChipsIndx[i])]->WriteMaskBinaryFile( QString( savePath + "mask_" + QString::number(int(_workChipsIndx[i]))) );
+            // Masked pixels
+            _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile(QString( savePath + "mask_" + QString::number(_workChipsIndx[i])));
 
-        if (GetBarChart(int(i)) == nullptr) {
-            qDebug() << "[INFO] [Equalisation]\tPlot" << i << "does not exist. Did not save the equalisation plot :(";
-        } else {
             GetBarChart(int(i))->savePng(savePath + "chip_" + QString::number(i) + ".png", 1024, 1024, 2.0);
         }
     }
@@ -1315,16 +1316,16 @@ void QCstmEqualization::SaveEqualization(QString path, bool toTempDir, bool fetc
 
     //! When you need to get the rest from a temporary directory
     if (fetchFromTempDir) {
-        qDebug() << "[INFO] [Equalisation]\tStart copying files from temporary directory" << _tempEqSaveDir << " to " << savePath;
+        //qDebug() << "[INFO] [Equalisation]\tStart copying files from temporary directory" << _tempEqSaveDir << " to " << savePath;
 
         //! Move everything from temporary directory to the current savePath (could be just selected by the user) except the config.
-        //! Only the last one is interesting.
 
-        QString copyTo = savePath;
+        const QStringList filesList { "adj_0", "adj_1", "adj_2", "adj_3",
+                                      "mask_0", "mask_1", "mask_2", "mask_3",
+                                      "chip_0.png", "chip_1.png", "chip_2.png", "chip_3.png" };
 
-        const QStringList filesList { "adj_*", "mask_*", "chips_*" };
         for (const auto& i : filesList) {
-            safeCopy(QString(_tempEqSaveDir + QDir::separator() + i), copyTo, i);
+            safeCopy(QString(_tempEqSaveDir + QDir::separator() + i), savePath, i);
         }
     }
 }
@@ -1511,8 +1512,7 @@ void QCstmEqualization::ScanThreadFinished(){
     // 2) Handle when the equalization has been stopped by the user.
     //    The thread will finish prematurely and then this function gets called.
     if ( _stopEq ) {
-        // In this case do the big rewind.
-        qDebug() << "[INFO]\tEqualization stopped --> Rewind.";
+        qDebug() << "[INFO]\tEqualisation stopped --> Rewind.";
         _stopEq = false;
         // Full rewind
         FullEqRewind();
@@ -1530,7 +1530,6 @@ void QCstmEqualization::GetSlopeAndCut_IDAC_DISC_THL(ScanResults * r1, ScanResul
     // The slope is =  (THLmean2 - THLmean1) / (DAC_DISC_L_setting_2 - DAC_DISC_L_setting_1)
     eta = (r2->DAC_DISC_setting - r1->DAC_DISC_setting) / (r2->weighted_arithmetic_mean - r1->weighted_arithmetic_mean);
     cut = r2->DAC_DISC_setting - (eta * r2->weighted_arithmetic_mean);
-
 }
 
 void QCstmEqualization::GetSlopeAndCut_Adj_THL(ScanResults * r1, ScanResults * r2, double & eta, double & cut) {
@@ -2301,24 +2300,41 @@ bool QCstmEqualization::makeTeaCoffeeDialog()
     }
 }
 
-void QCstmEqualization::safeCopy(QString copyFrom, QString copyTo, QString files)
+void QCstmEqualization::safeCopy(QString copyFrom, QString copyTo, QString file)
 {
-    qDebug().noquote() << QString("[INFO] [Equalisation]\tExecuting command, copy %1 files").arg(files);
+    //qDebug().noquote() << QString("[INFO] [Equalisation]\tExecuting command, copy %1 file").arg(file);
+
+    const QFile source(copyFrom);
 
     if (QFileInfo(copyTo).isDir() && QDir(copyTo).isReadable() && QFileInfo(copyTo).isWritable()) {
 
-        if (QFile::copy(copyFrom, copyTo)) {
-            qDebug().noquote() << QString("[INFO] [Equalisation]\tFinished command, copy %1 files").arg(files);
+        if (source.copy(copyFrom, (copyTo + file))) {
+            #ifdef QT_DEBUG
+            qDebug().noquote() << QString("[DEBUG] [Equalisation]\tFinished command, copy %1 file").arg(file);
+            #endif
 
         } else {
-            //! This is because copying to a folder does copy the files
-            if (!QFileInfo(copyTo).exists()) {
-                qDebug().noquote() << QString("[ERROR] [Equalisation]\tFAILED command, copy %1 files").arg(files);
+
+            if (!source.exists()) {
+
+                //! adj_3, mask_3 and chip_3.png are not yet saved to the tmp directory, only print the warning for the other files
+                if (!file.contains("3")) {
+                    qDebug().noquote() << QString("[WARN] [Equalisation]\tFile does not exist: %1").arg(copyFrom);
+                }
+                return;
+            }
+
+            qDebug().noquote() << QString("[ERROR] [Equalisation]\tCopy failed. File error = %1").arg(source.errorString());
+
+            if (QFileInfo(copyTo).exists()) {
+                qDebug().noquote() << QString("[ERROR] [Equalisation]\tFAILED command, copy %1 file").arg(file);
 
                 //! Handle error
                 if (!QFile::rename(copyTo, QString(copyTo + "_old"))) {
-                    qDebug("[ERROR] [Equalisation]\tCould not rename the existing file...");
+                    qDebug().noquote() << QString("[ERROR] [Equalisation]\tCould not rename the existing file: %1").arg(copyTo);
                 }
+            } else {
+                qDebug().noquote() << QString("[INFO] [Equalisation]\tCopy failed and the file did not exist before, %1").arg(file);
             }
         }
     } else {

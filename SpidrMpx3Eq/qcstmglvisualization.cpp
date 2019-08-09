@@ -112,30 +112,32 @@ void QCstmGLVisualization::refreshScoringInfo()
 {
     updateETA();
 
-    // Progress
-    QString prog = "";
+    const int nTriggers = _mpx3gui->getConfig()->getNTriggers();
+    const uint nFramesKept = _score.nFramesKept;
+    const uint lostFrames = _score.lostFrames;
+    const uint nFramesReceived = _score.nFramesReceived;
+    const uint lostPackets = _score.lostPackets;
+    QString frameCounterLabel = QString::number(nFramesKept);
 
-    int nTriggers = _mpx3gui->getConfig()->getNTriggers();
-    uint nFramesKept = _score.nFramesKept;
     /* Not necessary to do this, nFramesKept is not modified in DataTakingThread for colour mode
      * if ( _mpx3gui->getConfig()->getColourMode() ) {
      *    nFramesKept /= 4;
     }*/
 
-    if ( nTriggers > 0 ) {
-        prog = QString("%1").arg( nFramesKept );
-        if ( _score.lostFrames != 0 ) prog += QString("<font color=\"red\">(%1)</font>").arg( _score.lostFrames );
-        prog += QString("/%1").arg( nTriggers );
-    } else {
-        prog = QString("%1").arg( _score.nFramesKept ); // nTriggers=0 is keep taking data forever
-        if ( _score.lostFrames != 0 ) prog += QString("<font color=\"red\">(%1)</font>").arg( _score.lostFrames );
+    //! If frames have been lost and at least one has been received.
+    if ( lostFrames > 0 && nFramesReceived > 0 ) {
+        frameCounterLabel += QString("<font color=\"red\">(%1)</font>").arg( lostFrames );
     }
-    ui->frameCntr->setText( prog );
+    //! Only add this part of the string if a finite number of frames was requested.
+    if ( nTriggers > 0 ) {
+        frameCounterLabel += "/" + QString::number( nTriggers );
+    }
+    //! Update the frame counter label with the constructed QString
+    ui->frameCntr->setText( frameCounterLabel );
 
-    // FPS
-    fps_update(int(_score.nFramesReceived));
-    BuildStatsStringLostFrames( _score.lostFrames );
-    BuildStatsStringLostPackets( _score.lostPackets );
+    fps_update( nFramesReceived );
+    BuildStatsStringLostFrames( lostFrames );
+    BuildStatsStringLostPackets( lostPackets );
     BuildStatsString();
 }
 
@@ -661,15 +663,12 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 void QCstmGLVisualization::ntriggers_edit() {
 
     // Modify the spinner on the config side
-    _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
-                ui->nTriggersSpinBox->value()
-                );
+    _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue( ui->nTriggersSpinBox->value() );
 
     // And try to send the new config
-    _mpx3gui->getConfig()->setNTriggers(
-                ui->nTriggersSpinBox->value()
-                );
+    _mpx3gui->getConfig()->setNTriggers( ui->nTriggersSpinBox->value() );
 
+    predictAcquisitionTime();
 }
 
 void QCstmGLVisualization::triggerLength_edit() {
@@ -701,6 +700,7 @@ void QCstmGLVisualization::triggerLength_edit() {
                     );
     }
 
+    predictAcquisitionTime();
 }
 
 void QCstmGLVisualization::startupActions()
@@ -717,19 +717,17 @@ void QCstmGLVisualization::changeBinCount(int count) {
     }
 }
 
-void QCstmGLVisualization::fps_update(int nframes_done) {
+void QCstmGLVisualization::fps_update(uint nframes_done) {
 
-    // check if there is a datataking thread is running
-    if ( ! _dataTakingThread->isRunning() ) return;
+    if (! _dataTakingThread->isRunning()) return;
     if (! _etatimer) return;
 
-    double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
+    const double fpsVal = (double(nframes_done)) / (double(_etatimer->elapsed())/1000.); // elapsed() comes in milliseconds
 
     QString fpsS = QString::number( round( fpsVal ) , 'd', 0 );
     fpsS += " fps";
 
     ui->fpsLabel->setText( fpsS );
-
 }
 
 void QCstmGLVisualization::overflow_update(int ovf_cntr) {
@@ -873,6 +871,22 @@ void QCstmGLVisualization::BuildStatsStringOverflow(bool overflow)
 
     BuildStatsString();
 
+}
+
+void QCstmGLVisualization::predictAcquisitionTime()
+{
+    const auto config = _mpx3gui->getConfig();
+    double singleFrameTime_us = 0;
+    QTime time(0,0,0);
+
+    if ( config->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
+        singleFrameTime_us = double(config->getTriggerPeriod());
+    } else {
+        singleFrameTime_us = double(1. / double(config->getContRWFreq()) * 1000000.);
+    }
+
+    time = time.addSecs(int(singleFrameTime_us / 1000000. * config->getNTriggers() * (1+__overhead)));
+    ui->etaCntr->setText(time.toString("hh:mm:ss"));
 }
 
 QString QCstmGLVisualization::getPath(QString msg)

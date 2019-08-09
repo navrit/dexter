@@ -189,7 +189,7 @@ private:
     } extra_widgets;
 
     stats_str _statsString;
-    scoring _score;
+    scoring _score = {0, 0, 0, 0, 0};
     extra_widgets _extraWidgets;
     int _timerId;
 
@@ -199,6 +199,7 @@ private:
     void BuildStatsStringLostFrames(uint64_t lostFrames);
     void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
+    void predictAcquisitionTime();
 
     //! Adds the specified threshold to the layerselector combobox
     void addThresholdToSelector(int threshold);
@@ -296,7 +297,7 @@ public slots:
     void mpx3clock_stops(int);
 
 
-    void fps_update(int);
+    void fps_update(uint);
     void overflow_update(int);
 
     void user_accepted_profile(); //! Deleting profile dialog

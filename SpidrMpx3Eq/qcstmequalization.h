@@ -333,7 +333,7 @@ private:
     bool _isSequentialAllChipsEqualization = false;
     int _setId;
     int _deviceIndex;
-    int _nTriggers;
+    int _nTriggers; //! There really is no need to sample the noise multiple times
     int _spacing; //! Pixel spacing. Ie. a pixel spacing of 2 would be scannig 1/4 pixels
     int _userChosenSpacing = -1;
     int _minScanTHL;
