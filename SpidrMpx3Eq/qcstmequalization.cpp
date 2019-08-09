@@ -52,20 +52,20 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _ui->equalizationTHLTHHCombo->addItem( QString("THL and THH") );
     _ui->equalizationTHLTHHCombo->addItem( QString("Only THL") );
     _ui->equalizationTHLTHHCombo->addItem( QString("Only THH") );
-    _equalizationCombination = __THLandTHH; // item 0
-    _prevEqualizationCombination = _equalizationCombination;
+    _equalisationCombination = __THLandTHH; // item 0
+    _prevEqualizationCombination = _equalisationCombination;
 
     _ui->equalizationTypeCombo->addItem( QString("Noise edge") );
     _ui->equalizationTypeCombo->addItem( QString("Noise centroid") );
     _ui->equalizationTypeCombo->addItem( QString("Noise edge FAST") );
     _ui->equalizationTypeCombo->addItem( QString("Noise centroid FAST") );
 
-    _equalizationType = __NoiseEdge; // item 0
+    _equalisationType = __NoiseEdge; // item 0
 
     _ui->equalizationSelectTHLTHHCombo->addItem( QString("Show THL") );
     _ui->equalizationSelectTHLTHHCombo->addItem( QString("Show THH") );
     _ui->equalizationSelectTHLTHHCombo->setDisabled( true ); // Only when the equalization is finished this will be enabled
-    _equalizationShow = Mpx3EqualizationResults::__ADJ_L;
+    _equalisationShow = Mpx3EqualizationResults::__ADJ_L;
 
     _ui->eqLabelFineTuningLoopProgress->setText("-/-");
 
@@ -290,21 +290,21 @@ void QCstmEqualization::NewRunInitEqualization() {
     for ( int i = 0 ; i < chipListSize ; i++ ) {
 
         // Decide on how many thresholds will be equalized
-        _steeringInfo[std::size_t(i)]->equalizationCombination = _equalizationCombination;
+        _steeringInfo[std::size_t(i)]->equalizationCombination = _equalisationCombination;
         // Type: Noise Edge, etc ....
-        _steeringInfo[std::size_t(i)]->equalizationType = _equalizationType;
+        _steeringInfo[std::size_t(i)]->equalizationType = _equalisationType;
 
         // Global adj setting used for DAC_DISC_X optimization
         _steeringInfo[std::size_t(i)]->globalAdj = 0;
 
         // Which one to start with
         // If both ! --> start with TH0
-        if ( _equalizationCombination == __OnlyTHL || _equalizationCombination == __THLandTHH ) {
+        if ( _equalisationCombination == __OnlyTHL || _equalisationCombination == __THLandTHH ) {
             _steeringInfo[std::size_t(i)]->currentTHx = MPX3RX_DAC_THRESH_0;
             _steeringInfo[std::size_t(i)]->currentTHx_String = "THRESH_0";
             _steeringInfo[std::size_t(i)]->currentDAC_DISC = MPX3RX_DAC_DISC_L;
             _steeringInfo[std::size_t(i)]->currentDAC_DISC_String = "DAC_DISC_L";
-        } else if ( _equalizationCombination == __OnlyTHH ) {
+        } else if ( _equalisationCombination == __OnlyTHH ) {
             _steeringInfo[std::size_t(i)]->currentTHx = MPX3RX_DAC_THRESH_1;
             _steeringInfo[std::size_t(i)]->currentTHx_String = "THRESH_1";
             _steeringInfo[std::size_t(i)]->currentDAC_DISC = MPX3RX_DAC_DISC_H;
@@ -403,21 +403,21 @@ bool QCstmEqualization::InitEqualization(int chipId) {
         _steeringInfo.push_back( new equalizationSteeringInfo );
 
         // Decide on how many thresholds will be equalized
-        _steeringInfo[std::size_t(i)]->equalizationCombination = _equalizationCombination;
+        _steeringInfo[std::size_t(i)]->equalizationCombination = _equalisationCombination;
         // Type: Noise Edge, etc ....
-        _steeringInfo[std::size_t(i)]->equalizationType = _equalizationType;
+        _steeringInfo[std::size_t(i)]->equalizationType = _equalisationType;
 
         // Global adj setting used for DAC_DISC_X optimization
         _steeringInfo[std::size_t(i)]->globalAdj = 0;
 
         // Which one to start with
         // If both ! --> start with TH0
-        if ( _equalizationCombination == __OnlyTHL || _equalizationCombination == __THLandTHH ) {
+        if ( _equalisationCombination == __OnlyTHL || _equalisationCombination == __THLandTHH ) {
             _steeringInfo[std::size_t(i)]->currentTHx = MPX3RX_DAC_THRESH_0;
             _steeringInfo[std::size_t(i)]->currentTHx_String = "THRESH_0";
             _steeringInfo[std::size_t(i)]->currentDAC_DISC = MPX3RX_DAC_DISC_L;
             _steeringInfo[std::size_t(i)]->currentDAC_DISC_String = "DAC_DISC_L";
-        } else if ( _equalizationCombination == __OnlyTHH ) {
+        } else if ( _equalisationCombination == __OnlyTHH ) {
             _steeringInfo[std::size_t(i)]->currentTHx = MPX3RX_DAC_THRESH_1;
             _steeringInfo[std::size_t(i)]->currentTHx_String = "THRESH_1";
             _steeringInfo[std::size_t(i)]->currentDAC_DISC = MPX3RX_DAC_DISC_H;
@@ -931,10 +931,10 @@ void QCstmEqualization::StartEqualization() {
         clearPreviousData(chipListSize);
 
         // Decide if the equalization needs to be ran again for THH or if we are done
-        if ( _equalizationCombination == __THLandTHH ) {
+        if ( _equalisationCombination == __THLandTHH ) {
             // At this point we finished THL. Go for THH now
-            _prevEqualizationCombination = _equalizationCombination;
-            _equalizationCombination = __OnlyTHH;
+            _prevEqualizationCombination = _equalisationCombination;
+            _equalisationCombination = __OnlyTHH;
 
             NewRunInitEqualization(); // partial re-initialization
 
@@ -948,7 +948,7 @@ void QCstmEqualization::StartEqualization() {
         } else {
 
             // come back to the initial setting for equalization combination
-            _equalizationCombination = _prevEqualizationCombination;
+            _equalisationCombination = _prevEqualizationCombination;
 
             // If we're done see if we need to continue with the next chip or if we're really done.
             // REQUIREMENT: The active chips need to be in sequence.
@@ -1392,7 +1392,7 @@ void QCstmEqualization::ScanOnInterpolation() {
 
     ThlScan * tscan_opt_ext = new ThlScan(_mpx3gui, this);
 
-    if ( _steeringInfo[0]->GetEqualizationTarget() == __default_equalizationtarget ) {
+    if ( _steeringInfo[0]->GetEqualizationTarget() == __default_equalisationtarget ) {
         tscan_opt_ext->SetMinScan( 30 );
         tscan_opt_ext->SetMaxScan( 0 );
         qDebug() << "[INFO]\tUsing fast scanning, hardcoded 30 to 0";
@@ -1417,7 +1417,7 @@ void QCstmEqualization::ScanOnInterpolation() {
 
     // Let's assume the mean falls at the equalization target
     tscan_opt_ext->DoScan( _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, false ); // -1: Do all loops
-    tscan_opt_ext->SetAdjustmentType( ThlScan::__adjust_to_equalizationMatrix );
+    tscan_opt_ext->SetAdjustmentType( ThlScan::__adjust_to_equalisationMatrix );
     // A global_adj doesn't apply here anymore.  Passing -1.
     tscan_opt_ext->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
 
@@ -1955,7 +1955,7 @@ void QCstmEqualization::DistributeAdjHistogramsInGridLayout(){
 
             col = ( col % nCols );
 
-            BarChart * bc = GetAdjBarChart( indx, _equalizationShow );
+            BarChart * bc = GetAdjBarChart( indx, _equalisationShow );
             if ( bc != nullptr ) { // i might be asking for a chart that is not available 'cause a chip is unresponsive
                 _gridLayoutHistograms->addWidget( bc , row, col );
                 bc->show();
@@ -2248,7 +2248,7 @@ void QCstmEqualization::estimateEqualisationTarget()
         //! Note the last flag here
         tscan_opt_testPulses->DoScan(  _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, true );
         // -1: Do all loops
-        tscan_opt_testPulses->SetAdjustmentType( ThlScan::__adjust_to_equalizationMatrix );
+        tscan_opt_testPulses->SetAdjustmentType( ThlScan::__adjust_to_equalisationMatrix );
         tscan_opt_testPulses->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
 
         // Launch as thread.  Connect the slot which signals when it's done
@@ -2467,7 +2467,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
     emit sig_statusBarAppend("Equalisation loaded", "green");
     //emit sig_statusBarAppend(msg, "green");
 
-    ShowEqualization( _equalizationShow );
+    ShowEqualization( _equalisationShow );
 
 }
 
@@ -2527,28 +2527,28 @@ void QCstmEqualization::SetupSignalsAndSlots() {
 
 void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
 
-    if( int(_equalizationShow == sel)) {
-        ShowEqualization(_equalizationShow);
+    if( int(_equalisationShow == sel)) {
+        ShowEqualization(_equalisationShow);
         return;
     }
 
     // see the order in the constructor
-    if ( sel == 0 ) _equalizationShow = Mpx3EqualizationResults::__ADJ_L;
-    if ( sel == 1 ) _equalizationShow = Mpx3EqualizationResults::__ADJ_H;
+    if ( sel == 0 ) _equalisationShow = Mpx3EqualizationResults::__ADJ_L;
+    if ( sel == 1 ) _equalisationShow = Mpx3EqualizationResults::__ADJ_H;
 
     // and show again
-    ShowEqualization(_equalizationShow);
+    ShowEqualization(_equalisationShow);
 }
 
 void QCstmEqualization::setEqualizationTHLTHH(int sel) {
-    if ( _equalizationCombination == sel ) return;
-    _equalizationCombination = sel;
+    if ( _equalisationCombination == sel ) return;
+    _equalisationCombination = sel;
     _prevEqualizationCombination = sel;
 }
 
 void QCstmEqualization::setEqualizationTHLType(int sel) {
-    if ( _equalizationType == sel ) return;
-    _equalizationType = sel;
+    if ( _equalisationType == sel ) return;
+    _equalisationType = sel;
 }
 
 void QCstmEqualization::setNTriggers( int nTriggers ) {

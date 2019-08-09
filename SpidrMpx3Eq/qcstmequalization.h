@@ -128,7 +128,7 @@ private:
 
 };
 
-#define __default_equalizationtarget 10
+#define __default_equalisationtarget 10
 
 class equalizationSteeringInfo {
 
@@ -356,7 +356,7 @@ private:
         __OnlyTHH,
         __nEQCombinations
     };
-    int _equalizationCombination;
+    int _equalisationCombination;
     int _prevEqualizationCombination;
     QString _tempEqSaveDir;
 
@@ -367,8 +367,8 @@ private:
         __NoiseCentroidFAST,
         __nEQTypes
     };
-    int _equalizationType;
-    Mpx3EqualizationResults::lowHighSel _equalizationShow;
+    int _equalisationType;
+    Mpx3EqualizationResults::lowHighSel _equalisationShow;
     vector<equalizationSteeringInfo *> _steeringInfo;
     std::array<bool, __EQStatus_Count> _stepDone;
 

@@ -104,7 +104,7 @@ signals:
 public slots:
     void on_doneWithOneFrame(int);
     void on_someCommandHasFinished_Successfully(void);
-    void on_equalizationPathExported(QString path);
+    void on_equalisationPathExported(QString path);
     void setServerStatus(SERVER_BUSY_TYPE status);
     void testSetThreshold_idx_val_chipId(); /* Test function for set threshold */
 
@@ -112,7 +112,7 @@ private:
     void initializeCmdTable(void);
     char* getTimeStamp();
     bool _sendingImage = false;
-    QString _equalizationPath = "";
+    QString _equalisationPath = "";
     SERVER_BUSY_TYPE _serverStatus;
 };
 

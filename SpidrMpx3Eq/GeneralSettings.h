@@ -42,7 +42,7 @@ public:
     double getSlope(int chipNum);
 
 private:
-    QString _equalizationPath = "./config/"; // Default equalisation files should be here
+    QString _equalisationPath = "./config/"; // Default equalisation files should be here
     QString _configPath = "./config/mpx3.json";
     QString _lastThresholdScanPath = "";
 

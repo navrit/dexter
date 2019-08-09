@@ -160,7 +160,7 @@ private:
     bool _infDataTaking = false;
     unsigned int _nTriggersSave;
     bool _dropFrames = true;
-    QString _equalizationPath = "";
+    QString _equalisationPath = "";
 
     bool _saveCheckBox_isChecked = false;
     bool _saveAllCheckBox_isChecked = false;

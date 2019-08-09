@@ -23,7 +23,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),visualisation,SLOT(onRequestToMaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),visualisation,SLOT(onRequestToUnmaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToLoadEqualizationRemotely(QString)),getGui(),SLOT(loadEqualisationFromPathRemotely(QString)));
-    connect(QCstmEqualization::getInstance(),SIGNAL(equalizationPathExported(QString)),this,SLOT(on_equalizationPathExported(QString)));
+    connect(QCstmEqualization::getInstance(),SIGNAL(equalizationPathExported(QString)),this,SLOT(on_equalisationPathExported(QString)));
     connect(this,SIGNAL(requestToStartStopThresholdScan()),thresholdScan::getInstance(),SLOT(button_startStop_clicked_remotely()));
     connect(this,SIGNAL(requestToDoEqualizationRemotely(QString)),QCstmEqualization::getInstance(),SLOT(StartEqualizationSequentialSingleChipsRemotely(QString)));
     connect(this,SIGNAL(requestToLoadConfigRemotely(QString)),getGui(),SLOT(load_config_remotely(QString)));
@@ -647,7 +647,7 @@ int CommandHandler::loadEqualizationRemotely(QString path)
 
 QString CommandHandler::getEqualizationPath()
 {
-    return _equalizationPath;
+    return _equalisationPath;
 }
 
 int CommandHandler::loadConfigRemotely(QString path)
@@ -796,9 +796,9 @@ void CommandHandler::on_someCommandHasFinished_Successfully()
     disconnect(QCstmGLVisualization::getInstance()->getDataConsumerThread(),SIGNAL(doneWithOneFrame(int)),this,SLOT(on_doneWithOneFrame(int)));
 }
 
-void CommandHandler::on_equalizationPathExported(QString path)
+void CommandHandler::on_equalisationPathExported(QString path)
 {
-    _equalizationPath = path;
+    _equalisationPath = path;
 }
 
 void CommandHandler::setServerStatus(SERVER_BUSY_TYPE status)

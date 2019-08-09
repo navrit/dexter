@@ -484,7 +484,7 @@ void Mpx3GUI::on_shortcutsSwitchPages() {
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
         uncheckAllToolbarButtons();
-        _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
+        _ui->stackedWidget->setCurrentIndex( __equalisation_page_Id );
         _ui->actionEqualization->setChecked(1);
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ) {
@@ -1591,7 +1591,7 @@ void Mpx3GUI::on_actionDACs_triggered(){
 
 void Mpx3GUI::on_actionEqualization_triggered(){
     uncheckAllToolbarButtons();
-    _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
+    _ui->stackedWidget->setCurrentIndex( __equalisation_page_Id );
     _ui->actionEqualization->setChecked(1);
 }
 

@@ -11,7 +11,7 @@ GeneralSettings::GeneralSettings(QObject *parent) : QObject(parent)
 
 void GeneralSettings::setEqualisationPath(QString path)
 {
-    _equalizationPath = path;
+    _equalisationPath = path;
     writeSetting();
 }
 
@@ -24,7 +24,7 @@ void GeneralSettings::setConfigPath(QString path)
 QString GeneralSettings::getEqualisationPath()
 {
     readSetting();
-    return _equalizationPath;
+    return _equalisationPath;
 }
 
 QString GeneralSettings::getConfigPath()
@@ -90,7 +90,7 @@ QString GeneralSettings::getLastThresholdPath()
 void GeneralSettings::writeSetting()
 {
     QSettings settings(companyName, softwareName);
-    settings.setValue(equalisationPath, _equalizationPath);
+    settings.setValue(equalisationPath, _equalisationPath);
     settings.setValue(configPath, _configPath);
     settings.setValue(lastThresholdScanPath, _lastThresholdScanPath);
 
@@ -115,7 +115,7 @@ void GeneralSettings::readSetting()
 
 
     if(settings.contains(equalisationPath))
-        _equalizationPath = settings.value(equalisationPath).toString();
+        _equalisationPath = settings.value(equalisationPath).toString();
 
     if(settings.contains(configPath))
         _configPath = settings.value(configPath).toString();

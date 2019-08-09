@@ -258,7 +258,7 @@ void QCstmThreshold::UpdateChart(int /*setId*/, int /*thlValue*/) {
     int cntr = 0;
     for( ; itr != itrE ; itr++ ) {
 
-        if( (*itr).second ==  _equalization->GetNTriggers() ) {
+        if( (*itr).second ==  _equalisation->GetNTriggers() ) {
             cntr++;
             (*itr).second++; // This way we avoid re-ploting next time. The value _nTriggers+1 identifies these pixels
         }
@@ -446,7 +446,7 @@ void CustomScanThread::ConnectToHardware() {
     else { _srcAddr = 0; }
 
     // The chart and the heatmap !
-    //_chart = _equalization->GetUI()->_histoWidget;
+    //_chart = _equalisation->GetUI()->_histoWidget;
     _heatmap = _cstmThreshold->GetUI()->framePlot;
 
 }

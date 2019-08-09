@@ -2192,11 +2192,11 @@ void QCstmGLVisualization::on_saveLineEdit_textEdited()
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 {
     /* So that the equalisation won't save the mask file to the wrong folder during equalisation */
-    if ( _equalizationPath != "") {
+    if ( _equalisationPath != "") {
 
-        qDebug() << "[INFO]\tPixels masked, making a file in " << _equalizationPath ;
+        qDebug() << "[INFO]\tPixels masked, making a file in " << _equalisationPath ;
 
-        QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
+        QFile file(_equalisationPath + QString("mask_") + QString::number(devID));
 
         if (file.open(QIODevice::ReadWrite | QFile::Truncate)) {
             QTextStream stream(&file);
@@ -2277,7 +2277,7 @@ void QCstmGLVisualization::initialiseThresholdsVector()
 
 void QCstmGLVisualization::onEqualizationPathExported(QString path)
 {
-    _equalizationPath = path;
+    _equalisationPath = path;
 }
 
 void QCstmGLVisualization::onRequestToMaskPixelRemotely(int x , int y)

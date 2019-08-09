@@ -58,7 +58,7 @@ class hdmiConfig;
 #define __visualization_page_Id     0
 #define __configuration_page_Id     1
 #define __dacs_page_Id              2
-#define __equalization_page_Id      3
+#define __equalisation_page_Id      3
 #define __scans_page_Id             4
 #define __ct_page_Id                5
 #define __stepperMotor_page_Id      6

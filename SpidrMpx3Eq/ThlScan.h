@@ -53,7 +53,7 @@ public:
 
     typedef enum {
         __adjust_to_global = 0,
-        __adjust_to_equalizationMatrix
+        __adjust_to_equalisationMatrix
     } adj_type;
 
     void SetAdjustmentType(adj_type t){ _adjType = t; }
@@ -126,7 +126,7 @@ private:
     void run();
 
     Mpx3GUI *_mpx3gui = nullptr;
-    QCstmEqualization *_equalization = nullptr;
+    QCstmEqualization *_equalisation = nullptr;
 
     SpidrController *_spidrcontrol = nullptr;
     SpidrDaq *_spidrdaq = nullptr;

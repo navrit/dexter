@@ -15,7 +15,7 @@
 ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 
     _mpx3gui = mpx3gui;
-    _equalization = ptr;
+    _equalisation = ptr;
     _heatmap = nullptr;
     _spidrcontrol = nullptr;
     _spidrdaq = nullptr;
@@ -45,11 +45,11 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
     _fullsize_y = __matrix_size_y * _nchipsY;
 
     // Extract the information needed when the thread will be launched
-    _spacing = _equalization->GetSpacing();
+    _spacing = _equalisation->GetSpacing();
     SetMinScan(); // default min max
     SetMaxScan();
-    _stepScan = _equalization->GetStepScan();
-    _deviceIndex = _equalization->GetDeviceIndex();
+    _stepScan = _equalisation->GetStepScan();
+    _deviceIndex = _equalisation->GetDeviceIndex();
 }
 
 void ThlScan::SetWorkChipIndexes(vector<uint> v, vector<equalizationSteeringInfo *> st) {
@@ -105,7 +105,7 @@ void ThlScan::ConnectToHardware(SpidrController * sc, SpidrDaq * sd) {
     else { _srcAddr = 0; }
 
     // get the heatmap from the GUI
-    _heatmap = _equalization->GetUI()->_intermediatePlot;
+    _heatmap = _equalisation->GetUI()->_intermediatePlot;
 }
 
 /**
@@ -272,7 +272,7 @@ void ThlScan::FineTuning() {
         if ( ! _mpx3gui->getConfig()->detectorResponds(int( _workChipsIndx[di] ))) continue;
 
         //! Send the adj bits
-        _equalization->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), false, _testPulses);
+        _equalisation->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), false, _testPulses);
 
         //! While equalizing one threshold the other should be set at a high value
         //!   to keep that circuit from reacting.  Set it at ~100
@@ -298,7 +298,7 @@ void ThlScan::FineTuning() {
     //! Setup signals, 2 for GUI, 1 for data taking
     connect( this, SIGNAL( UpdateChartSignal(int, int, int) ), this, SLOT( UpdateChart(int, int, int) ) );
     connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
-    connect(_equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+    connect(_equalisation, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 
     //! Start with the adjustments currently reacting
     //FillAdjReactTHLHistory();
@@ -328,7 +328,7 @@ void ThlScan::FineTuning() {
     // Decide when to stop trying different adj values for this particular mask
     int adjLoops = 0;
     while ( ! AdjScanCompleted(_scheduledForFineTuning, _maskedSet)
-            && (adjLoops < _equalization->GetFineTuningLoops()) ) {
+            && (adjLoops < _equalisation->GetFineTuningLoops()) ) {
 
         //! Stop when a number of loops has been reached
         //! Compared to the GUI box value.
@@ -336,7 +336,7 @@ void ThlScan::FineTuning() {
 
         file_fineTuningStats << adjLoops;
         if (_testPulses) {
-            _spacing = int(_equalization->testPulseEqualisationDialog->getPixelSpacing());
+            _spacing = int(_equalisation->testPulseEqualisationDialog->getPixelSpacing());
             progressMax = _spacing * _spacing;
         }
 
@@ -349,9 +349,9 @@ void ThlScan::FineTuning() {
                 loopProgressS =  QString::number( maskOffsetItr_x * _spacing + maskOffsetItr_y + 1, 'd', 0 );
                 loopProgressS += "/";
                 loopProgressS += QString::number( progressMax, 'd', 0 );
-                connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
+                connect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
                 fillText( loopProgressS );
-                disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
+                disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
                 // -------------------------------------------------------------
 
                 // Set a mask
@@ -370,10 +370,10 @@ void ThlScan::FineTuning() {
                 // GUI stuff ---------------------------------------------------
                 QString ftLoopProgressS = QString::number( adjLoops, 'd', 0 );
                 ftLoopProgressS += "/";
-                ftLoopProgressS += QString::number( _equalization->GetFineTuningLoops(), 'd', 0 );
-                connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelFineTuningLoopProgress, SLOT( setText(QString)) );
+                ftLoopProgressS += QString::number( _equalisation->GetFineTuningLoops(), 'd', 0 );
+                connect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelFineTuningLoopProgress, SLOT( setText(QString)) );
                 fillText( ftLoopProgressS );
-                disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelFineTuningLoopProgress, SLOT( setText(QString)) );
+                disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelFineTuningLoopProgress, SLOT( setText(QString)) );
                 // -------------------------------------------------------------
 
                 //! Shift adjustment bits around according to if they're above or below the target
@@ -381,7 +381,7 @@ void ThlScan::FineTuning() {
 
 
                 for ( ulong di = 0 ; di < _workChipsIndx.size(); di++ ) {
-                    _equalization->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), false, _testPulses);
+                    _equalisation->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), false, _testPulses);
                 }
 
                 //! Reset reactions counters to Thl_Status::__NOT_TESTED_YET
@@ -420,7 +420,7 @@ void ThlScan::FineTuning() {
                 _pixelReactiveInScan = 0;
                 _thlItr = _minScan;
 
-                if ( _equalization->isScanDescendant() ) _thlItr = _maxScan;
+                if ( _equalisation->isScanDescendant() ) _thlItr = _maxScan;
                 bool scanContinue = true;
 
                 //! Scan over thresholds
@@ -429,9 +429,9 @@ void ThlScan::FineTuning() {
                     // GUI stuff -----------------------------------------------
                     QString thlLabelS = QString::number( _thlItr, 'd', 0 );
                     // Send signal to Labels.  Making connections one by one.
-                    connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
+                    connect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
                     fillText( thlLabelS );
-                    disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
+                    disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
                     // ---------------------------------------------------------
 
                     // Set the threshold on all chips
@@ -498,9 +498,9 @@ void ThlScan::FineTuning() {
                     reactiveLabelS += "/";
                     reactiveLabelS += QString::number( nNotInMask, 'd', 0 );
                     // Send signal to Labels.  Making connections one by one.
-                    connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
+                    connect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
                     fillText( reactiveLabelS );
-                    disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
+                    disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
                     // ---------------------------------------------------------
 
                     // Last scan boundaries
@@ -511,11 +511,11 @@ void ThlScan::FineTuning() {
                     }
 
                     //! Increment or decrement
-                    if( _equalization->isScanDescendant() ) _thlItr -= _stepScan;
+                    if( _equalisation->isScanDescendant() ) _thlItr -= _stepScan;
                     else _thlItr += _stepScan;
 
                     //! Check termination conditions
-                    if ( _equalization->isScanDescendant() ) {
+                    if ( _equalisation->isScanDescendant() ) {
                         if ( _thlItr >= _minScan ) scanContinue = true;
                         else scanContinue = false;
                     } else {
@@ -546,7 +546,7 @@ void ThlScan::FineTuning() {
 
         //! Send the new configuration to the chip
         for (ulong chip = 0; chip < _workChipsIndx.size(); chip++ ) {
-            _equalization->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[chip]), false, false);
+            _equalisation->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[chip]), false, false);
             spidrcontrol->setInternalTestPulse(int(chip), false);
         }
 
@@ -557,7 +557,7 @@ void ThlScan::FineTuning() {
     //! Disconnect the signals we made before
     disconnect( this, SIGNAL( UpdateChartSignal(int, int, int) ), this, SLOT( UpdateChart(int, int, int) ) );
     disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
-    disconnect( _equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) );
+    disconnect( _equalisation, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) );
 
     file_fineTuningStats.close();
 
@@ -644,9 +644,9 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
 
         // At this point the best adjustment has been found.
         // Send it to the data structure
-        _equalization->GetEqualizationResults( chipId )->SetPixelAdj( (*i)%__matrix_size, pixHistory[ulong(minDistanceIndx)].first, sel );
+        _equalisation->GetEqualizationResults( chipId )->SetPixelAdj( (*i)%__matrix_size, pixHistory[ulong(minDistanceIndx)].first, sel );
         // And tag as equalized
-        _equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
+        _equalisation->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
 
         if ( cntr < showHeadAndTail || cntr >= int(_scheduledForFineTuning.size()) - showHeadAndTail ) {
             qDebug() << "[" << *i << "](" << pixHistory[ulong(minDistanceIndx)].first << ") ";
@@ -679,7 +679,7 @@ void ThlScan::FillAdjReactTHLHistory() {
         int chipId = PixelBelongsToChip( *i );
 
         // Look at the current adjustment
-        int adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size, sel );
+        int adj = _equalisation->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size, sel );
         vector< pair<int, int> > pixHistory = _adjReactiveTHLFineTuning[*i];
         // search for this adj
         int foundIndx = -1;
@@ -814,16 +814,16 @@ void ThlScan::EqualizationScan() {
         // Send all the adjustment bits to a global value
         if ( _adjType == __adjust_to_global ) {
             if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-                _equalization->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), _equalization->GetSteeringInfo(int(_workChipsIndx[di]))->globalAdj, 0x0);
-                //qDebug() << "[INFO]\tSetting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+                _equalisation->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), _equalisation->GetSteeringInfo(int(_workChipsIndx[di]))->globalAdj, 0x0);
+                //qDebug() << "[INFO]\tSetting global L =  " << _equalisation->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
             if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-                _equalization->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), 0x0, _equalization->GetSteeringInfo(int(_workChipsIndx[di]))->globalAdj);
-                //qDebug() << "[INFO]\tSetting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+                _equalisation->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), 0x0, _equalisation->GetSteeringInfo(int(_workChipsIndx[di]))->globalAdj);
+                //qDebug() << "[INFO]\tSetting global H =  " << _equalisation->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
-        } else if ( _adjType == __adjust_to_equalizationMatrix ) {
+        } else if ( _adjType == __adjust_to_equalisationMatrix ) {
             qDebug() << "[INFO]\tSetting adjustment bits on chip:" << _workChipsIndx[di];
-            _equalization->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), false, _testPulses);
+            _equalisation->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), false, _testPulses);
         }
 
         // While equalizing one threshold the other should be set at a very high value
@@ -853,7 +853,7 @@ void ThlScan::EqualizationScan() {
     // Signals to draw out of the worker
     connect( this, SIGNAL( UpdateChartSignal(int, int, int) ), this, SLOT( UpdateChart(int, int, int) ) );
     connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
-    connect(_equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+    connect(_equalisation, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 
     // Sometimes a reduced loop is selected
     int processedLoops = 0;
@@ -879,9 +879,9 @@ void ThlScan::EqualizationScan() {
             loopProgressS =  QString::number( maskOffsetItr_x * _spacing + maskOffsetItr_y + 1, 'd', 0 );
             loopProgressS += "/";
             loopProgressS += QString::number( progressMax, 'd', 0 );
-            connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
+            connect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
             fillText( loopProgressS );
-            disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
+            disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
 
             // Set mask
             nMasked = 0;
@@ -904,7 +904,7 @@ void ThlScan::EqualizationScan() {
             accelerationApplied = false;
 
             // limits from the GUI (no signals on them)
-            _stepScan = _equalization->GetUI()->eqStepSpinBox->value();
+            _stepScan = _equalisation->GetUI()->eqStepSpinBox->value();
 
             // THx scan
             bool scanContinue = true;
@@ -918,9 +918,9 @@ void ThlScan::EqualizationScan() {
                 thlLabelS = QString::number( _thlItr, 'd', 0 );
                 if ( accelerationApplied ) thlLabelS += " acc";
                 // Send signal to Labels.  Making connections one by one.
-                connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
+                connect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
                 fillText( thlLabelS );
-                disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
+                disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
                 // Set the threshold on all chips
                 for ( ulong devId = 0; devId < _workChipsIndx.size(); devId++ ) {
@@ -1021,9 +1021,9 @@ void ThlScan::EqualizationScan() {
                 reactiveLabelS += "/";
                 reactiveLabelS += QString::number( expectedInOneThlLoop, 'd', 0);
                 // Send signal to Labels.  Making connections one by one.
-                connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
+                connect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
                 fillText( reactiveLabelS );
-                disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
+                disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
 
                 // If done with all pixels
                 if ( _pixelReactiveInScan == expectedInOneThlLoop ) {
@@ -1033,7 +1033,7 @@ void ThlScan::EqualizationScan() {
                 if( finishScan || finishTHLLoop) break;
 
                 /*
-                if( ! _equalization->isScanDescendant() ) {
+                if( ! _equalisation->isScanDescendant() ) {
 
                     // Scan upwards
                     // Accelerate if the pixels reactive reached a significant fraction
@@ -1057,18 +1057,18 @@ void ThlScan::EqualizationScan() {
                     ) {
                         _stepScan = oldStep;
                         accelerationApplied = false;
-                        _equalization->GetUI()->eqStepSpinBox->setValue( _stepScan );
+                        _equalisation->GetUI()->eqStepSpinBox->setValue( _stepScan );
                     }
                 }
 */
                 if ( _stop ) break;
 
                 // increment
-                if( _equalization->isScanDescendant() ) _thlItr -= _stepScan;
+                if( _equalisation->isScanDescendant() ) _thlItr -= _stepScan;
                 else _thlItr += _stepScan;
 
                 // See the termination condition
-                if ( _equalization->isScanDescendant() ) {
+                if ( _equalisation->isScanDescendant() ) {
                     if ( _thlItr >= _maxScan ) scanContinue = true;
                     else scanContinue = false;
                 } else {
@@ -1100,7 +1100,7 @@ void ThlScan::EqualizationScan() {
     // Signals to draw out of the thread
     disconnect( this, SIGNAL( UpdateChartSignal(int, int, int) ), this, SLOT( UpdateChart(int, int, int) ) );
     disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
-    disconnect( _equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) );
+    disconnect( _equalisation, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) );
 
     // in case the thread is used again
     _stop = false;
@@ -1129,7 +1129,7 @@ bool ThlScan::OutsideTargetRegion(int devId, int pix, double Nsigma) {
 
     return ( _pixelReactiveTHL[pix] < lowLim  ||
              _pixelReactiveTHL[pix] > highLim ||
-             _pixelReactiveTHL[pix] < _equalization->GetNTriggers() // simply never responded
+             _pixelReactiveTHL[pix] < _equalisation->GetNTriggers() // simply never responded
              );
 }
 
@@ -1146,11 +1146,11 @@ void ThlScan::TagPixelsEqualizationStatus(set<int> vetoList) {
 
         if( vetoList.find(i) == vetoList.end() ) {
             // if it is not in the veto-list it needs rework
-            _equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING );
+            _equalisation->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING );
 
         } else {
             // if it is found in the veto-list this pixel is well equalized
-            _equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__EQUALIZED );
+            _equalisation->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__EQUALIZED );
             // These can be send to the histogram immediately
             _fineTuningPixelsEqualized.insert( i );
         }
@@ -1179,15 +1179,15 @@ set<int> ThlScan::ExtractPixelsNotOnTarget() {
         chipId = PixelBelongsToChip( i );
 
         // consider the pixel only if it belongs in the _workChipsIndx
-        if ( ! _equalization->pixelInScheduledChips( i ) ) continue;
+        if ( ! _equalisation->pixelInScheduledChips( i ) ) continue;
 
         if ( _pixelReactiveTHL[i] != GetScanResults(chipId)->equalisationTarget ) {
             reworkList.insert( i );
             // WARNING: the numbering is per chip in the EqualizationResults
-            _equalization->GetEqualizationResults( PixelBelongsToChip( i ) )->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING, sel );
+            _equalisation->GetEqualizationResults( PixelBelongsToChip( i ) )->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING, sel );
         } else {
             // Otherwise tag it as equalized
-            _equalization->GetEqualizationResults( PixelBelongsToChip( i ) )->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
+            _equalisation->GetEqualizationResults( PixelBelongsToChip( i ) )->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
             equalisedPixelCount++;
         }
     }
@@ -1221,7 +1221,7 @@ void ThlScan::DumpSet(set<int> theset, QString name, int max) {
     qDebug() << "< pixId{reactTHL,adj} : ";
     for ( ; i != iE ; ) {
 
-        qDebug() << *i << "{" << _pixelReactiveTHL[*i] << ":" << _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i ) << "} ";
+        qDebug() << *i << "{" << _pixelReactiveTHL[*i] << ":" << _equalisation->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i ) << "} ";
 
         if ( ++cntr >= max ) {
             qDebug() << "... printed " << max << " of " << theset.size();
@@ -1271,7 +1271,7 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> /*activeMask*/) {
         //if ( activeMask.find( *i ) != activeMask.end() ) continue;
 
         // Also skip if the pixel has been previously marked as equalized or impossible to equalize ( > __EQUALIZED)
-        if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
+        if ( _equalisation->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
 
         // Considering this pixel.  Count it.
         pixelsConsidered++;
@@ -1298,7 +1298,7 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> /*activeMask*/) {
         if ( (passedUpTarget && passedUnderTarget) || passedOnTarget ) {
             pixelsAteqT++;
             // And tag the pixel as equalized already
-            _equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
+            _equalisation->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
         }
 
     }
@@ -1318,24 +1318,24 @@ void ThlScan::SetMinScan(int min) {
 
     // default value
     if( min == -1 ) {
-        _minScan = _equalization->GetUI()->eqMinSpinBox->value();
+        _minScan = _equalisation->GetUI()->eqMinSpinBox->value();
         return;
     }
 
     _minScan = min;
-    _equalization->GetUI()->eqMinSpinBox->setValue( _minScan );
+    _equalisation->GetUI()->eqMinSpinBox->setValue( _minScan );
 }
 
 void ThlScan::SetMaxScan(int max) {
 
     // default value
     if( max == -1 ) {
-        _maxScan = _equalization->GetUI()->eqMaxSpinBox->value();
+        _maxScan = _equalisation->GetUI()->eqMaxSpinBox->value();
         return;
     }
 
     _maxScan = max;
-    _equalization->GetUI()->eqMaxSpinBox->setValue( _maxScan );
+    _equalisation->GetUI()->eqMaxSpinBox->setValue( _maxScan );
 }
 
 /**
@@ -1369,29 +1369,29 @@ int ThlScan::ShiftAdjustments(set<int> reworkSubset, set<int> activeMask) {
 
         nPixelsNotInMask++;
 
-        if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__NOT_EQUALIZED ) {
+        if ( _equalisation->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__NOT_EQUALIZED ) {
             p++;
         }
-        if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING ) {
+        if ( _equalisation->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING ) {
             p0++;
         }
-        if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__EQUALIZED ) {
+        if ( _equalisation->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__EQUALIZED ) {
             p1++;
         }
-        if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__EQUALIZATION_FAILED_ADJ_OUTOFBOUNDS ) {
+        if ( _equalisation->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__EQUALIZATION_FAILED_ADJ_OUTOFBOUNDS ) {
             p2++;
         }
-        if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__EQUALIZATION_FAILED_NONREACTIVE ) {
+        if ( _equalisation->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) == Mpx3EqualizationResults::__EQUALIZATION_FAILED_NONREACTIVE ) {
             p3++;
         }
 
         // Also skip if the pixel has been previously marked as equalized or higher status
-        if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) >= Mpx3EqualizationResults::__EQUALIZED ) {
+        if ( _equalisation->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) >= Mpx3EqualizationResults::__EQUALIZED ) {
             continue;
         }
 
         // Get the current adj
-        adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size, sel);
+        adj = _equalisation->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size, sel);
         // assume no change for the moment
         newadj = adj;
 
@@ -1405,7 +1405,7 @@ int ThlScan::ShiftAdjustments(set<int> reworkSubset, set<int> activeMask) {
         }
         if (  _pixelReactiveTHL[ *i ] == __UNDEFINED && ( adj == 0x0 ) ) {
             // this pixel will never react.  Mark immediately.
-            _equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZATION_FAILED_NONREACTIVE, sel);
+            _equalisation->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZATION_FAILED_NONREACTIVE, sel);
             specialCase = true;
             p5++;
         }
@@ -1441,7 +1441,7 @@ int ThlScan::ShiftAdjustments(set<int> reworkSubset, set<int> activeMask) {
         //! It is different depending on the chipId
         //!
         //! Note: this changes the internal results, it does not set them
-        _equalization->GetEqualizationResults( chipId )->SetPixelAdj( (*i)%__matrix_size , newadj, sel);
+        _equalisation->GetEqualizationResults( chipId )->SetPixelAdj( (*i)%__matrix_size , newadj, sel);
 
         if (newadj != adj) {
             changedAdj++;
@@ -1552,7 +1552,7 @@ void ThlScan::ExtractStatsOnChart(int devId, int setId) {
     // Normalization value (p val) used later when calculating the variance
     double norm_val = 0.;
     // Calculate the weighted arithmetic mean and standard deviation
-    BarChart * bc = _equalization->GetBarChart(devId);
+    BarChart * bc = _equalisation->GetBarChart(devId);
     QCPBarDataMap * dataSet = bc->GetDataSet( setId )->data();
     QCPBarDataMap::iterator i = dataSet->begin();
 
@@ -1600,20 +1600,20 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 
     for(int i = 0 ; i < nPixels ; i++) {
 
-        if ( ( data[i] >= _equalization->GetNHits() ) ) {
+        if ( ( data[i] >= _equalisation->GetNHits() ) ) {
 
             // Increase the counting in this pixel if it hasn't already reached the _nTriggers
-            if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) {
+            if ( _pixelCountsMap[i] < _equalisation->GetNTriggers() ) {
                 _pixelCountsMap[i]++;
             }
 
             // It it reached the number of triggers, set this Threshold as the reactive threshold
-            if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) {
+            if ( _pixelCountsMap[i] == _equalisation->GetNTriggers() ) {
 
                 // This way I mark the pixel as reactive +1
                 _pixelCountsMap[i]++;
 
-                //qDebug() << i << " | " << _pixelCountsMap[i] << " -- data --> " << data[i] << " | triggers : " << _equalization->GetNTriggers() << endl;
+                //qDebug() << i << " | " << _pixelCountsMap[i] << " -- data --> " << data[i] << " | triggers : " << _equalisation->GetNTriggers() << endl;
 
                 _pixelReactiveTHL[i] = thl;
                 _nReactivePixels++;
@@ -1648,16 +1648,16 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl, int interes
         // I checked that the entry is not zero, and also that is not in the maskedMap
         if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
             // Increase the counting in this pixel if it hasn't already reached the _nTriggers
-            if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) {
+            if ( _pixelCountsMap[i] < _equalisation->GetNTriggers() ) {
                 _pixelCountsMap[i]++;
             }
             // It it reached the number of triggers, set this Threshold as the reactive threshold
-            if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) {
+            if ( _pixelCountsMap[i] == _equalisation->GetNTriggers() ) {
 
                 // This way I mark the pixel as reactive +1
                 _pixelCountsMap[i]++;
 
-                //qDebug() << i << " | " << _pixelCountsMap[i] << " -- data --> " << data[i] << " | triggers : " << _equalization->GetNTriggers() << endl;
+                //qDebug() << i << " | " << _pixelCountsMap[i] << " -- data --> " << data[i] << " | triggers : " << _equalisation->GetNTriggers() << endl;
 
                 _pixelReactiveTHL[i] = thl;
                 _nReactivePixels++;
@@ -1764,7 +1764,7 @@ void ThlScan::UpdateChart(int devId, int setId, int thlValue) {
         // Avoid the pixels not corresponding to this devId
         if ( ( i < offset ) || i >= ( offset + __matrix_size ) ) continue;
 
-        if( _pixelCountsMap[i] ==  _equalization->GetNTriggers() + 1 ) { // Marked as +1 := reactive
+        if( _pixelCountsMap[i] ==  _equalisation->GetNTriggers() + 1 ) { // Marked as +1 := reactive
             // Count how many pixels counted at this threshold
             cntr++; // Marked as +2 --> taken into account in Chart
             _pixelCountsMap[i]++; // This way we avoid re-plotting next time. The value _nTriggers+2 identifies these pixels
@@ -1772,8 +1772,8 @@ void ThlScan::UpdateChart(int devId, int setId, int thlValue) {
     }
 
     if ( cntr > 0 ) {
-        _equalization->GetBarChart(devId)->SetValueInSet( uint(setId), thlValue, cntr );
-        _equalization->GetBarChart(devId)->fitToHeight(); //replot( QCustomPlot::rpQueued );
+        _equalisation->GetBarChart(devId)->SetValueInSet( uint(setId), thlValue, cntr );
+        _equalisation->GetBarChart(devId)->fitToHeight(); //replot( QCustomPlot::rpQueued );
     }
 }
 
@@ -1803,7 +1803,7 @@ void ThlScan::UpdateChartPixelsReady(int devId, int setId) {
     map<int, int>::iterator im = thlCntr.begin();
     map<int, int>::iterator imE = thlCntr.end();
     for ( ; im != imE ; im++ ) {
-        _equalization->GetBarChart( devId )->SetValueInSet( uint(setId), im->first, im->second );
+        _equalisation->GetBarChart( devId )->SetValueInSet( uint(setId), im->first, im->second );
     }
 }
 
@@ -1919,7 +1919,7 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> rework
     }
 
     // And send the configuration
-    spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+    spidrcontrol->setPixelConfigMpx3rx( _equalisation->GetDeviceIndex() );
 
     return cntr;
 }
