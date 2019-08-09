@@ -272,8 +272,8 @@ public:
     BarChart * GetBarChart(int chipIdx);
     QCheckBox * GetCheckBox(int chipIdx);
 
-    bool getIsScanDescendant() { return _scanDescendant; }
-    bool getIsBusy() { return _busy; }
+    bool isScanDescendant() { return _scanDescendant; }
+    bool isBusy() { return _busy; }
     bool getScanningAllChips() { return _scanAllChips; }
     int GetDeviceIndex(){ return _deviceIndex; }
     int GetNTriggers(){ return _nTriggers; }

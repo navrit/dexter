@@ -716,7 +716,7 @@ void QCstmDacs::ChangeDeviceIndex( int index )
     // If the detector is busy with something else set the
     //   actualization flag to false so the GUI refreshes
     //   but the values are not sent to the chip
-    bool busy = _mpx3gui->getEqualization()->getIsBusy();
+    bool busy = _mpx3gui->getEqualization()->isBusy();
     // busy |= visualization->isBusy();
 
     // if busy, don't update in the chip

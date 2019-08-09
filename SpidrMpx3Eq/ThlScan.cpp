@@ -420,7 +420,7 @@ void ThlScan::FineTuning() {
                 _pixelReactiveInScan = 0;
                 _thlItr = _minScan;
 
-                if ( _equalization->getIsScanDescendant() ) _thlItr = _maxScan;
+                if ( _equalization->isScanDescendant() ) _thlItr = _maxScan;
                 bool scanContinue = true;
 
                 //! Scan over thresholds
@@ -512,11 +512,11 @@ void ThlScan::FineTuning() {
                     }
 
                     //! Increment or decrement
-                    if( _equalization->getIsScanDescendant() ) _thlItr -= _stepScan;
+                    if( _equalization->isScanDescendant() ) _thlItr -= _stepScan;
                     else _thlItr += _stepScan;
 
                     //! Check termination conditions
-                    if ( _equalization->getIsScanDescendant() ) {
+                    if ( _equalization->isScanDescendant() ) {
                         if ( _thlItr >= _minScan ) scanContinue = true;
                         else scanContinue = false;
                     } else {
@@ -1071,11 +1071,11 @@ void ThlScan::EqualizationScan() {
                 if ( _stop ) break;
 
                 // increment
-                if( _equalization->getIsScanDescendant() ) _thlItr -= _stepScan;
+                if( _equalization->isScanDescendant() ) _thlItr -= _stepScan;
                 else _thlItr += _stepScan;
 
                 // See the termination condition
-                if ( _equalization->getIsScanDescendant() ) {
+                if ( _equalization->isScanDescendant() ) {
                     if ( _thlItr >= _maxScan ) scanContinue = true;
                     else scanContinue = false;
                 } else {
