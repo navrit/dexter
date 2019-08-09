@@ -307,7 +307,7 @@ void Mpx3GUI::sendingShutter()
 }
 
 bool Mpx3GUI::equalizationLoaded(){
-    return _ui->equalizationWidget->equalizationHasBeenLoaded();
+    return _ui->equalizationWidget->getEqualisationHasBeenLoaded();
 }
 
 int Mpx3GUI::getStepperMotorPageID()

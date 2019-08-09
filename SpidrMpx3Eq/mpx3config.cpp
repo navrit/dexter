@@ -535,7 +535,7 @@ int Mpx3Config::getDacCount() {
 
 int Mpx3Config::getDACValue(uint chip, int dacIndex) {
     if (_dacVals->length() > 0) {
-        return _dacVals[dacIndex][chip];
+        return _dacVals[dacIndex][int(chip)];
     }
     //! Error otherwise. Most likely this function is called too early by a fool!
     //! Deal with it elsewhere
@@ -544,7 +544,7 @@ int Mpx3Config::getDACValue(uint chip, int dacIndex) {
 
 void Mpx3Config::setDACValue(uint chip, int dacIndex, int dac_value) {
     if (_dacVals->length() > 0) {
-        _dacVals[dacIndex][chip] = dac_value;
+        _dacVals[dacIndex][int(chip)] = dac_value;
     } else {
         qDebug() << "[WARN]\tMpx3Config::setDACValue failed. _dacVals is empty - report this bug. chip =" << chip << " dac_index =" << dacIndex << " dac_value =" << dac_value;
     }
@@ -673,17 +673,21 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
     if(itParent != JSobjectParent.end()){
         QJsonObject JSobject = itParent.value().toObject();
         it = JSobject.find("chip_0");
-        if(it != JSobject.end());
+        if(it != JSobject.end()) {
             _chipIDELAYS[0] = uint8_t (it.value().toInt());
+        }
         it = JSobject.find("chip_1");
-        if(it != JSobject.end());
+        if(it != JSobject.end()) {
             _chipIDELAYS[1] = uint8_t (it.value().toInt());
+        }
         it = JSobject.find("chip_2");
-        if(it != JSobject.end());
+        if(it != JSobject.end()) {
             _chipIDELAYS[2] = uint8_t (it.value().toInt());
+        }
         it = JSobject.find("chip_3");
-        if(it != JSobject.end());
+        if(it != JSobject.end()) {
             _chipIDELAYS[3] = uint8_t (it.value().toInt());
+        }
     }
 
     itParent = JSobjectParent.find("DetectorConfig");
@@ -889,13 +893,13 @@ void Mpx3Config::setIpZmqSubAddress(QString ip_and_port)
 
     QString string = ip_and_port.toLower();
 
-    if (string.contains(QRegExp("(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+    if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
         Zmq_Sub_address = ip_and_port;
 
         emit IpZmqSubAddressChanged( this->getIpZmqSubAddressPortString() );
     } else {
         qDebug() << "[ERROR] ZMQ IP SUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
-                    \n You need to match the following Regex: '(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
+                    \n You need to match the following Regex: '(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
         emit IpZmqSubAddressChangedFailed( "Eg.: tcp://192.168.1.1:5555 - Invalid input" );
     }
 

@@ -82,7 +82,6 @@ private:
     int _numMotors;
     CPhidgetStepperHandle _stepper;
     map<int, motorPars> _parsMap;
-
 };
 
 #endif // STEPPERMOTORCONTROLLER_H

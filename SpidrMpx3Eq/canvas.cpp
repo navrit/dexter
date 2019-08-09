@@ -98,7 +98,7 @@ bool Canvas::saveToTiff(const char* filePath)
         TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     height);                 // set the height of the image
 
         uint8_t* img = image.get();
-        for (uint y=0; y < height; y++) {
+        for (uint y=0; y < uint(height); y++) {
             TIFFWriteScanline(m_pTiff, img, y, 0);
             img += rowStride;
         }
@@ -136,4 +136,6 @@ bool Canvas::saveToPGM16(const char* filePath) {
         n -= n2;
     }
     fclose(f);
+
+    return true;
 }

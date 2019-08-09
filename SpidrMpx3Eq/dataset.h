@@ -21,12 +21,15 @@
 #include <QFile>
 #include <stdint.h>
 #include <vector>
-#include "spline.h"
 #include "canvas.h"
 #include "mpx3config.h"
 #include "FrameSet.h"
 
-using namespace std;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#include "spline.h"
+#pragma GCC diagnostic pop
+
 
 namespace Ui {
 class QCstmGLVisualization;

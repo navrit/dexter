@@ -17,23 +17,23 @@ class QCstmBHWindow;
 
 class QCstmCorrectionsDialog;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsubobject-linkage"
 class QCstmBHWindow : public QDialog
 {
     Q_OBJECT
 
 public:
 
-    explicit QCstmBHWindow(QWidget *parent = 0);
+    explicit QCstmBHWindow(QWidget *parent = nullptr);
     ~QCstmBHWindow();
     Ui::QCstmBHWindow * GetUI(){ return ui; }
 
     void SetMpx3GUI(Mpx3GUI *p);
     void SetNLayersCurrentImage(int);
 
-    //#44 Another corrections enhancement
     bool getFileSaved() const;
     void setFileSaved(bool value);
-    //-----------------------------------
 
 private:
 
@@ -104,7 +104,7 @@ private slots:
     void on_plot();
     void on_loadJsonButton_clicked(bool ctMode);
     void on_applyBHCorrection();
-
 };
 
 #endif // QCSTMBHWINDOW_H
+#pragma GCC diagnostic pop

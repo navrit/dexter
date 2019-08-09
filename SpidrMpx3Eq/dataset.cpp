@@ -1,7 +1,6 @@
 #include "dataset.h"
 #include "mpx3gui.h"
 #include "qcstmBHWindow.h"
-#include "spline.h"
 #include "qcstmcorrectionsdialog.h"
 
 #include <QDataStream>
@@ -13,9 +12,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include <fstream>      // std::ofstream
-
-using namespace std;
+#include <fstream>
 
 Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
 {
@@ -195,7 +192,7 @@ Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
     int width                   = getWidth()+2*extraPixels;  // Should always be 512 or 256 for a quad without spatial correction
     int height                  = getHeight()+2*extraPixels; // ""
     float edgePixelMagicNumber  = float(2.8);
-    float edgePixelMagicNumberSpectro = float(2.3);
+    //float edgePixelMagicNumberSpectro = float(2.3);
     float edgePixelMagicNumberSpectroVertical = float(1.9);
     float edgePixelMagicNumberSpectroHorizontal = float(1.1);
 
@@ -203,7 +200,7 @@ Canvas Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
 
     if (spatialOnly){
         edgePixelMagicNumber = 1;
-        edgePixelMagicNumberSpectro = 1;
+        //edgePixelMagicNumberSpectro = 1;
         edgePixelMagicNumberSpectroHorizontal = 1;
         edgePixelMagicNumberSpectroVertical = 1;
     }
@@ -735,7 +732,7 @@ int Dataset::countProfileRegions(){
 
 QPair<double, double> Dataset::LinearRegression(QVector<double> x, QVector<double> y)
 {   double a, b; //The slope (a) and point of intersection (b) of a straight line y= ax+b.
-    double Sx = 0, Sy = 0, Sxx = 0, Sxy = 0, Syy = 0, xm = 0, ym = 0;
+    double /*Sx = 0, Sy = 0,*/ Sxx = 0, Sxy = 0, Syy = 0, xm = 0, ym = 0;
     int n = x.length();
 
     if(n != 0){

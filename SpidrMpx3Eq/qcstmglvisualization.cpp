@@ -330,8 +330,8 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
     if (! _takingData ){
         _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_UDP_PKTCNTR, 0);
         Mpx3Config* config = _mpx3gui->getConfig();
-        for(int i=0; i<config->getNActiveDevices();i++){
-            config->Configuration(false,i,Mpx3Config::__readBothCounters);
+        for (int i = 0; i < int(config->getNActiveDevices()); i++){
+            config->Configuration(false, i, Mpx3Config::__readBothCounters);
         }
     }
 
@@ -2339,7 +2339,10 @@ void QCstmGLVisualization::on_saveFileComboBox_currentIndexChanged(const QString
 
 void QCstmGLVisualization::on_saveLineEdit_textChanged(const QString &arg1)
 {
-    if(autosaveFromServer){
+    //! Note, I'm pretty sure that arg1 is the same as ui->saveLineEdit->text()
+    Q_UNUSED(arg1);
+
+    if (autosaveFromServer) {
         bool success = requestToSetSavePath(ui->saveLineEdit->text());
         Q_UNUSED(success)
         if (!ui->saveLineEdit->text().isEmpty()) {

@@ -52,7 +52,7 @@ void BarChart::Clean() {
 
 void BarChart::fitToHeight(double min)
 {
-
+    Q_UNUSED(min);
     // see that there are histograms
     if ( _barSets.empty() ) return;
 

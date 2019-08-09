@@ -20,6 +20,8 @@ typedef struct dac_s
 #define DAC_T_DEFINED
 #endif
 
+#include "mpx3defs.h"
+
 // Tables with descriptions of DACs in the DACs register
 // according to device type
 

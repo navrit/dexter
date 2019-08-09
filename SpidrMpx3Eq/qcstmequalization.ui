@@ -28,7 +28,7 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="layoutWidget1">
       <property name="toolTipDuration">
        <number>-1</number>
       </property>
@@ -100,7 +100,7 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QWidget" name="layoutWidget">
+      <widget class="QWidget" name="layoutWidget2">
        <property name="toolTipDuration">
         <number>-1</number>
        </property>
@@ -151,7 +151,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="layoutWidget">
+      <widget class="QWidget" name="layoutWidget3">
        <property name="toolTipDuration">
         <number>-1</number>
        </property>

@@ -224,8 +224,9 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("GetServerStatus", getServerStatus);
 }
 
-bool Command::enoughArguments(int argsNum,QString command)
+bool Command::enoughArguments(int argsNum, QString command)
 {
+    Q_UNUSED(command);
     if(argsNum != arguments.size())
     {
         data = "Too many or too few arguments...";
@@ -624,14 +625,14 @@ int CommandHandler::setPixelMask(int x, int y)
 {
     emit requestToMaskPixelRemotely(x,y);
 
-    //! TODO return an int?
+    return NO_ERROR;
 }
 
 int CommandHandler::setPixelUnmask(int x , int y)
 {
     emit requestToUnmaskPixelRemotely(x,y);
 
-    //! TODO return an int?
+    return NO_ERROR;
 }
 
 int CommandHandler::loadEqualizationRemotely(QString path)

@@ -30,7 +30,7 @@ using namespace std;
 
 #define __default_step_scan		1
 #define __DAC_Disc_Optimization_step    2
-#define __low_but_above_noise_threshold 511      //! This is for an equalised chip, should be valid for all gain modes
+#define __above_noise_threshold 511      //! This is for an equalised chip, should be valid for all gain modes
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
 
@@ -177,108 +177,68 @@ public:
 
     explicit QCstmEqualization(QWidget *parent = nullptr);
     ~QCstmEqualization();
-    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
-    Ui::QCstmEqualization * GetUI();
-    static QCstmEqualization* getInstance();
-    void PrintFraction(int * buffer, int size, int first_last);
-    int GetNPixelsActive(int * buffer, int size, verblev verbose);
-    void GetSlopeAndCut_IDAC_DISC_THL(ScanResults *, ScanResults *, double &, double &);
-    void GetSlopeAndCut_Adj_THL(ScanResults *, ScanResults *, double &, double &);
-    void stopEqualizationRemotely(void);
-    double EvalLinear(double eta, double cut, double x);
 
-    // Equalization steps
+    typedef enum {
+        __INIT = 0,
+        __DAC_Disc_Optimization_100,
+        __DAC_Disc_Optimization_150,
+        __PrepareInterpolation_0x0,
+        __PrepareInterpolation_0x5,
+        __ScanOnInterpolation,
+        __EstimateEqualisationTarget,
+        __FineTuning,
+        __EQStatus_Count
+    } eqStatus;
+
+    // int GetNPixelsActive(int * buffer, int size, verblev verbose); // Unused function
+
+    //! Core equalisation functions
+    void StartEqualization();
+    bool InitEqualization(int chipId);      //! chipId = -1  will equalize all available chips at once
+    void NewRunInitEqualization();          //! partial initialisation
+    void Configuration(int devId, int THx, bool reset);
     void DAC_Disc_Optimization_100();
     void DAC_Disc_Optimization_150();
     void DAC_Disc_Optimization(int devId, ScanResults * res_100, ScanResults * res_150);
     void PrepareInterpolation_0x0();
     void PrepareInterpolation_0x5();
-    int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5); // ScanResults * res_x0, ScanResults * res_x5);
     void ScanOnInterpolation();
-    bool InitEqualization(int chipId);      //! chipId = -1  will equalize all available chips at once
-    void NewRunInitEqualization();          //! partial initialization
-    bool pixelInScheduledChips(int);
-
-    void DAC_Disc_Optimization_DisplayResults(ScanResults * res);
+    int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5);
     int  FineTuning();
-    void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults * res);
-    void KeepOtherChipsQuiet();
-    void resetThresholds();
 
-    pair<int, int> XtoXY(int X, int dimX);
+
+    //! Core helper functions
+    void LoadEqualization(bool getPath = false, bool remotely = false, QString path ="");
+    void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val);
+    void KeepOtherChipsQuiet();
+    void FullEqRewind();
+    void GetSlopeAndCut_IDAC_DISC_THL(ScanResults *, ScanResults *, double &, double &);
+    void GetSlopeAndCut_Adj_THL(ScanResults *, ScanResults *, double &, double &);
+    void resetThresholds();
+    void InitializeEqualizationStructure();
     void SetupSignalsAndSlots();
     void SetLimits();
-    void Configuration(int devId, int THx, bool reset);
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int devId, int val_L, int val_H);
+    void stopEqualizationRemotely();
+    void temporarilyOverrideUserChosenSpacing();
+    void restoreOveriddenUserChosenSpacing();
+    void clearPreviousData(uint chipListSize);
+    void printNonReactiveWarning(uint chipListSize);
+    void updateTestpulseVariables();
+    bool pixelInScheduledChips(int pixels);
+    double EvalLinear(double eta, double cut, double x);
+
+    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, int val_L, int val_H);
     void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false, bool testbit = false);
     void SetAllAdjustmentBits(SpidrController * spidrcontrol);
     void SetAllAdjustmentBits();
     void ClearAllAdjustmentBits(int devId = 0);
 
-    void AppendToTextBrowser(QString s);
-    void ClearTextBrowser();
-    int GetDeviceIndex(){ return _deviceIndex; }
-    int GetNTriggers(){ return _nTriggers; }
-    int GetSpacing(){ return _spacing; }
-    int GetMinScan(){ return _minScanTHL; }
-    int GetMaxScan(){ return _maxScanTHL; }
-    int GetStepScan(){ return _stepScan; }
-    int GetNHits(){ return _nHits; }
-    int GetFineTuningLoops() { return _fineTuningLoops; }
-
-    int GetNChips() {return _nChips; }
-
-    void SetMinScan(int val = -1);
-    void SetMaxScan(int val = -1);
-    bool isScanDescendant() { return _scanDescendant; }
-    bool isBusy() { return _busy; }
-    bool scanningAllChips() { return _scanAllChips; }
-
-    void StartEqualization();
-    void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val);
-
     Mpx3EqualizationResults * GetEqualizationResults(int chipIndex);
-    void InitializeBarChartsEqualization();
-    void InitializeBarChartsAdjustements();
-    void DistributeAdjHistogramsInGridLayout();
-    equalizationSteeringInfo * GetSteeringInfo(int chipIdx);
-    BarChart * GetBarChart(int chipIdx);
-    QCheckBox * GetCheckBox(int chipIdx);
-    BarChart * GetAdjBarChart(int chipIdx, Mpx3EqualizationResults::lowHighSel sel);
-
+    pair<int, int> XtoXY(int X, int dimX);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-    void UpdateHeatMap(int * _data, int sizex, int sizey);
 
-    string BuildChartName(int val, QString leg);
 
-    void LoadEqualization(bool getPath = false, bool remotely = false, QString path ="");
-    void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);
-
-    void InitializeEqualizationStructure(); //! on a normal run, when the user load the equalization after connecting
-
-    typedef enum {
-        __INIT = 0,
-        __DAC_Disc_Optimization_100,
-        //__DAC_Disc_OptimizatioSET,
-        //EQUALIZATIONFILE,
-        //kian_100,
-        __DAC_Disc_Optimization_150,
-        __PrepareInterpolation_0x0,
-        __PrepareInterpolation_0x5,
-        __ScanOnInterpolation,
-         __EstimateEqualisationTarget,
-        __FineTuning,
-        __EQStatus_Count
-    } eqStatus;
-    array<bool, __EQStatus_Count> _stepDone;
-
-    void setWindowWidgetsStatus(win_status s = win_status::startup);
-
-    bool equalizationHasBeenLoaded(){ return _equalizationLoaded; }
-
-    QMap<int, Mpx3EqualizationResults *> getEqMap(){ return _eqMap; }
-
-    // -------------------------- Test pulse equalization  ------------------------------
+    //! Test pulse equalisation
     testPulseEqualisation * testPulseEqualisationDialog = nullptr;
     void setTestPulseMode(bool arg) { testPulseMode = arg; }
 
@@ -287,22 +247,63 @@ public:
     bool initialiseTestPulses(SpidrController * spidrcontrol);
     bool activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int *maskedPixels);
 
-    void FullEqRewind();
+
+    //! GUI functions
+    void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);
+    void DAC_Disc_Optimization_DisplayResults(ScanResults * res);
+    void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults * res);
+    void AppendToTextBrowser(QString s);
+    void ClearTextBrowser();
+    void InitializeBarChartsEqualization();
+    void InitializeBarChartsAdjustments();
+    void DistributeAdjHistogramsInGridLayout();
+    void UpdateHeatMap(int * _data, int sizex, int sizey);
+    std::string BuildChartName(int val, QString leg);
+
+
+    //! Getters and setters etc.
+    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
+    Ui::QCstmEqualization * GetUI();
+    static QCstmEqualization* getInstance();
+
+    QMap<int, Mpx3EqualizationResults *> getEqMap(){ return _eqMap; }
+    equalizationSteeringInfo * GetSteeringInfo(int chipIdx);
+    BarChart * GetAdjBarChart(int chipIdx, Mpx3EqualizationResults::lowHighSel sel);
+    BarChart * GetBarChart(int chipIdx);
+    QCheckBox * GetCheckBox(int chipIdx);
+
+    bool isScanDescendant() { return _scanDescendant; }
+    bool isBusy() { return _busy; }
+    bool getScanningAllChips() { return _scanAllChips; }
+    int GetDeviceIndex(){ return _deviceIndex; }
+    int GetNTriggers(){ return _nTriggers; }
+    int GetSpacing(){ return _spacing; }
+    int GetMinScan(){ return _minScanTHL; }
+    int GetMaxScan(){ return _maxScanTHL; }
+    int GetStepScan(){ return _stepScan; }
+    int GetNHits(){ return _nHits; }
+    int GetFineTuningLoops() { return _fineTuningLoops; }
+    int GetNChips() {return _nChips; }
+    void SetMinScan(int val = -1);
+    void SetMaxScan(int val = -1);
+    void setWindowWidgetsStatus(win_status s = win_status::startup);
+    bool getEqualisationHasBeenLoaded(){ return _equalisationLoaded; }
+
 
 private:
 
-    Ui::QCstmEqualization * _ui;
-    Mpx3GUI * _mpx3gui;
-    QApplication * _coreApp;
+    Ui::QCstmEqualization * _ui = nullptr;
+    Mpx3GUI * _mpx3gui = nullptr;
+    QApplication * _coreApp = nullptr;
 
     // Equalization info
     QMap<int, Mpx3EqualizationResults *> _eqMap;
-    vector<BarChart * > _chart;                 //! charts for all chips
-    vector<QCheckBox * > _checkBoxes;           //! checkBoxes for all chips
-    vector<BarChart * > _adjchart_L;            //! adjustment low bits charts
-    vector<BarChart * > _adjchart_H;            //! adjustment high bits charts
-    QGridLayout * _gridLayoutHistograms;
-    Dataset * _resdataset;
+    vector<BarChart * > _chart = {nullptr};                 //! charts for all chips
+    vector<QCheckBox * > _checkBoxes = {nullptr};           //! checkBoxes for all chips
+    vector<BarChart * > _adjchart_L = {nullptr};            //! adjustment low bits charts
+    vector<BarChart * > _adjchart_H = {nullptr};            //! adjustment high bits charts
+    QGridLayout * _gridLayoutHistograms = nullptr;
+    Dataset * _resdataset = nullptr;
 
     // -------------------------- Recent changes  ------------------------------
     //! bits flipped below
@@ -323,17 +324,18 @@ private:
     int _firstMinScanTHL; //! Set at the beginning of StartEqualisation
     // -------------------------------------------------------------------------
 
-    QStringList files;
-    bool _busy;
+    QStringList files = {};
+    bool _busy = false;
     bool _isRemotePath = false;
     QString _remotePath = "";
 
-    bool _equalizationLoaded = false;
+    bool _equalisationLoaded = false;
     bool _isSequentialAllChipsEqualization = false;
     int _setId;
     int _deviceIndex;
     int _nTriggers;
     int _spacing; //! Pixel spacing. Ie. a pixel spacing of 2 would be scannig 1/4 pixels
+    int _userChosenSpacing = -1;
     int _minScanTHL;
     int _maxScanTHL;
     int _stepScan;
@@ -345,9 +347,9 @@ private:
     int _nchipsY;
     int _fullsize_x;
     int _fullsize_y;
-    vector<int> _workChipsIndx;
-    unsigned int _eqStatus; //! Important state machine variable
-    unsigned int _scanIndex;
+    vector<uint> _workChipsIndx;
+    uint _eqStatus; //! Important state machine variable
+    uint _scanIndex;
     enum {
         __THLandTHH = 0,
         __OnlyTHL,
@@ -360,7 +362,7 @@ private:
 
     enum {
         __NoiseEdge = 0,
-        __NoiseCentroid,  // upper than this, fast equalizations
+        __NoiseCentroid,  // above this, fast equalizations
         __NoiseEdgeFAST,
         __NoiseCentroidFAST,
         __nEQTypes
@@ -368,9 +370,10 @@ private:
     int _equalizationType;
     Mpx3EqualizationResults::lowHighSel _equalizationShow;
     vector<equalizationSteeringInfo *> _steeringInfo;
+    std::array<bool, __EQStatus_Count> _stepDone;
 
     // Object in charge of performing Thl scans
-    QVector<ThlScan * > _scans;
+    QVector<ThlScan * > _scans  = {nullptr};
 
     // IP source address (SPIDR network interface)
     int _srcAddr;
@@ -393,22 +396,22 @@ private slots:
     void ScanThreadFinished();
     void StartEqualizationSingleChip();
     void StartEqualizationAllChips();
-    void StartEqualizationSequentialSingleChips(); //! Navrit: Added on 25/10/17 to address the bad
-                                                   //! behaviour when equalising all chips
-                                                   //! simultaneously
+
+    //! Addresses the weird behaviour when equalising all chips simultaneously
+    void StartEqualizationSequentialSingleChips();
     void StartEqualizationSequentialSingleChipsRemotely(QString path);
-    void ChangeNTriggers(int);
-    void ChangeDeviceIndex(int, bool uisetting = false);
-    void ChangeSpacing(int);
-    void ChangeMin(int, bool uisetting = false);
-    void ChangeMax(int, bool uisetting = false);
-    void ChangeStep(int, bool uisetting = false);
+    void setNTriggers(int);
+    void setDeviceIndex(int, bool uisetting = false);
+    void setSpacing(int);
+    void setMin(int, bool uisetting = false);
+    void setMax(int, bool uisetting = false);
+    void setStep(int, bool uisetting = false);
     void ConnectionStatusChanged(bool);
     void StopEqualization();
     void setEqualizationTHLTHH(int);
     void setEqualizationShowTHLTHH(int);
     void setEqualizationTHLType(int);
-    void ShowEqualizationForChip(bool checked);
+    void ShowEqualizationForChip();
 
     void on_pushButton_testPulses_clicked();
 
@@ -422,8 +425,6 @@ signals:
 
     void busy(SERVER_BUSY_TYPE);
     void equalizationPathExported(QString path);
-    //void pixelsMasked(int devId,QSet<int> pixelSet);
-
 };
 
 #endif // QCSTMEQUALIZATION_H

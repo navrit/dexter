@@ -38,10 +38,10 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     // When working in color mode.
     // The user might select ColorMode in the middle of an operation.
     // Allocating the data just in case.
-    _colourdata = new int*[ __max_colors ]; // 8 thresholds(colors)
-    for (int i = 0 ; i < __max_colors ; i++) {
-        _colourdata[i] = new int[ __matrix_size_color * _nChips ];
-        memset(_colourdata[i], 0, (sizeof(int) * __matrix_size_color * _nChips ));
+    _colourdata = new int*[ __max_colours ]; // 8 thresholds(colors)
+    for (int i = 0 ; i < __max_colours ; i++) {
+        _colourdata[i] = new int[ __matrix_size_colour * _nChips ];
+        memset(_colourdata[i], 0, (sizeof(int) * __matrix_size_colour * _nChips ));
     }
 
 }
@@ -65,7 +65,7 @@ DataConsumerThread::~DataConsumerThread() {
 
 
     // Color structure
-    for (int i = 0 ; i < __max_colors ; i++) delete [] _colourdata[i];
+    for (int i = 0 ; i < __max_colours ; i++) delete [] _colourdata[i];
     delete [] _colourdata;
     delete [] buffer;
 
@@ -173,7 +173,7 @@ void DataConsumerThread::run()
 
                 // Add the corresponding layers
                 if ( _colourdata != nullptr ) {
-                    for ( int i = 0 ; i < __max_colors ; i+= delvrCounters ) {
+                    for ( int i = 0 ; i < __max_colours ; i+= delvrCounters ) {
                         _mpx3gui->addLayer( _colourdata[i], i );
                     }
                 }
@@ -257,8 +257,8 @@ void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data
 
       // Pixel_index_colour goes up to 128*128 = 16384
       // i.e. this is the end of the chip for a specific threshold
-      pixel_index_colour = XYtoX(pixel_cluster_index_i, pixel_cluster_index_j, __matrix_size_color_x);
-      pixel_index_colour += chip_offset * __matrix_size_color;
+      pixel_index_colour = XYtoX(pixel_cluster_index_i, pixel_cluster_index_j, __matrix_size_colour_x);
+      pixel_index_colour += chip_offset * __matrix_size_colour;
 
       _colourdata[0 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + __matrix_size_x]; // P1 // TH0 !
       _colourdata[2 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data]; // P2 // TH2 !

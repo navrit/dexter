@@ -813,6 +813,11 @@ int QCstmDacs::GetNSamples() {
         return _nSamples;
     } else {
         ChangeNSamples(2); //! The first sample is always wrong, do 2 minimum
+        if (GetNSamples() == 2) {
+            return 2;
+        } else {
+            return -1;
+        }
     }
 }
 

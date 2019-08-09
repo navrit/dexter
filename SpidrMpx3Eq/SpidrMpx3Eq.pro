@@ -8,7 +8,7 @@ TEMPLATE = app
 TARGET = Dexter
 
 QT += core gui concurrent network opengl printsupport
-CONFIG   +=  c++14 debug_and_release
+CONFIG   +=  c++1z debug_and_release
 
 message("Explicitly enabling AVX2 instructions")
 QMAKE_CFLAGS          *= -mavx2

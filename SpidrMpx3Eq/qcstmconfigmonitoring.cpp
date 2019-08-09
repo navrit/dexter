@@ -828,7 +828,7 @@ void QCstmConfigMonitoring::csmSpmChangedByValue(int val)
 {
     int sizea = int(__csmSpmMap.size());
     for ( int i = 0; i < sizea; i++ ) {
-        if ( __csmSpmMap[i] == val) {
+        if ( __csmSpmMap[i] == uint(val)) {
             ui->csmSpmCombo->setCurrentIndex( i );
             return;
         }
@@ -863,7 +863,7 @@ void QCstmConfigMonitoring::pixelDepthChangedByValue(int val)
 
     int sizea = int(__pixelDepthMap.size());
     for ( int i = 0; i < sizea; i++ ) {
-        if ( __pixelDepthMap[i] == val ) {
+        if ( __pixelDepthMap[i] == uint(val) ) {
             ui->pixelDepthCombo->setCurrentIndex( i );
             return;
         }
@@ -884,14 +884,11 @@ void QCstmConfigMonitoring::widgetInfoPropagation()
     for ( int ii = 0 ; ii < nItems ; ii++ ) {
         _mpx3gui->getVisualization()->GetUI()->operationModeComboBox_Vis->addItem( ui->operationModeComboBox->itemText( ii ) );
     }
-
 }
-
 
 void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 
     readMonitoringInfo();
-
 }
 
 void QCstmConfigMonitoring::setWindowWidgetsStatus(win_status s){

@@ -24,17 +24,14 @@ void optionsDialog::SetMpx3GUI(Mpx3GUI * p )
 
 QString optionsDialog::getCurrentTab()
 {
-    if(ui->tabWidget->currentIndex() == __mtfIndex)
+    if (ui->tabWidget->currentIndex() == __mtfIndex) {
         return "mtf";
-    else if(ui->tabWidget->currentIndex() == __npsIndex)
+    } else if (ui->tabWidget->currentIndex() == __npsIndex) {
         return "nps";
+    } else {
+        return "UNKNOWN";
+    }
 }
-
-//void optionsDialog::setDataRange(int NdataESF)
-//{
-//    ui->binSizeSpinBox->setMaximum( NdataESF );
-//    ui->windowSpinBox->setMaximum( NdataESF );
-//}
 
 optionsDialog::~optionsDialog()
 {
@@ -239,8 +236,8 @@ void optionsDialog::on_roiXsizeSpinBox_editingFinished()
 
 void optionsDialog::on_roiYsizeSpinBox_editingFinished()
 {
-    int x = ui->roiXsizeSpinBox->value();
-    int y = ui->roiYsizeSpinBox->value();
+    //int x = ui->roiXsizeSpinBox->value();
+    //int y = ui->roiYsizeSpinBox->value();
     int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeSpinBox->value(), ui->roiYsizeSpinBox->value() );
     ui->roiNumberSpinBox->setMaximum( Nmax );
     ui->roiNumberSpinBox->setValue( Nmax );

@@ -60,6 +60,10 @@ const int   VERSION_ID = 0x19051016; // lots of improvements!
 #define SPIDRMPX3_TPSWITCH_FREQ_I       0x10BC
 #define SPIDRMPX3_TP_LENGTH_I           0x10C0
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
+
 // ----------------------------------------------------------------------------
 // Constructor / destructor
 // ----------------------------------------------------------------------------
@@ -676,6 +680,8 @@ bool SpidrController::setPixelConfigMpx3rx( int  dev_nr,
                         bool readback,
                         bool with_replies )
 {
+  Q_UNUSED(with_replies);
+
   // The SPIDR software will see to it that it gets done in 2 stages:
   // the first 128 rows, then the second 128 rows...
   // (due to hardware bug in Medipix3RX device)
@@ -1736,3 +1742,5 @@ int SpidrController::dacIndexMpx3rx( int dac_code )
 }
 
 // ----------------------------------------------------------------------------
+
+#pragma GCC diagnostic pop

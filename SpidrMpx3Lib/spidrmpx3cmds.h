@@ -131,6 +131,9 @@
 #define CMD_SET_BOARDID        0x786
 #define CMD_REINIT_MACADDR     0x787
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
 static const char *CMD_STR[] =
@@ -325,3 +328,4 @@ static const char *ERR_STR[] =
   };
 
 #endif // SPIDRMPX3CMDS_H
+#pragma GCC diagnostic pop

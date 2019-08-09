@@ -3,8 +3,8 @@
 
 #include <QDialog>
 #include "mpx3gui.h"
-#include "qcstmequalization.h"
 
+class QCstmEqualization;
 
 namespace Ui {
 class testPulseEqualisation;
@@ -17,7 +17,7 @@ class testPulseEqualisation : public QDialog
     Q_OBJECT
 
 public:
-    explicit testPulseEqualisation(Mpx3GUI *, QWidget *parent = 0);
+    explicit testPulseEqualisation(Mpx3GUI *, QWidget *parent = nullptr);
     ~testPulseEqualisation();
 
     bool activate(int startPixelOffset = 0);
@@ -55,14 +55,14 @@ private slots:
     void on_spinBox_2nd_DAC_DISC_valueChanged(int arg1);
 
 private:
-    Mpx3GUI * _mpx3gui = nullptr;
+    Mpx3GUI *_mpx3gui = nullptr;
     Ui::testPulseEqualisation *ui = nullptr;
-    SpidrController * spidrcontrol = nullptr;
+    SpidrController *spidrcontrol = nullptr;
     QCstmEqualization * _equalisation = nullptr;
 
-    const float maximumInjectionVoltage = 0.975; //! over linear range
+    const double maximumInjectionVoltage = 0.975; //! over linear range
     const int maximumInjectionElectrons = 30431; //! over linear range, assuming 5fF exactly and maximum voltage injection (over linear range)
-    const int maximumInjectionKeV = maximumInjectionElectrons / 3.62; //! Assuming near room temperature for Si
+    const double maximumInjectionKeV = maximumInjectionElectrons / 3.62; //! Assuming near room temperature for Si
 
     const double e = 1.6021766208e-19;
     const double c_test = 5e-15;

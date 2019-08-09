@@ -166,7 +166,7 @@ void QCstmBHWindow::on_plot(){
     }
     for(int i = 0; i< xPlot.size(); i++){
         double count = 0;
-        for(int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++ ){
+        for(int j = 0; j< int(_mpx3gui->getDataset()->getPixelsPerLayer()); j++ ){
             count += correctionMap[xPlot[i]].getLayer(0)[j];
         }
         count /= _mpx3gui->getDataset()->getPixelsPerLayer(); //average of threshold 0
@@ -312,6 +312,7 @@ void QCstmBHWindow::on_open_data_failed(){
 }
 
 void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index){
+    Q_UNUSED(index);
     emit loadSignal();
 }
 
@@ -499,7 +500,7 @@ void QCstmBHWindow::saveJSON(QString fileName){
     doc.setObject(JSobjectParent);
     loadFile.write(doc.toJson());  //Actually writes the file
 
-    setFileSaved(true);
+    //setFileSaved(true);
 }
 
 bool QCstmBHWindow::getFileSaved() const
@@ -509,6 +510,7 @@ bool QCstmBHWindow::getFileSaved() const
 
 void QCstmBHWindow::setFileSaved(bool value)
 {
+    Q_UNUSED(value);
     //#44 Another corrections enhancement
     //fileSaved = value;
 }

@@ -572,6 +572,7 @@ void ProfileDialog::mousePressEvent(QMouseEvent *event)
 
 void ProfileDialog::closeEvent(QCloseEvent *event)
 {
+    Q_UNUSED(event);
     emit user_accepted_profile();
 }
 

@@ -6,20 +6,23 @@
 #ifndef THLSCAN_H
 #define THLSCAN_H
 
-#include <map>
-#include <set>
-#include <vector>
 #include <QThread>
 #include <QtWidgets>
 
+#include <map>
+#include <set>
+#include <vector>
+#include <iostream>
+#include <iterator>
+
 #include "mpx3gui.h"
-
-
-using namespace std;
+#include "SpidrDaq.h"
+#include "barchart.h"
+#include "mpx3dacsdescr.h"
+#include "mpx3defs.h"
+#include "mpx3eq_common.h"
 
 class SpidrController;
-class SpidrDaq;
-class BarChart;
 class QCstmPlotHeatmap;
 class QCstmEqualization;
 class Mpx3EqualizationResults;
@@ -30,20 +33,15 @@ enum Thl_Status {
     __NOT_TESTED_YET = 0,
 };
 
-
-#define __accelerationStartLimit	50
-#define __step_scan_boostfactor		10
-
 class ScanResults {
-public:
-    double weighted_arithmetic_mean;
-    double sigma;
-    int DAC_DISC_setting;
-    int global_adj;
-    int chipIndx;
-    int equalisationTarget;
+    public:
+        double weighted_arithmetic_mean;
+        double sigma;
+        int DAC_DISC_setting;
+        int global_adj;
+        uint chipIndx;
+        int equalisationTarget;
 };
-
 
 class ThlScan : public QThread {
 
@@ -83,8 +81,6 @@ public:
     int NumberOfNonReactingPixels();
     vector<int> GetNonReactingPixels();
 
-    //! UNUSED FUNCTION
-    void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
     void SetStopWhenPlateau(bool b) { _stopWhenPlateau = b; }
 
     void DeliverPreliminaryEqualization(int devId, int currentDAC_DISC, Mpx3EqualizationResults *, int global_adj);
@@ -98,7 +94,7 @@ public:
     int lastEqualisationTarget = 0;
     void FineTuning();
     void EqualizationScan();
-    void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val );
+    void SetDAC_propagateInGUI(SpidrController * spidrcontrol, uint devId, int dac_code, int dac_val );
 
     void SetScanType(scan_type st) { _scanType = st; }
     scan_type GetScanType() { return _scanType; }
@@ -119,8 +115,8 @@ public:
     void SetSetId(int si) { _setId = si; }
     int GetSetId() { return _setId; }
 
-    void SetWorkChipIndexes(vector<int> v, vector<equalizationSteeringInfo *> st);
-    vector<int> GetWorkChipIndexes() { return _workChipsIndx; }
+    void SetWorkChipIndexes(vector<uint> v, vector<equalizationSteeringInfo *> st);
+    vector<uint> GetWorkChipIndexes() { return _workChipsIndx; }
 
     void InitializeScanResults(vector<equalizationSteeringInfo *> st);
     ScanResults * GetScanResults(int chipIdx);
@@ -129,16 +125,16 @@ private:
 
     void run();
 
-    Mpx3GUI * _mpx3gui;
-    QCstmEqualization * _equalization;
+    Mpx3GUI *_mpx3gui = nullptr;
+    QCstmEqualization *_equalization = nullptr;
 
-    SpidrController * _spidrcontrol;
-    SpidrDaq * _spidrdaq;
-    QCstmPlotHeatmap * _heatmap;
+    SpidrController *_spidrcontrol = nullptr;
+    SpidrDaq *_spidrdaq = nullptr;
+    QCstmPlotHeatmap *_heatmap = nullptr;
 
-    vector<ScanResults *> _results;		//! results for all chips
-    vector<int> _workChipsIndx;
-    Dataset * _dataset;
+    vector<ScanResults *> _results = {nullptr};		//! results for all chips
+    vector<uint> _workChipsIndx;
+    Dataset *_dataset = nullptr;
 
     // pixelId, counts map
     map<int, int> _pixelCountsMap;
@@ -189,8 +185,8 @@ private:
     ofstream file_fineTuningStats;
 
     // For data taking
-    int * _data;
-    int * _plotdata;
+    int * _data = nullptr;
+    int * _plotdata = nullptr;
     int _frameId;
     int _thlItr;
     int _pixelReactiveInScan;
@@ -202,7 +198,6 @@ private:
     const static uint _timeOut = 50;
 
 private slots:
-    //void UpdateChart(int setId, int thlValue);
     void UpdateChart(int devId, int setId, int thlValue);
     void UpdateChartPixelsReady(int devId, int setId);
     void UpdateHeatMap(int sizex, int sizey);
@@ -214,7 +209,6 @@ signals:
     void UpdateHeatMapSignal(int sizex, int sizey);
     void fillText(QString);
     void slideAndSpin(int, int);
-
 };
 
 #endif

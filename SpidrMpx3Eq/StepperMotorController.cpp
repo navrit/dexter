@@ -5,9 +5,7 @@
 
 
 StepperMotorController::StepperMotorController() {
-
-	_stepper = 0;
-
+    _stepper = nullptr;
 }
 
 StepperMotorController::~StepperMotorController()
@@ -16,6 +14,7 @@ StepperMotorController::~StepperMotorController()
 
 
 int CCONV AttachHandler(CPhidgetHandle stepper, void * userptr) {
+    (void)(userptr);
 
 	int serialNo;
 	const char *name;
@@ -31,6 +30,7 @@ int CCONV AttachHandler(CPhidgetHandle stepper, void * userptr) {
 
 int CCONV DetachHandler(CPhidgetHandle stepper, void *userptr)
 {
+    (void)(userptr);
 	int serialNo;
 	const char *name;
 
@@ -43,12 +43,18 @@ int CCONV DetachHandler(CPhidgetHandle stepper, void *userptr)
 
 int CCONV ErrorHandler(CPhidgetHandle stepper, void *userptr, int ErrorCode, const char *Description)
 {
+    (void)(stepper);
+    (void)(userptr);
 	printf("Error handled. %d - %s\n", ErrorCode, Description);
 	return 0;
 }
 
 int CCONV PositionChangeHandler(CPhidgetStepperHandle stepper, void *usrptr, int Index, __int64 Value)
 {
+    (void)(stepper);
+    (void)(usrptr);
+    (void)(Index);
+    (void)(Value);
 	//printf("Motor: %d > Current Position: %lld\n", Index, Value);
 	return 0;
 }
@@ -59,9 +65,9 @@ int StepperMotorController::display_properties(CPhidgetStepperHandle phid)
 	int serialNo, version, numMotors;
 	const char* ptr;
 
-	CPhidget_getDeviceType((CPhidgetHandle)phid, &ptr);
-	CPhidget_getSerialNumber((CPhidgetHandle)phid, &serialNo);
-	CPhidget_getDeviceVersion((CPhidgetHandle)phid, &version);
+    CPhidget_getDeviceType(CPhidgetHandle(phid), &ptr);
+    CPhidget_getSerialNumber(CPhidgetHandle(phid), &serialNo);
+    CPhidget_getDeviceVersion(CPhidgetHandle(phid), &version);
 
 	CPhidgetStepper_getMotorCount (phid, &numMotors);
 
@@ -76,23 +82,23 @@ bool StepperMotorController::arm_stepper( ) {
 	const char *err;
 
 	//create the stepper object
-	_stepper = 0;
+    _stepper = nullptr;
 	CPhidgetStepper_create(&_stepper);
 
-	// Set the handlers to be run when the device is plugged in or opened from software, unplugged or closed from software, or generates an error.
-	CPhidget_set_OnAttach_Handler( (CPhidgetHandle)_stepper, AttachHandler, NULL );
-	CPhidget_set_OnDetach_Handler( (CPhidgetHandle)_stepper, DetachHandler, NULL );
-	CPhidget_set_OnError_Handler ( (CPhidgetHandle)_stepper, ErrorHandler , NULL );
+    // Set the handlers to be run when the device is plugged in or opened from software, unplugged or closed from software, or generates an error.
+    CPhidget_set_OnAttach_Handler( CPhidgetHandle(_stepper), AttachHandler, nullptr );
+    CPhidget_set_OnDetach_Handler( CPhidgetHandle(_stepper), DetachHandler, nullptr );
+    CPhidget_set_OnError_Handler ( CPhidgetHandle(_stepper), ErrorHandler , nullptr );
 	// Registers a callback that will run when the motor position is changed.
 	// Requires the handle for the Phidget, the function that will be called, and an arbitrary pointer that will be supplied to the callback function (may be NULL).
-	CPhidgetStepper_set_OnPositionChange_Handler( _stepper, PositionChangeHandler, NULL );
+    CPhidgetStepper_set_OnPositionChange_Handler( _stepper, PositionChangeHandler, nullptr );
 
-	//open the device for connections
-	CPhidget_open((CPhidgetHandle)_stepper, -1);
+    //open the device for connections
+    CPhidget_open(CPhidgetHandle(_stepper), -1);
 
 	//get the program to wait for an stepper device to be attached
-	printf("[STEP] Waiting for Phidget to be attached....");
-	if((result = CPhidget_waitForAttachment((CPhidgetHandle)_stepper, 10000)))
+    printf("[STEP] Waiting for Phidget to be attached....");
+    if((result = CPhidget_waitForAttachment(CPhidgetHandle(_stepper), 10000)))
 	{
 		CPhidget_getErrorDescription(result, &err);
 		printf("Problem waiting for attachment: %s\n", err);
@@ -151,7 +157,6 @@ bool StepperMotorController::arm_stepper( ) {
 
 		// Calibration not present yet
 		_parsMap[motorid].calibOK = false;
-
 	}
 
 	return true;
@@ -218,17 +223,15 @@ void StepperMotorController::SetCurrentILimit(int motorid, double val) {
 	CPhidgetStepper_setCurrentLimit(_stepper, motorid, _parsMap[motorid].currentILimit);
 
 	//cout << "current limit : " << _parsMap[motorid].currentILimit << endl;
-
 }
 
 
 void StepperMotorController::disarm_stepper() {
 
-	printf("[STEP] Closing and deleting stepper handler.\n");
-	CPhidget_close((CPhidgetHandle)_stepper);
-	CPhidget_delete((CPhidgetHandle)_stepper);
-	_stepper = 0;
-
+    printf("[STEP] Closing and deleting stepper handler.\n");
+    CPhidget_close(CPhidgetHandle(_stepper));
+    CPhidget_delete(CPhidgetHandle(_stepper));
+    _stepper = nullptr;
 }
 
 bool StepperMotorController::isStepperReady() {
@@ -246,26 +249,26 @@ int StepperMotorController::stepper_simple(int motorid)
 	int stopped;
 
 	//Declare an stepper handle
-	CPhidgetStepperHandle stepper = 0;
+    CPhidgetStepperHandle stepper = nullptr;
 
 	//create the stepper object
 	CPhidgetStepper_create(&stepper);
 
 	//Set the handlers to be run when the device is plugged in or opened from software, unplugged or closed from software, or generates an error.
-	CPhidget_set_OnAttach_Handler( (CPhidgetHandle)stepper, AttachHandler, NULL );
-	CPhidget_set_OnDetach_Handler( (CPhidgetHandle)stepper, DetachHandler, NULL );
-	CPhidget_set_OnError_Handler ( (CPhidgetHandle)stepper, ErrorHandler , NULL );
+    CPhidget_set_OnAttach_Handler( CPhidgetHandle(stepper), AttachHandler, nullptr );
+    CPhidget_set_OnDetach_Handler( CPhidgetHandle(stepper), DetachHandler, nullptr );
+    CPhidget_set_OnError_Handler ( CPhidgetHandle(stepper), ErrorHandler , nullptr );
 
 	//Registers a callback that will run when the motor position is changed.
 	//Requires the handle for the Phidget, the function that will be called, and an arbitrary pointer that will be supplied to the callback function (may be NULL).
-	CPhidgetStepper_set_OnPositionChange_Handler( stepper, PositionChangeHandler, NULL );
+    CPhidgetStepper_set_OnPositionChange_Handler( stepper, PositionChangeHandler, nullptr );
 
 	//open the device for connections
-	CPhidget_open((CPhidgetHandle)stepper, -1);
+    CPhidget_open(CPhidgetHandle(stepper), -1);
 
 	//get the program to wait for an stepper device to be attached
 	printf("Waiting for Phidget to be attached....");
-	if((result = CPhidget_waitForAttachment((CPhidgetHandle)stepper, 10000)))
+    if((result = CPhidget_waitForAttachment(CPhidgetHandle(stepper), 10000)))
 	{
 		CPhidget_getErrorDescription(result, &err);
 		printf("Problem waiting for attachment: %s\n", err);
@@ -335,8 +338,8 @@ int StepperMotorController::stepper_simple(int motorid)
 
 	//since user input has been read, this is a signal to terminate the program so we will close the phidget and delete the object we created
 	printf("Closing...\n");
-	CPhidget_close((CPhidgetHandle)stepper);
-	CPhidget_delete((CPhidgetHandle)stepper);
+    CPhidget_close(CPhidgetHandle(stepper));
+    CPhidget_delete(CPhidgetHandle(stepper));
 
 	//all done, exit
 	return 0;
@@ -345,8 +348,6 @@ int StepperMotorController::stepper_simple(int motorid)
 void StepperMotorController::goToTarget(long long int targetPos, int motorid) {
 
 	CPhidgetStepper_setTargetPosition (_stepper, motorid, targetPos);
-
-
 }
 
 /**
@@ -386,10 +387,6 @@ double StepperMotorController::AngleToStep(int motorid, double angle) {
 	return 0.0;
 }
 
-
 void StepperMotorController::ClearParsMap() {
-
 	//_parsMap[motorid].
-
 }
-

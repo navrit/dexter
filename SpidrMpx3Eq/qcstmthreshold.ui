@@ -22,7 +22,7 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="layoutWidget1">
       <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
        <item>
         <widget class="QCustomPlot" name="plot" native="true"/>
@@ -111,7 +111,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="layoutWidget2">
       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0">
        <item>
         <widget class="QCstmPlotHeatmap" name="framePlot" native="true"/>
