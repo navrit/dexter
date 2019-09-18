@@ -1843,17 +1843,13 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     qDebug() << "[INFO] [Equalisation]\tCsm_Spm = " << config->getCsmSpm();
 
     //! -------------------------------------------------------------------------
-    // Trigger config
-    // Sequential R/W
-    int trig_mode      = SHUTTERMODE_AUTO;     // Auto-trigger mode
-    int trig_length_us = 1000;  // This time shouldn't be longer than the period defined by trig_freq_hz
-    int trig_freq_mhz   = 10000;   //
-    int nr_of_triggers = _nTriggers;    // This is the number of shutter open I get
-    spidrcontrol->setShutterTriggerConfig( trig_mode,
-                                           trig_length_us,
-                                           trig_freq_mhz,
-                                           nr_of_triggers );
-
+    //! Trigger config, Sequential R/W.
+    //!    Get trigger config from the main config, this should be correct.
+    //!    Also, it's more configurable.
+    spidrcontrol->setShutterTriggerConfig( SHUTTERMODE_AUTO,
+                                           int(_mpx3gui->getConfig()->getTriggerLength_64()),
+                                           _mpx3gui->getConfig()->getTriggerFreq_mHz(),
+                                           _nTriggers );
 }
 
 Mpx3EqualizationResults * QCstmEqualization::GetEqualizationResults(int chipIndex) {
