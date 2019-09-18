@@ -276,7 +276,6 @@ void ThlScan::FineTuning() {
 
         //! While equalizing one threshold the other should be set at a high value
         //!   to keep that circuit from reacting.  Set it at ~100
-        //! TODO Check this number with Rafa
         if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
             SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, __above_noise_threshold );
             if ( _mpx3gui->getConfig()->getColourMode() ) {
@@ -826,12 +825,8 @@ void ThlScan::EqualizationScan() {
             _equalisation->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[di]), false, _testPulses);
         }
 
-        // While equalizing one threshold the other should be set at a very high value
-        //   to keep that circuit from reacting.  Set it at ~100
-        //qDebug() << "presettings : " << (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5-1].bits)/4 << ", " <<  (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7-1].bits)/4 << endl;
-        //qDebug() << "              " << MPX3RX_DAC_THRESH_5 << ", " << MPX3RX_DAC_THRESH_7 << endl;
-        //qDebug() << " trigger ---> " << _mpx3gui->getConfig()->getTriggerLength();
-
+        //! While equalizing one threshold the other should be set at a high value
+        //!   to keep that circuit from reacting.  Set it at ~100
         if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
             SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, __above_noise_threshold );
             if ( _mpx3gui->getConfig()->getColourMode() ) {

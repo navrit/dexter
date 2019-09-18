@@ -790,9 +790,11 @@ void QCstmEqualization::StartEqualization() {
         titleInit += " optimization ...";
         AppendToTextBrowser( titleInit );
 
-        //! Print useful equalisation informationto console, useful for analysis later
-        qDebug() << "[INFO]\tEqualisation algorithm =" << _ui->equalizationTypeCombo->currentText();
-        qDebug() << "[INFO]\tEqualisation THL/THH choice =" << _ui->equalizationTHLTHHCombo->currentText();
+        //! Print useful equalisation information to console, useful for analysis later
+        qDebug() << "[INFO] [Equalisation]\talgorithm =" << _ui->equalizationTypeCombo->currentText();
+        qDebug() << "[INFO]  [Equalisation]\tTHL/THH choice =" << _ui->equalizationTHLTHHCombo->currentText();
+
+        qDebug() << "[INFO] [Equalisation]\tTurn CSM ON for THH =" << _turn_on_CSM_for_THH;
 
         // CONFIG for all involved chips
         for ( ulong i = 0 ; i < chipListSize ; i++ ) {
@@ -800,7 +802,7 @@ void QCstmEqualization::StartEqualization() {
             _steeringInfo[i]->globalAdj = 0;
             _steeringInfo[i]->currentDAC_DISC_OptValue = int(DAC_DISC_1_value); // for now make the opt value equal to the test value
             //! Default = 100 for noise (SLGM)
-            qDebug() << "[INFO]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
+            qDebug() << "[INFO] [Equalisation]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
 
         temporarilyOverrideUserChosenSpacing();
@@ -816,7 +818,7 @@ void QCstmEqualization::StartEqualization() {
             // New text value
             _steeringInfo[i]->currentDAC_DISC_OptValue = int(DAC_DISC_2_value); // for now make the opt value equal to the test value
             //! Default = 150 for noise (SLGM)
-            qDebug() << "[INFO]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
+            qDebug() << "[INFO] [Equalisation]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
 
         // And go for next scan
@@ -906,7 +908,7 @@ void QCstmEqualization::StartEqualization() {
                 DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
             }
         } else {
-            qDebug() << "[INFO]\tSkipping test pulse scans";
+            qDebug() << "[INFO] [Equalisation]\tSkipping test pulse scans";
         }
 
         // If fast equalization, skip fine tuning, same for all chips
@@ -1760,7 +1762,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! True  : Holes collection (positive polarity)
     //! False : Electron collection (negative polarity)
     spidrcontrol->setPolarity( _deviceIndex, config->getPolarity() );
-    qDebug() << "[Equalisation]\tPolarity = " << config->getPolarity() << "\tTrue = + False = -";
+    qDebug() << "[INFO] [Equalisation]\tPolarity = " << config->getPolarity() << "\tTrue = + False = -";
 
     //! ------------------------------------------------------------------------
     //! OMR bit for Equalization
@@ -1773,16 +1775,15 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //    //! False : default
     //    //! True  : if doing a test pulse based equalisation
     //    spidrcontrol->setInternalTestPulse( devId, testPulseMode );
-    //    qDebug() << "[Equalisation]\tSPIDR Internal Test pulses = " << testPulseMode;
+    //    qDebug() << "[INFO] [Equalisation]\tSPIDR Internal Test pulses = " << testPulseMode;
 
     //! ------------------------------------------------------------------------
     //! OMR bit
     //! Use colour mode depending on GUI
     //! True  : Colour mode
     //! False : Fine pitch (FPM)
-    //! Always set it to FPM
     spidrcontrol->setColourMode( devId, config->getColourMode() );
-    qDebug() << "[Equalisation]\tColour mode = " << config->getColourMode();
+    qDebug() << "[INFO] [Equalisation]\tColour mode = " << config->getColourMode();
 
     //! ------------------------------------------------------------------------
 
@@ -1805,7 +1806,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
     spidrcontrol->setGainMode( devId, gainMode ); //! SLGM for equalisation
     //! ALWAYS for noise equalisations
-    qDebug() << "[Equalisation]\tGain mode = " << gainMode << "\tAlways 3 (SLGM) for noise based equalisations";
+    qDebug() << "[INFO] [Equalisation]\tGain mode = " << gainMode << "\tAlways 3 (SLGM) for noise based equalisations";
 
     //! Important defaults
     spidrcontrol->setPixelDepth( devId, 12 );
@@ -1817,10 +1818,10 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! When equalizing the high thresholds
     if ( THx == MPX3RX_DAC_THRESH_1 || THx == MPX3RX_DAC_THRESH_3 || THx == MPX3RX_DAC_THRESH_5 || THx == MPX3RX_DAC_THRESH_7 ) {
         spidrcontrol->setDiscCsmSpm( devId, 1 );		//! Use DiscH
-        qDebug() << "[Equalisation]\tDisc_Csm_Spm = " << "DiscH";
+        qDebug() << "[INFO] [Equalisation]\tDisc_Csm_Spm = " << "DiscH";
     } else {
         spidrcontrol->setDiscCsmSpm( devId, 0 );		//! Use DiscL
-        qDebug() << "[Equalisation]\tDisc_Csm_Spm = " << "DiscL";
+        qDebug() << "[INFO] [Equalisation]\tDisc_Csm_Spm = " << "DiscL";
     }
 
     //! -------------------------------------------------------------------------
