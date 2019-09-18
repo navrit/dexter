@@ -976,7 +976,8 @@ void ThlScan::EqualizationScan() {
                         emit UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
 
                         // Report to graph
-                        for ( ulong devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
+                        const ulong workChipsSize = _workChipsIndx.size();
+                        for ( ulong devId = 0; devId < workChipsSize; devId++ ) {
                             if ( !_blindScan ) emit UpdateChartSignal(int(_workChipsIndx[devId]), _setId, _thlItr);
                         }
 
