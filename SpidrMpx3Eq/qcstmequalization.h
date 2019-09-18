@@ -30,7 +30,7 @@ using namespace std;
 
 #define __default_step_scan		1
 #define __DAC_Disc_Optimization_step    2
-#define __above_noise_threshold 511      //! This is for an equalised chip, should be valid for all gain modes
+#define __above_noise_threshold 256      //! This is for an equalised chip, should be valid for all gain modes
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
 
