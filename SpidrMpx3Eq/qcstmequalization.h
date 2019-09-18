@@ -322,6 +322,8 @@ private:
     void estimateEqualisationTarget();
 
     int _firstMinScanTHL; //! Set at the beginning of StartEqualisation
+
+    bool _turn_on_CSM_for_THH = false;
     // -------------------------------------------------------------------------
 
     QStringList files = {};

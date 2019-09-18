@@ -794,6 +794,11 @@ void QCstmEqualization::StartEqualization() {
         qDebug() << "[INFO] [Equalisation]\talgorithm =" << _ui->equalizationTypeCombo->currentText();
         qDebug() << "[INFO]  [Equalisation]\tTHL/THH choice =" << _ui->equalizationTHLTHHCombo->currentText();
 
+        if (bool(_mpx3gui->getConfig()->getCsmSpm()) &&
+                _equalisationCombination == __THLandTHH ) {
+
+            _turn_on_CSM_for_THH = true;
+        }
         qDebug() << "[INFO] [Equalisation]\tTurn CSM ON for THH =" << _turn_on_CSM_for_THH;
 
         // CONFIG for all involved chips
@@ -1787,13 +1792,6 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
     //! ------------------------------------------------------------------------
 
-    //! OMR bit
-    //! 0 : Single pixel mode
-    //! 1 : Charge summing mode
-    spidrcontrol->setCsmSpm( devId, config->getCsmSpm() );
-
-    qDebug() << "[Equalisation]\tCsm_Spm = " << config->getCsmSpm();
-
     //! Set gainMode based on if this is a test pulse scan or noise
     if (testPulseMode) {
         gainMode = config->getGainMode();
@@ -1823,6 +1821,26 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
         spidrcontrol->setDiscCsmSpm( devId, 0 );		//! Use DiscL
         qDebug() << "[INFO] [Equalisation]\tDisc_Csm_Spm = " << "DiscL";
     }
+
+    bool TH_even = bool( _steeringInfo[0]->currentDAC_DISC_String == "DAC_DISC_L" );
+
+    if ( _turn_on_CSM_for_THH ) {
+        if (TH_even) {
+            qDebug() << "[INFO] [Equalisation]\tTurning CSM off for THL, turning on again when equalising THH";
+            _mpx3gui->getConfig()->setCsmSpm(false);
+            _mpx3gui->getConfig()->setReadBothCounters(false);
+        } else {
+            qDebug() << "[INFO] [Equalisation]\tTurning CSM on for THH";
+            _mpx3gui->getConfig()->setCsmSpm(true);
+            _mpx3gui->getConfig()->setReadBothCounters(false);
+        }
+    }
+
+    //! OMR bit
+    //! 0 : Single pixel mode
+    //! 1 : Charge summing mode
+    spidrcontrol->setCsmSpm( devId, config->getCsmSpm() );
+    qDebug() << "[INFO] [Equalisation]\tCsm_Spm = " << config->getCsmSpm();
 
     //! -------------------------------------------------------------------------
     // Trigger config
