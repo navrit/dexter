@@ -55,15 +55,15 @@ class TcpServer;
 class hdmiConfig;
 
 // Change me when adding extra views
-#define __visualization_page_Id     0
-#define __configuration_page_Id     1
-#define __dacs_page_Id              2
-#define __equalisation_page_Id      3
-#define __scans_page_Id             4
-#define __ct_page_Id                5
-#define __stepperMotor_page_Id      6
-#define __thresholdScan_page_Id     7
-#define __hdmi_config_page_Id       8
+const static int __visualization_page_Id = 0;
+const static int __configuration_page_Id = 1;
+const static int __dacs_page_Id = 2;
+const static int __equalisation_page_Id = 3;
+const static int __scans_page_Id = 4;
+const static int __ct_page_Id = 5;
+const static int __stepperMotor_page_Id = 6;
+const static int __thresholdScan_page_Id = 7;
+const static int __hdmi_config_page_Id = 8;
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"
