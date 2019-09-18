@@ -905,25 +905,23 @@ void QCstmEqualization::StartEqualization() {
                 _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
                 DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
             }
-
-            // If fast equalization, skip fine tuning, same for all chips
-            if ( _steeringInfo[0]->equalizationType == __NoiseCentroidFAST ||
-                _steeringInfo[0]->equalizationType == __NoiseEdgeFAST ) {
-
-                // Go directly to next scan
-                // Go to next step, except for fine tuning where I use the same previous scan
-                _stepDone[_eqStatus] = true;
-                _eqStatus++;
-                StartEqualization( );
-
-            } else {
-                AppendToTextBrowser("3) Fine tuning ...");
-
-                // 5) Attempt fine tuning
-                FineTuning( );
-            }
         } else {
             qDebug() << "[INFO]\tSkipping test pulse scans";
+        }
+
+        // If fast equalization, skip fine tuning, same for all chips
+        if ( _steeringInfo[0]->equalizationType == __NoiseCentroidFAST ||
+             _steeringInfo[0]->equalizationType == __NoiseEdgeFAST ) {
+
+            // Go directly to next scan
+            // Go to next step, except for fine tuning where I use the same previous scan
+            _stepDone[_eqStatus] = true;
+            _eqStatus++;
+            StartEqualization( );
+
+        } else {
+            AppendToTextBrowser("3) Fine tuning ...");
+            FineTuning(); // 5) Attempt fine tuning
         }
 
     } else if ( EQ_NEXT_STEP( __FineTuning ) ) {
