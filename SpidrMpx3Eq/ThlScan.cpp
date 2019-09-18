@@ -923,6 +923,15 @@ void ThlScan::EqualizationScan() {
                 const ulong workChipsSize = _workChipsIndx.size();
                 for ( ulong devId = 0; devId < workChipsSize; devId++ ) {
                     SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
+                    if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
+                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
+                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
+                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
+                    } else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
+                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
+                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
+                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
+                    }
                 }
 
                 // flush the history of good/bad frames
