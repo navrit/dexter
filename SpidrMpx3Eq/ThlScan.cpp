@@ -434,7 +434,8 @@ void ThlScan::FineTuning() {
                     // ---------------------------------------------------------
 
                     // Set the threshold on all chips
-                    for ( unsigned long devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
+                    const ulong workChipsSize = _workChipsIndx.size();
+                    for ( ulong devId = 0; devId < workChipsSize; devId++ ) {
                         SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
                         if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
                             SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
@@ -544,7 +545,8 @@ void ThlScan::FineTuning() {
         SelectBestAdjFromHistory( 10 );
 
         //! Send the new configuration to the chip
-        for (ulong chip = 0; chip < _workChipsIndx.size(); chip++ ) {
+        const ulong workChipsSize = _workChipsIndx.size();
+        for (ulong chip = 0; chip < workChipsSize; chip++ ) {
             _equalisation->SetAllAdjustmentBits(spidrcontrol, int(_workChipsIndx[chip]), false, false);
             spidrcontrol->setInternalTestPulse(int(chip), false);
         }
@@ -918,7 +920,8 @@ void ThlScan::EqualizationScan() {
                 disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
                 // Set the threshold on all chips
-                for ( ulong devId = 0; devId < _workChipsIndx.size(); devId++ ) {
+                const ulong workChipsSize = _workChipsIndx.size();
+                for ( ulong devId = 0; devId < workChipsSize; devId++ ) {
                     SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
                 }
 
