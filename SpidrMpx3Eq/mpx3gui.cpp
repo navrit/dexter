@@ -184,6 +184,11 @@ void Mpx3GUI::resize(int x, int y) {
     emit sizeChanged(int(bbox.width() * x), int(bbox.height() * y)); // goes to qcstmglplot
 }
 
+/**
+ * @brief Assumes that the int* data in in the circular buffer, so you can take and keep it briefly
+ * @param data
+ * @param layer
+ */
 void Mpx3GUI::addLayer(int * data, int layer) {
 
     if (integrate == 1) {

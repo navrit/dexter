@@ -1862,19 +1862,37 @@ void Dataset::setLayer(int *data, int threshold) {
     }
 }
 
-// This function receives negative values from upstream only with colour mode and double counter on
+/**
+ * @brief This function receives negative values from upstream only with colour mode and double counter on
+ * @param data
+ * @param threshold
+ */
 void Dataset::addLayer(int *data, int threshold) {
     if (m_thresholdsToIndices.contains(threshold)) {
         int layerIndex = m_thresholdsToIndices[threshold];
+        assert(layerIndex >= 0);
+        assert(m_layers[layerIndex] != nullptr);
         int *curr = m_layers[layerIndex];
+        if (*curr < 0) {
+            qDebug() << "[WARN]\t*curr " << *curr << " curr =" << curr;
+        }
         int n = m_nFrames*m_nx*m_ny;
-        int* temp = data;
+        int negValues = -1;
         while (n--) {
-            *(temp++) += *(curr++);
+            *(data++) += *(curr++);
+            if (((*(data) < 0)) || (*(curr) < 0)) {
+               negValues += 1;
+            }
         }
         m_layers[layerIndex] = data;
+        if (negValues > 0) {
+            qDebug() << ">>> th" << threshold << " | negValues =" << negValues;
+        }
     } else {
         setNewLayer(threshold, data);
+        //qDebug() << ">>> setNewLayer th =" << threshold << " | m_thresholdsToIndices =" << m_thresholdsToIndices;
+    }
+}
     }
 }
 

@@ -196,6 +196,10 @@ void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data
 
   int pixel_index_input_data = 0, pixel_index_colour = 0, pixel_cluster_index_i = 0, pixel_cluster_index_j = 0;
 
+//  int th01_moreThan0 = 0;
+//  int th23_moreThan0 = 0;
+//  int th45_moreThan0 = 0;
+//  int th67_moreThan0 = 0;
 
   for (int j = 0; j < __matrix_size_y; j += 2) {
 
@@ -217,9 +221,40 @@ void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data
       _colourdata[4 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + 1 + __matrix_size_x]; // P3 // TH4 !
       _colourdata[6 + threshold_offset][pixel_index_colour] = data[pixel_index_input_data + 1]; // P4 // TH6 !
 
+
+      // These all pass with 12 bit, integration on, colour mode, single and double counter...
+      assert(_colourdata[0 + threshold_offset][pixel_index_colour] >= 0);
+      assert(_colourdata[2 + threshold_offset][pixel_index_colour] >= 0);
+      assert(_colourdata[4 + threshold_offset][pixel_index_colour] >= 0);
+      assert(_colourdata[6 + threshold_offset][pixel_index_colour] >= 0);
+
+      // Only for 12 bit mode
+//      assert(_colourdata[0 + threshold_offset][pixel_index_colour] < 4096);
+//      assert(_colourdata[2 + threshold_offset][pixel_index_colour] < 4096);
+//      assert(_colourdata[4 + threshold_offset][pixel_index_colour] < 4096);
+//      assert(_colourdata[6 + threshold_offset][pixel_index_colour] < 4096);
+      // -------------------------------------------------------------------------------------
+
+
+
+//      if (data[pixel_index_input_data + __matrix_size_x] > 0) {
+//          th01_moreThan0 += 1;
+//      }
+//      if (data[pixel_index_input_data] > 0) {
+//          th23_moreThan0 += 1;
+//      }
+//      if (data[pixel_index_input_data + 1 + __matrix_size_x] > 0) {
+//          th45_moreThan0 += 1;
+//      }
+//      if (data[pixel_index_input_data + 1] > 0) {
+//          th67_moreThan0 += 1;
+//      }
+
       pixel_cluster_index_i++;
     }
 
     pixel_cluster_index_j++;
   }
+
+//  qDebug() << "0/1 2/3 4/5 6/7 =" << th01_moreThan0 << th23_moreThan0 << th45_moreThan0 << th67_moreThan0;
 }
