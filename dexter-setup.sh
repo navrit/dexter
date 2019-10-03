@@ -4,7 +4,7 @@
 # Created: 2019-01-24
 
 function usage() {
-  printf '%s\n'   "Last modified: 2019-01-29"
+  printf '%s\n'   "Last modified: 2019-09-18"
   printf '\n%s' "Usage: "${0##*/}": [-m dev]"
   printf '\n%s'   "Purpose: Prepare a linux machine for using or development of Dexter"
 
@@ -61,13 +61,13 @@ function handle_mode_option() {
 function get_Qt_URL() {
   local OS=$(get_OS)
 
-  URL_Qt_5_12_0=https://download.qt.io/archive/qt/5.12/5.12.0/single/qt-everywhere-src-5.12.0.tar.xz
+  URL_Qt_5_13_1=https://download.qt.io/archive/qt/5.13/5.13.1/single/qt-everywhere-src-5.13.1.tar.xz
   URL_Qt_5_7_1=https://download.qt.io/archive/qt/5.7/5.7.1/single/qt-everywhere-opensource-src-5.7.1.tar.xz
 
   if [[ $OS == *"Fedora"* ]]; then
-    echo "$URL_Qt_5_12_0"
+    echo "$URL_Qt_5_13_1"
   elif [[ $OS == *"Ubuntu"* ]]; then
-    echo "$URL_Qt_5_12_0"
+    echo "$URL_Qt_5_13_1"
   elif [[ $OS == *"CentOS"* ]] || [[ $OS == *"Red Hat Enterprise Linux"* ]]; then
     echo "$URL_Qt_5_7_1"
   elif [[ $OS == *"Debian"* ]]; then
@@ -82,13 +82,13 @@ function get_Qt_URL() {
 function get_Qt_file_string() {
   local OS=$(get_OS)
 
-  Qt5_12_0=qt-everywhere-src-5.12.0.tar.xz
+  Qt5_13_1=qt-everywhere-src-5.13.1.tar.xz
   Qt5_7_1=qt-everywhere-opensource-src-5.7.1.tar.xz
 
   if [[ $OS == *"Fedora"* ]]; then
-    echo "$Qt5_12_0"
+    echo "$Qt5_13_1"
   elif [[ $OS == *"Ubuntu"* ]]; then
-    echo "$Qt5_12_0"
+    echo "$Qt5_13_1"
   elif [[ $OS == *"CentOS"* ]] || [[ $OS == *"Red Hat Enterprise Linux"* ]]; then
     echo "$Qt5_7_1"
   elif [[ $OS == *"Debian"* ]]; then
@@ -102,7 +102,7 @@ function get_Qt_file_string() {
 
 function install_fedora_packages() {
   local OS=$1
-  echo "[INFO] Only confirmed for Fedora 29"
+  echo "[INFO] Only confirmed for Fedora 29 and 30"
   sudo dnf update
   sudo dnf install openblas-devel.x86_64 lapack.x86_64 gcc libusb-devel.x86_64 mesa-libGL-devel libtiff-devel.x86_64 dlib-devel.x86_64 boost-devel.x86_64 cppzmq-devel.x86_64 glib2-devel.x86_64 glibc-devel.x86_64 pulseaudio-libs-devel.x86_64 make gcc-c++ fontconfig-devel freetype-devel
 }
@@ -295,7 +295,7 @@ function configure_Qt_with_version() {
   version="$1"
   echo "Configuring for Qt $version"
 
-  if [[ $version == "5_12_0" ]]; then
+  if [[ $version == "5_13_1" ]]; then
     ./configure --recheck-all -static \
                 -prefix ~/$Qt_static_build_folder-static-build \
                 -opensource \
@@ -352,9 +352,9 @@ function configure_Qt() {
   # Skipping pretty much everything I think it's possible to get away with
 
   if [[ $OS == *"Fedora"* ]]; then
-    configure_Qt_with_version "5_12_0"
+    configure_Qt_with_version "5_13_1"
   elif [[ $OS == *"Ubuntu"* ]]; then
-    configure_Qt_with_version "5_12_0"
+    configure_Qt_with_version "5_13_1"
   elif [[ $OS == *"CentOS"* ]] || [[ $OS == *"Red Hat Enterprise Linux"* ]]; then
     configure_Qt_with_version "5_7_1"
   else
