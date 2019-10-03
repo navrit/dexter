@@ -240,13 +240,14 @@ void DataTakingThread::run() {
                         _consumer->copydata(fs, i, false);
                         _consumer->usedFrames->release();
                     }
-                    if (bothCounters)
+                    if (bothCounters) {
                         foreach (int i, activeDevices) {
                             // retreive data for a given chip
                             _consumer->freeFrames->acquire();
                             _consumer->copydata(fs, i, true);
                             _consumer->usedFrames->release();
                         }
+                    }
                     nFramesKept++;
 
                     _consumer->consume();
