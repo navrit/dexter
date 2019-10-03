@@ -132,7 +132,7 @@ public:
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
-    void addLayer(int * data, int layer);
+    void addLayer(int *data, int layer);
 
     Gradient* getGradient(int index);
     void resize(int x, int y);
@@ -142,7 +142,7 @@ public:
 
     QPoint  getSize();
     void getSize(int *x, int *y);
-    int getMode(){return mode;}
+    int getMode(){return integrate;}
     int getX();
     int getY();
     int getPixelAt(int x, int y, int layer);
@@ -231,7 +231,7 @@ public slots:
 
 private:
     bool _loadingBeforeConnecting = false;
-    EnergyCalibrator *_energyCalibrator;
+    EnergyCalibrator *_energyCalibrator = nullptr;
     // ML605 layout
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
     //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
@@ -244,18 +244,18 @@ private:
     TcpServer *dataServer = nullptr;
     CommandHandlerWrapper *commandHandlerWrapper = nullptr;
 
-    int mode = 0; //! Summing/integral or 'normal' mode
-    Ui::Mpx3GUI * _ui;
+    int integrate = 0; //! Summing/integral or 'normal' mode
+    Ui::Mpx3GUI * _ui = nullptr;
     QVector<QShortcut *> _shortcutsSwitchPages;
 
     Mpx3Config * config = nullptr;
-    Dataset * workingSet;
-    Dataset * originalSet;
+    Dataset * workingSet = nullptr;
+    Dataset * originalSet = nullptr;
 
     SpidrDaq * _spidrdaq = nullptr;
     bool _armedOk = true; //! It won't let the application go into the event loop if set to false
 
-    QVector<Gradient*>  gradients;
+    QVector<Gradient*>  gradients; //! Initialising this as {nullptr} is apparently bad for some signal connection
     void updateHistogram(int layer);
 
     QLabel m_statusBarMessageLabel;

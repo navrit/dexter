@@ -93,21 +93,26 @@ void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
 void FrameSet::copyTo32(int chipIndex, bool counterH, uint32_t *dest) {
     ChipFrame *f0 = frame[0][chipIndex];
     ChipFrame *f1 = frame[1][chipIndex];
-    if (f0 == nullptr)
-        return; // sorry, chip is not there
+    if (f0 == nullptr) {
+        return; // Sorry, chip is not there
+    }
     bool mode24 = f0->omr.getCountL() == 3;
     int n = MPX_PIXELS;
     if (mode24 && f1 != nullptr) {
         uint16_t *src0 = f0->getRow(0);
         uint16_t *src1 = f1->getRow(0);
-        while (n--) *(dest++) = (uint32_t(*(src1++)) << 12) | *(src0++) ;
+        while (n--) {
+            *(dest++) = (uint32_t(*(src1++)) << 12) | *(src0++) ;
+        }
     } else {
-        ChipFrame *f = counterH ? f1 : f0;
+        ChipFrame *f = counterH ? f1 : f0; // Choose which counter to copy using counterH
         if (f == nullptr) {
-            std::cerr << " missing ChipFrame" << std::endl;
+            std::cerr << " missing ChipFrame, not 24 bit mode\n";
         } else {
-            uint16_t *src = f->getRow(0);
-            while (n--) *(dest++) = *(src++);
+            uint16_t *src = f->getRow(0); // Gets the first row
+            while (n--) {
+                *(dest++) = *(src++);
+            }
         }
     }
 }

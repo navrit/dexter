@@ -62,26 +62,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     m_zmqController = new zmqController(this);
     m_zmqController->SetMpx3GUI(this);
 
-//    tcpServer = new TcpServer;
-//    if(!tcpServer->listen(QHostAddress::Any,6351))
-//    {
-//        qDebug()<< "Server can not be started...!";
-//        return;
-//    }
-//    commandHandlerWrapper = new CommandHandlerWrapper;
-//    connect(tcpServer,SIGNAL(dataReceived(QString)),commandHandlerWrapper,SLOT(on_dataReceived(QString)));
-//    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
-//    dataServer = new DataServer;
-
-//    if(!dataServer->listen(QHostAddress::Any,6352))
-//    {
-//        qDebug()<< "Data Server can not be started...!";
-//        return;
-//    }
-
-    //connect(tcpServer,SIGNAL(requestAnotherServer(int)),dataServer,SLOT(on_requestAnotherServer(int)));
-
-
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.
     auto ds = getDataset();
@@ -143,7 +123,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // CT
     _ui->ctTab->SetMpx3GUI( this );
-
     // Threshold scan
     _ui->THScan->SetMpx3GUI( this );
 
@@ -179,59 +158,13 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+8", "Switch to Stepper Motor Control") ), this)  );
 
-    // Make Dexter somewhat scriptable via the GUI
-
-    // Connections to Visualisation
-    QShortcut *shortcutStart = new QShortcut(QKeySequence("s"), this);
-    connect(shortcutStart, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutStart()));
-    QShortcut *shortcutIntegrate = new QShortcut(QKeySequence("i"), this);
-    connect(shortcutIntegrate, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrate()));
-    QShortcut *shortcutIntegrateToggle = new QShortcut(QKeySequence("Alt+i"), this);
-    connect(shortcutIntegrateToggle, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrateToggle()));
-    QShortcut *shortcutFrameLength = new QShortcut(QKeySequence("l"), this);
-    connect(shortcutFrameLength, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameLength()));
-    QShortcut *shortcutFrameNumber = new QShortcut(QKeySequence("f"), this);
-    connect(shortcutFrameNumber, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameNumber()));
-
-    // Connections to Configuration and settings
-    QShortcut *shortcutGainModeSLGM = new QShortcut(QKeySequence("g, 4"), this);
-    connect(shortcutGainModeSLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSLGM()));
-    QShortcut *shortcutGainModeLGM = new QShortcut(QKeySequence("g, 3"), this);
-    connect(shortcutGainModeLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeLGM()));
-    QShortcut *shortcutGainModeHGM = new QShortcut(QKeySequence("g, 2"), this);
-    connect(shortcutGainModeHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeHGM()));
-    QShortcut *shortcutGainModeSHGM = new QShortcut(QKeySequence("g, 1"), this);
-    connect(shortcutGainModeSHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSHGM()));
-
-    QShortcut *shortcutCSMOff = new QShortcut(QKeySequence("c, 0"), this);
-    connect(shortcutCSMOff, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOff()));
-    QShortcut *shortcutCSMOn = new QShortcut(QKeySequence("c, 1"), this);
-    connect(shortcutCSMOn, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOn()));
-
-    // Connections to DACs
-    QShortcut *shortcutTH0 = new QShortcut(QKeySequence("t, 0"), this);
-    connect(shortcutTH0, SIGNAL(activated()), _ui->DACsWidget, SLOT(shortcutTH0()));
-    QShortcut *shortcutIkrum = new QShortcut(QKeySequence("Ctrl+D, i"), this);
-    connect(shortcutIkrum, SIGNAL(activated()), _ui->DACsWidget, SLOT(shortcutIkrum()));
-
-    // Signals and slots for this part
     SetupSignalsAndSlots();
-    //emit frame_added();
 
-    /////////////////////////////////////////////////////////
-    // statusBarMessage
-
-    // I use a QLabel to be able to use rich text inside
     m_statusBarMessageLabel.setTextFormat( Qt::RichText );
-
-    //QRect sgeo = _ui->statusBar->geometry();
-    //m_statusBarMessageLabel.setGeometry(sgeo);
 
     // Add the QLabel permanently to the statusBar
     _ui->statusBar->addPermanentWidget( &m_statusBarMessageLabel, 0 );
 
-    //_ui->statusBar->set
-    //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
 
     initialiseServers();
@@ -242,12 +175,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QTimer::singleShot(0, this, SLOT(autoConnectToDetector()));
 }
 
-Mpx3GUI::~Mpx3GUI()
-{
-    delete config;
-    delete workingSet;
-    delete originalSet;
-    delete _ui;
+Mpx3GUI::~Mpx3GUI() {
 }
 
 void Mpx3GUI::resize(int x, int y) {
@@ -258,9 +186,9 @@ void Mpx3GUI::resize(int x, int y) {
 
 void Mpx3GUI::addLayer(int * data, int layer) {
 
-    if (mode == 1) { //! Summing/integral
+    if (integrate == 1) {
         getDataset()->addLayer(data, layer);
-    } else { //! Not summing, normal mode
+    } else {
         getDataset()->setLayer(data, layer);
     }
 }
@@ -451,6 +379,43 @@ void Mpx3GUI::SetupSignalsAndSlots(){
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,
                  this, &Mpx3GUI::on_shortcutsSwitchPages );
     }
+
+
+
+    // Make Dexter somewhat scriptable via the GUI
+
+    // Connections to Visualisation
+    QShortcut *shortcutStart = new QShortcut(QKeySequence("s"), this);
+    connect(shortcutStart, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutStart()));
+    QShortcut *shortcutIntegrate = new QShortcut(QKeySequence("i"), this);
+    connect(shortcutIntegrate, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrate()));
+    QShortcut *shortcutIntegrateToggle = new QShortcut(QKeySequence("Alt+i"), this);
+    connect(shortcutIntegrateToggle, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrateToggle()));
+    QShortcut *shortcutFrameLength = new QShortcut(QKeySequence("l"), this);
+    connect(shortcutFrameLength, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameLength()));
+    QShortcut *shortcutFrameNumber = new QShortcut(QKeySequence("f"), this);
+    connect(shortcutFrameNumber, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameNumber()));
+
+    // Connections to Configuration and settings
+    QShortcut *shortcutGainModeSLGM = new QShortcut(QKeySequence("g, 4"), this);
+    connect(shortcutGainModeSLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSLGM()));
+    QShortcut *shortcutGainModeLGM = new QShortcut(QKeySequence("g, 3"), this);
+    connect(shortcutGainModeLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeLGM()));
+    QShortcut *shortcutGainModeHGM = new QShortcut(QKeySequence("g, 2"), this);
+    connect(shortcutGainModeHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeHGM()));
+    QShortcut *shortcutGainModeSHGM = new QShortcut(QKeySequence("g, 1"), this);
+    connect(shortcutGainModeSHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSHGM()));
+
+    QShortcut *shortcutCSMOff = new QShortcut(QKeySequence("c, 0"), this);
+    connect(shortcutCSMOff, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOff()));
+    QShortcut *shortcutCSMOn = new QShortcut(QKeySequence("c, 1"), this);
+    connect(shortcutCSMOn, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOn()));
+
+    // Connections to DACs
+    QShortcut *shortcutTH0 = new QShortcut(QKeySequence("t, 0"), this);
+    connect(shortcutTH0, SIGNAL(activated()), _ui->DACsWidget, SLOT(shortcutTH0()));
+    QShortcut *shortcutIkrum = new QShortcut(QKeySequence("Ctrl+D, i"), this);
+    connect(shortcutIkrum, SIGNAL(activated()), _ui->DACsWidget, SLOT(shortcutIkrum()));
 
 }
 
@@ -1394,15 +1359,15 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
 }
 
 void Mpx3GUI::set_mode_integral(){
-    if(mode != 1){
-        mode = 1;
+    if(integrate != 1){
+        integrate = 1;
         emit summing_set(true);
     }
 }
 
 void Mpx3GUI::set_mode_normal(){
-    if(0 != mode){
-        mode = 0;
+    if(integrate != 0){
+        integrate = 0;
         emit summing_set(false);
     }
 }

@@ -112,7 +112,7 @@ private:
     int m_nFrames; //!< The amount of chips, a.k.a. frames here.
     score_info m_scores; //!< some 'score' info about this frame. A bunch of counters.
 
-    QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
+    QVector<QPoint> m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
     QVector<int> m_frameOrientation;//!<The orientation of the detectors. see the enum.
 
     QMap <int, int> m_thresholdsToIndices;//!<Translate threshold values to indices in the vectors.

@@ -1826,7 +1826,6 @@ void Dataset::setPixel(int x, int y, int threshold, int val) {
     QPoint coordinate = getNaturalCoordinates(QPoint(x,y), frameIndex);
     // set the value
     frame[coordinate.y()*m_nx+coordinate.x()] = val;
-
 }
 
 int Dataset::sampleFrameAt(int index, int layer, int x, int y){
@@ -1863,6 +1862,7 @@ void Dataset::setLayer(int *data, int threshold) {
     }
 }
 
+// This function receives negative values from upstream only with colour mode and double counter on
 void Dataset::addLayer(int *data, int threshold) {
     if (m_thresholdsToIndices.contains(threshold)) {
         int layerIndex = m_thresholdsToIndices[threshold];

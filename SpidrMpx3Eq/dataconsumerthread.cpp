@@ -35,15 +35,14 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     freeFrames = new QSemaphore( _nFramesBuffer * _nChips ); // nChips per frame
     usedFrames = new QSemaphore;
 
-    // When working in color mode.
-    // The user might select ColorMode in the middle of an operation.
+    // When working in colour mode.
+    // The user might select ColourMode in the middle of an operation.
     // Allocating the data just in case.
     _colourdata = new int*[ __max_colours ]; // 8 thresholds(colors)
     for (int i = 0 ; i < __max_colours ; i++) {
         _colourdata[i] = new int[ __matrix_size_colour * _nChips ];
         memset(_colourdata[i], 0, (sizeof(int) * __matrix_size_colour * _nChips ));
     }
-
 }
 
 DataConsumerThread::~DataConsumerThread() {
@@ -80,15 +79,11 @@ void DataConsumerThread::consume()
 
         connect( this, &DataConsumerThread::bufferOccupancySig,
                  _mpx3gui->getVisualization(),
-                 &QCstmGLVisualization::bufferOccupancySlot
-                 );
+                 &QCstmGLVisualization::bufferOccupancySlot);
         connect ( this, &DataConsumerThread::doneWithOneFrame,
                   _mpx3gui->getVisualization(),
                   &QCstmGLVisualization::consumerFinishedOneFrame,
-                  Qt::DirectConnection
-                  // needs to finish before dataset is overwritten (#266)
-                  // see also #244
-                  );
+                  Qt::DirectConnection);
 
         // Start !
         start( HighestPriority );
@@ -117,8 +112,8 @@ void DataConsumerThread::copydata(FrameSet * source, int chipIndex, bool counter
 
 void DataConsumerThread::run()
 {
-    int bothCountersMod = 1;
-    int delvrCounters = 1;
+    int bothCountersMode = 1;
+    uint colourIncrement = 1;
 
     forever {
 
@@ -132,21 +127,19 @@ void DataConsumerThread::run()
 
             // Check single or both counters
             if ( _bothCounters ) {
-                bothCountersMod = 2;
-                delvrCounters = 1; // do all of them (8)
+                bothCountersMode = 2;
+                colourIncrement = 1; // do all of them (8)
             } else {
-                bothCountersMod = 1;
-                delvrCounters = 2; // do 0,2,4,6
+                bothCountersMode = 1;
+                colourIncrement = 2; // do 0, 2, 4, 6
             }
 
-            /////////////////
-            // Colour Mode //
+            //! Colour mode - spectroscopic mode
             if ( _mpx3gui->getConfig()->getColourMode() ) {
 
                 if ( _bothCounters ) {
 
                     for ( int i = 0 ; i < bothCountersMod ; i++ ) {
-                        // SeparateThresholds -> I can do it on a chip per chip basis
 
                         for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                             usedFrames->acquire();
@@ -155,11 +148,9 @@ void DataConsumerThread::run()
                                                ci);
                             freeFrames->release();
                         }
-                        // Move the reading descriptor
                         inc(readdescriptor, _bufferSizeOneFrame);
                     }
                 } else {
-                    // SeparateThresholds -> I can do it on a chip per chip basis
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                         usedFrames->acquire();
                         SeparateThresholds(0,
@@ -167,7 +158,6 @@ void DataConsumerThread::run()
                                            ci);
                         freeFrames->release();
                     }
-                    // Move the reading descriptor
                     inc(readdescriptor, _bufferSizeOneFrame);
                 }
 
@@ -177,9 +167,7 @@ void DataConsumerThread::run()
                         _mpx3gui->addLayer( _colourdata[i], i );
                     }
                 }
-
-                /////////////
-                // FP Mode //
+            //! FPM - Fine Pitch Mode
             } else {
 
                 // Send the info -> use the Semaphores (here's where I use the share resource)
@@ -194,28 +182,18 @@ void DataConsumerThread::run()
                     // Then I can release
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) freeFrames->release();
                 }
-
             }
 
-            // Fraction
-            emit bufferOccupancySig( (int)(100*(usedFrames->available()/ (double)(_semaphoreSize) ) ) );
-
+            emit bufferOccupancySig( int((100*(usedFrames->available()/ double((_semaphoreSize))))));
             emit doneWithOneFrame( _frameId++ );
-
             if ( _stop ) break;
         }
 
-
-        //qDebug() << "   --- lock DataConsumerThread";
         _mutex.lock();
-        if (!_restart)
-            _condition.wait(&_mutex);
+        if (!_restart) _condition.wait(&_mutex);
         _restart = false;
         _mutex.unlock();
-        //qDebug() << "   +++ unlock DataConsumerThread";
-
     }
-
 }
 
 void DataConsumerThread::dataTakingSaysIFinished()

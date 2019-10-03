@@ -247,10 +247,8 @@ void DataTakingThread::run() {
                             _consumer->copydata(fs, i, true);
                             _consumer->usedFrames->release();
                         }
-                    // Keep a track of frames actually kept
                     nFramesKept++;
 
-                    // Awake the consumer thread
                     _consumer->consume();
                 }
 
