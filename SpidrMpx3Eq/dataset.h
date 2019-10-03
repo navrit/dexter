@@ -116,8 +116,8 @@ private:
     QVector<int> m_frameOrientation;//!<The orientation of the detectors. see the enum.
 
     QMap <int, int> m_thresholdsToIndices;//!<Translate threshold values to indices in the vectors.
-    QVector<int*>  m_layers;    //!< [Chip, layer(threshold)] Actual data, one pointer per threshold.
-    Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
+    QVector<int*> m_layers;    //!< [Chip, layer(threshold)] Actual data, one pointer per threshold.
+    Dataset *obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
     bool corrected; //!indicates whether or not an image has been corrected.
     void rewindScores();
     Canvas createCorrectedImage(int threshold, bool spatialOnly = false);
@@ -190,8 +190,9 @@ public:
     void clear();//!< Removes all data
     void resize(int nx, int ny, bool connected=true);//!< Changes the size of each chip. Also calls clear().
     void setFramesPerLayer(int newFrameCount); //!<Sets the amount of chips. New Chips get initialized with location (0,0) and a LtRTtB orientation.
-    void setLayer(int *data, int threshold);//!<Overwrites a specific layer with the values pointed to by data.
-    void addLayer(int* data, int threshold);//!<Adds the values pointed to by data to the specified layer.
+
+    void setLayer(int *data, int threshold); //!<Overwrites a specific layer with the values pointed to by data.
+    void addLayer(int *data, int threshold); //!<Adds the values pointed to by data to the specified layer.
     void setFrame(FrameSet *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
     void setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
     void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)

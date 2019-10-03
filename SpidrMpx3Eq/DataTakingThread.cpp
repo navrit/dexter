@@ -265,22 +265,23 @@ void DataTakingThread::run() {
 
                 spidrdaq->resetLostCount();
 
-                if( false) {
-                    int externalCnt = 0;
-                    spidrcontrol->getExtShutterCounter(&externalCnt);
-                    //Debug() << "[Debug] ext count : " << externalCnt;
-                    emit scoring_sig(externalCnt,
-                                     nFramesKept,
-                                     lostFrames,                  //
-                                     lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-                                     spidrdaq->framesCount());
-                } else {
-                    emit scoring_sig(nFramesReceived,
-                                     nFramesKept,
-                                     lostFrames,                  //
-                                     lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-                                     spidrdaq->framesCount());
-                }
+                //! Lol Kia, nice one
+//                if (false) {
+//                    int externalCnt = 0;
+//                    spidrcontrol->getExtShutterCounter(&externalCnt);
+//                    //Debug() << "[Debug] ext count : " << externalCnt;
+//                    emit scoring_sig(externalCnt,
+//                                     nFramesKept,
+//                                     lostFrames,                  //
+//                                     lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+//                                     spidrdaq->framesCount());
+//                } else {
+                emit scoring_sig(nFramesReceived,
+                                 nFramesKept,
+                                 lostFrames,                  //
+                                 lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+                                 spidrdaq->framesCount());
+//                }
             }
         }
         if (daqRunning) {

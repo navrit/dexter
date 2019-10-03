@@ -32,13 +32,13 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     // The Semaphores
     // _nFramesBuffer is the number of resources
     _semaphoreSize = _nFramesBuffer * _nChips;
-    freeFrames = new QSemaphore( _nFramesBuffer * _nChips ); // nChips per frame
+    freeFrames = new QSemaphore( int(_nFramesBuffer * _nChips) ); // nChips per frame
     usedFrames = new QSemaphore;
 
     // When working in colour mode.
     // The user might select ColourMode in the middle of an operation.
     // Allocating the data just in case.
-    _colourdata = new int*[ __max_colours ]; // 8 thresholds(colors)
+    _colourdata = new int*[ __max_colours ]; // 8 thresholds (colours)
     for (int i = 0 ; i < __max_colours ; i++) {
         _colourdata[i] = new int[ __matrix_size_colour * _nChips ];
         memset(_colourdata[i], 0, (sizeof(int) * __matrix_size_colour * _nChips ));
@@ -103,11 +103,8 @@ void DataConsumerThread::inc(uint& var, uint increase) {
 
 void DataConsumerThread::copydata(FrameSet * source, int chipIndex, bool counterH)
 {
-
-    size_t num = 4 * 256 * 256;
     source->copyTo32(chipIndex, counterH, buffer + descriptor);
-
-    inc(descriptor, num/4);            // 4 bytes per integer
+    inc(descriptor, MPX_PIXEL_ROWS * MPX_PIXEL_COLUMNS);
 }
 
 void DataConsumerThread::run()
@@ -136,51 +133,28 @@ void DataConsumerThread::run()
 
             //! Colour mode - spectroscopic mode
             if ( _mpx3gui->getConfig()->getColourMode() ) {
-
-                if ( _bothCounters ) {
-
-                    for ( int i = 0 ; i < bothCountersMod ; i++ ) {
-
-                        for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
-                            usedFrames->acquire();
-                            SeparateThresholds(i,
-                                               buffer + readdescriptor,
-                                               ci);
-                            freeFrames->release();
-                        }
-                        inc(readdescriptor, _bufferSizeOneFrame);
-                    }
-                } else {
-                    for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
+                for (int i = 0; i < bothCountersMode; i++) {
+                    for (uint chip = 0; chip < _nChips; chip++) {
                         usedFrames->acquire();
-                        SeparateThresholds(0,
-                                           buffer + readdescriptor,
-                                           ci);
-                        freeFrames->release();
+                        SeparateThresholds(int(_bothCounters), buffer + readdescriptor, chip);  // The incoming numbers are correct at this point
+                    }
+                    for (int threshold = 0; threshold < __max_colours; threshold += colourIncrement) {
+                        _mpx3gui->addLayer(_colourdata[threshold], threshold); // This is wrong somehow
                     }
                     inc(readdescriptor, _bufferSizeOneFrame);
-                }
-
-                // Add the corresponding layers
-                if ( _colourdata != nullptr ) {
-                    for ( int i = 0 ; i < __max_colours ; i+= delvrCounters ) {
-                        _mpx3gui->addLayer( _colourdata[i], i );
-                    }
+//                    This only really happens in debugging mode it seems
+//                    if (descriptor != readdescriptor) {
+//                        qDebug() << ">>> descriptor != readdescriptor, diff=" << descriptor-readdescriptor;
+//                    }
+                    for (uint chip = 0; chip < _nChips; chip++) freeFrames->release();
                 }
             //! FPM - Fine Pitch Mode
             } else {
-
-                // Send the info -> use the Semaphores (here's where I use the share resource)
-                // Acquire and release for N chips
-                for ( int i = 0 ; i < bothCountersMod ; i++ ) {
-                    // I need the info for ALL the 4 chips acquired first
-                    for ( uint ci = 0 ; ci < _nChips ; ci++ ) usedFrames->acquire();
-                    // Now I can work on the layer
-                    _mpx3gui->addLayer(reinterpret_cast<int*>(buffer + readdescriptor), i );
-                    // Move the reading descriptor
+                for (int i = 0; i < bothCountersMode; i++) {
+                    for (uint ci = 0; ci < _nChips; ci++) usedFrames->acquire();
+                    _mpx3gui->addLayer(reinterpret_cast<int*>(buffer + readdescriptor), i);
                     inc(readdescriptor, _bufferSizeOneFrame);
-                    // Then I can release
-                    for ( uint ci = 0 ; ci < _nChips ; ci++ ) freeFrames->release();
+                    for (uint ci = 0; ci < _nChips; ci++) freeFrames->release();
                 }
             }
 
@@ -206,7 +180,7 @@ void DataConsumerThread::dataTakingSaysIFinished()
 }
 
 void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data,
-                                            int chip_offset) {
+                                            uint chip_offset) {
 
   // Layout of 110um pixel
   //  -------------   ---------------------

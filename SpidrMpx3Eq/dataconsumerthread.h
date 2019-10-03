@@ -22,7 +22,7 @@ public:
     void dataTakingSaysIFinished();
 
     void consume();
-    void SeparateThresholds(int threshold_offset, uint32_t *data, int chip_offset);
+    void SeparateThresholds(int threshold_offset, uint32_t *data, uint chip_offset);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 
     QSemaphore *freeFrames = nullptr;
@@ -62,8 +62,7 @@ private:
     uint32_t * buffer = nullptr;
     uint descriptor = 0;
     uint readdescriptor = 0;
-    int ** _colourdata = nullptr;
-
+    int ** _colourdata = {nullptr};
 };
 
 #endif // DATACONSUMERTHREAD_H
