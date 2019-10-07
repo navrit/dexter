@@ -190,8 +190,12 @@ void Mpx3GUI::resize(int x, int y) {
  * @param layer
  */
 void Mpx3GUI::addLayer(int * data, int layer) {
-        getDataset()->addLayer(data, layer);
     if (integrate) {
+        if (config->getColourMode()) {
+            getDataset()->addLayerColour(data, layer);
+        } else {
+            getDataset()->addLayer(data, layer);
+        }
     } else {
         getDataset()->setLayer(data, layer);
     }

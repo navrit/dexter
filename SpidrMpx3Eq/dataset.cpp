@@ -1857,7 +1857,10 @@ void Dataset::setFramesPerLayer(int newFrameCount){
 void Dataset::setLayer(int *data, int threshold) {
 
     if (m_thresholdsToIndices.contains(threshold)) {
-        m_layers[m_thresholdsToIndices[threshold]] = data;
+        int layerIndex = m_thresholdsToIndices[threshold];
+        assert(layerIndex >= 0);
+        assert(m_layers[layerIndex] != nullptr);
+        m_layers[layerIndex] = data;
     } else {
         setNewLayer(threshold, data);
     }
@@ -1876,26 +1879,58 @@ void Dataset::addLayer(int *data, int threshold) {
         assert(m_layers[layerIndex] != nullptr);
 
         int *curr = m_layers[layerIndex];
-        if (*curr < 0) {
-            qDebug() << "[WARN]\t*curr " << *curr << " curr =" << curr;
-        }
         int n = m_nFrames*m_nx*m_ny;
-        int negValues = -1;
+        int* temp = data;
+
         while (n--) {
-            *(data++) += *(curr++);
-            if (((*(data) < 0)) || (*(curr) < 0)) {
-               negValues += 1;
-            }
+            *(temp++) += *(curr++);
         }
         m_layers[layerIndex] = data;
-        if (negValues > 0) {
-            qDebug() << ">>> th" << threshold << " | negValues =" << negValues;
-        }
     } else {
         setNewLayer(threshold, data);
-        //qDebug() << ">>> setNewLayer th =" << threshold << " | m_thresholdsToIndices =" << m_thresholdsToIndices;
     }
 }
+
+/**
+ * @brief Adds to the dataset-owned array, if it's not yet there, it makes a copy of colour_data it gets
+ * @param colour_data
+ * @param threshold
+ */
+void Dataset::addLayerColour(int *colour_data, int threshold)
+{
+    // Calculate number of pixels to copy from the number of chips * x * y
+    size_t n = size_t(m_nFrames*m_nx*m_ny);
+
+    if (m_thresholdsToIndices.contains(threshold)) {
+
+        // Get layer index
+        int layerIndex = m_thresholdsToIndices[threshold];
+
+        // Get pointer to current threshold
+        int *curr = m_layers[layerIndex];
+        assert (curr != nullptr);
+        int nonZero = 0;
+
+        // Sum array contents using pointer arithmetic
+        while (n--) {
+            *(curr++) += *(colour_data++);
+            if (threshold == 0 && *(colour_data) > 0){
+                nonZero++;
+            }
+        }
+
+        if (nonZero > 0){
+            qDebug() << "nonZero, th0 =" << nonZero;
+        }
+
+    } else {
+
+        // Makes a copy of colour_data
+        int* temp = new int[n];
+        std::copy(colour_data, colour_data+n, temp);
+
+        // Sets the new layer to the copied colour_data
+        setNewLayer(threshold, temp);
     }
 }
 

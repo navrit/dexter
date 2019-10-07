@@ -136,13 +136,13 @@ void DataConsumerThread::run()
                 for (int i = 0; i < bothCountersMode; i++) {
                     for (uint chip = 0; chip < _nChips; chip++) {
                         usedFrames->acquire();
-                        SeparateThresholds(int(_bothCounters), buffer + readdescriptor, chip);  // The incoming numbers are correct at this point
-                    }
-                    for (int threshold = 0; threshold < __max_colours; threshold += colourIncrement) {
-                        _mpx3gui->addLayer(_colourdata[threshold], threshold); // This is wrong somehow
+                        SeparateThresholds(i, buffer + readdescriptor, chip); // The incoming numbers are correct at this point
                     }
                     inc(readdescriptor, _bufferSizeOneFrame);
                     for (uint chip = 0; chip < _nChips; chip++) freeFrames->release();
+                }
+                for (int threshold = 0; threshold < __max_colours; threshold++) {
+                    _mpx3gui->addLayer(_colourdata[threshold], threshold);
                 }
             //! FPM - Fine Pitch Mode
             } else {
