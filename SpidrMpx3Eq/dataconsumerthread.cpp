@@ -142,10 +142,6 @@ void DataConsumerThread::run()
                         _mpx3gui->addLayer(_colourdata[threshold], threshold); // This is wrong somehow
                     }
                     inc(readdescriptor, _bufferSizeOneFrame);
-//                    This only really happens in debugging mode it seems
-//                    if (descriptor != readdescriptor) {
-//                        qDebug() << ">>> descriptor != readdescriptor, diff=" << descriptor-readdescriptor;
-//                    }
                     for (uint chip = 0; chip < _nChips; chip++) freeFrames->release();
                 }
             //! FPM - Fine Pitch Mode
@@ -223,10 +219,12 @@ void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data
 
 
       // These all pass with 12 bit, integration on, colour mode, single and double counter...
-      assert(_colourdata[0 + threshold_offset][pixel_index_colour] >= 0);
-      assert(_colourdata[2 + threshold_offset][pixel_index_colour] >= 0);
-      assert(_colourdata[4 + threshold_offset][pixel_index_colour] >= 0);
-      assert(_colourdata[6 + threshold_offset][pixel_index_colour] >= 0);
+//      assert(_colourdata[0 + threshold_offset][pixel_index_colour] >= 0);
+//      assert(_colourdata[2 + threshold_offset][pixel_index_colour] >= 0);
+//      assert(_colourdata[4 + threshold_offset][pixel_index_colour] >= 0);
+//      assert(_colourdata[6 + threshold_offset][pixel_index_colour] >= 0);
+
+//      assert(threshold_offset == 0 || threshold_offset == 1);
 
       // Only for 12 bit mode
 //      assert(_colourdata[0 + threshold_offset][pixel_index_colour] < 4096);
@@ -234,8 +232,6 @@ void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data
 //      assert(_colourdata[4 + threshold_offset][pixel_index_colour] < 4096);
 //      assert(_colourdata[6 + threshold_offset][pixel_index_colour] < 4096);
       // -------------------------------------------------------------------------------------
-
-
 
 //      if (data[pixel_index_input_data + __matrix_size_x] > 0) {
 //          th01_moreThan0 += 1;
@@ -256,5 +252,5 @@ void DataConsumerThread::SeparateThresholds(int threshold_offset, uint32_t *data
     pixel_cluster_index_j++;
   }
 
-//  qDebug() << "0/1 2/3 4/5 6/7 =" << th01_moreThan0 << th23_moreThan0 << th45_moreThan0 << th67_moreThan0;
+//  qDebug() << "Input colour data =" << th01_moreThan0 << th23_moreThan0 << th45_moreThan0 << th67_moreThan0 << " | threshold_offset =" << threshold_offset;
 }

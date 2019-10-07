@@ -1737,8 +1737,8 @@ void Dataset::setFrame(int *frame, int index, int threshold){
 
 /**
  * @brief Dataset::setNewLayer set the given data into a new layer for a given threshold
- * @param threshold the number of the threshold
- * @param the data that we will borrow for now; it is not sure we can keep it forever
+ * @param threshold, the number of the threshold
+ * @param data, that we will borrow for now; it is not sure we can keep it forever
  */
 void Dataset::setNewLayer(int threshold, int* data) {
     m_thresholdsToIndices[threshold] = m_layers.size();
@@ -1855,6 +1855,7 @@ void Dataset::setFramesPerLayer(int newFrameCount){
 }
 
 void Dataset::setLayer(int *data, int threshold) {
+
     if (m_thresholdsToIndices.contains(threshold)) {
         m_layers[m_thresholdsToIndices[threshold]] = data;
     } else {
@@ -1863,7 +1864,8 @@ void Dataset::setLayer(int *data, int threshold) {
 }
 
 /**
- * @brief This function receives negative values from upstream only with colour mode and double counter on
+ * @brief Adds to the dataset-owned array, if it's not there it makes a copy and keeps it
+ *        It adds the current sum to the new data, then keeps the new data (until the next frame arrives)
  * @param data
  * @param threshold
  */
@@ -1872,6 +1874,7 @@ void Dataset::addLayer(int *data, int threshold) {
         int layerIndex = m_thresholdsToIndices[threshold];
         assert(layerIndex >= 0);
         assert(m_layers[layerIndex] != nullptr);
+
         int *curr = m_layers[layerIndex];
         if (*curr < 0) {
             qDebug() << "[WARN]\t*curr " << *curr << " curr =" << curr;

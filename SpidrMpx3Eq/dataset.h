@@ -192,7 +192,7 @@ public:
     void setFramesPerLayer(int newFrameCount); //!<Sets the amount of chips. New Chips get initialized with location (0,0) and a LtRTtB orientation.
 
     void setLayer(int *data, int threshold); //!<Overwrites a specific layer with the values pointed to by data.
-    void addLayer(int *data, int threshold); //!<Adds the values pointed to by data to the specified layer.
+    void addLayer(int *data, int threshold); //!<Adds the values pointed to by data to the specified threshold.
     void setFrame(FrameSet *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
     void setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
     void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)

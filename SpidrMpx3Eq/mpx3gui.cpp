@@ -185,14 +185,13 @@ void Mpx3GUI::resize(int x, int y) {
 }
 
 /**
- * @brief Assumes that the int* data in in the circular buffer, so you can take and keep it briefly
+ * @brief For FPM, assumes that the int* data in in the circular buffer, so you can take and keep it briefly
  * @param data
  * @param layer
  */
 void Mpx3GUI::addLayer(int * data, int layer) {
-
-    if (integrate == 1) {
         getDataset()->addLayer(data, layer);
+    if (integrate) {
     } else {
         getDataset()->setLayer(data, layer);
     }
