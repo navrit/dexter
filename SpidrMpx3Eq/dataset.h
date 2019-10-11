@@ -125,7 +125,8 @@ private:
     QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
     QVector<QVector<int> > valuesinRoI;//!A matrix of the values of the pixels contained in the region of interest. Each row corresponds to a row of pixels (LtR), from Bottom to Top.
 
-
+     //! Assumes 4 chips
+    const static size_t m_maxColourPixels = size_t(4*128*128);
 public:
 
     Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);

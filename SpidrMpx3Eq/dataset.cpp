@@ -18,12 +18,9 @@ Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
 {
     m_nx = x; m_ny = y;
     setPixelDepthBits(pixelDepthBits);
-
     m_nFrames = 0;
     setFramesPerLayer(framesPerLayer);
-
     obCorrection = nullptr;
-
     rewindScores();
 }
 
@@ -44,7 +41,7 @@ Dataset::~Dataset()
 
 void Dataset::loadCorrection(QByteArray serialized) {
     delete obCorrection;
-    obCorrection  = new Dataset(0,0,0);
+    obCorrection  = new Dataset(0, 0, 0);
     obCorrection->fromByteArray(serialized); //TODO: add error checking on correction to see if it is relevant to the data.
 }
 
@@ -1898,9 +1895,6 @@ void Dataset::addLayer(int *data, int threshold) {
  */
 void Dataset::addLayerColour(int *colour_data, int threshold)
 {
-    // Calculate number of pixels to copy from the number of chips * x * y
-    size_t n = size_t(m_nFrames*m_nx*m_ny);
-
     if (m_thresholdsToIndices.contains(threshold)) {
 
         // Get layer index
@@ -1909,28 +1903,30 @@ void Dataset::addLayerColour(int *colour_data, int threshold)
         // Get pointer to current threshold
         int *curr = m_layers[layerIndex];
         assert (curr != nullptr);
-        int nonZero = 0;
+//        int nonZero = 0;
+
+        int n = m_maxColourPixels;
 
         // Sum array contents using pointer arithmetic
         while (n--) {
             *(curr++) += *(colour_data++);
-            if (threshold == 0 && *(colour_data) > 0){
-                nonZero++;
-            }
+//            if (threshold == 0 && *(colour_data) > 0){
+//                nonZero++;
+//            }
         }
 
-        if (nonZero > 0){
-            qDebug() << "nonZero, th0 =" << nonZero;
-        }
+//        if (nonZero > 0){
+//            qDebug() << "nonZero, th0 =" << nonZero;
+//        }
 
     } else {
-
+        int* tempColourBuffer = new int[m_maxColourPixels];
         // Makes a copy of colour_data
-        int* temp = new int[n];
-        std::copy(colour_data, colour_data+n, temp);
+        std::copy(colour_data, colour_data + m_maxColourPixels, tempColourBuffer);
 
         // Sets the new layer to the copied colour_data
-        setNewLayer(threshold, temp);
+        setNewLayer(threshold, tempColourBuffer);
+        delete [] tempColourBuffer;
     }
 }
 
