@@ -246,7 +246,6 @@ void zmqController::takeImage(QJsonObject obj)
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
         emit someCommandHasFailed();
     }
-
 }
 
 void zmqController::takeAndSaveImageSequence(QJsonObject obj)
@@ -267,7 +266,6 @@ void zmqController::takeAndSaveImageSequence(QJsonObject obj)
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
         emit someCommandHasFailed();
     }
-
 }
 
 void zmqController::saveImage(QJsonObject obj)
@@ -530,8 +528,8 @@ bool zmqController::JsonContains(QJsonObject obj, QString key, QString string)
 
 bool zmqController::folderExists(QString path)
 {
-    QFileInfo check_file(path);
-    return check_file.exists() && check_file.isReadable();
+    QFileInfo check_folder(path);
+    return check_folder.exists() && check_folder.isReadable();
 }
 
 bool zmqController::fileExists(QString path)
