@@ -105,8 +105,6 @@ public:
     Canvas getFullImageAsArrayWithLayout(int threshold, int bpp);
 
 private:
-    int* m_colourBuffer;
-
     int m_nx, m_ny; //!<Pixel size in the x and y direction, per detector.
     int m_pixelDepthBits;
     int m_pixelDepthCntr;

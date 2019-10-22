@@ -99,7 +99,6 @@ void FrameSet::copyTo32(int chipIndex, bool counterH, uint32_t *dest) {
     }
     bool mode24 = f0->omr.getCountL() == 3;
     int n = MPX_PIXELS;
-    uint32_t moreThanZero = 0;
 
     if (mode24 && f1 != nullptr) {
         uint16_t *src0 = f0->getRow(0);
@@ -114,7 +113,6 @@ void FrameSet::copyTo32(int chipIndex, bool counterH, uint32_t *dest) {
         } else {
             uint16_t *src = f->getRow(0); // Gets the first row
             while (n--) {
-                //if (*(src) > 0) { moreThanZero += 1; }
                 *(dest++) = *(src++);
             }
         }

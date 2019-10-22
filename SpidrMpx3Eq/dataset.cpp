@@ -22,8 +22,6 @@ Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
     setFramesPerLayer(framesPerLayer);
     obCorrection = nullptr;
     rewindScores();
-
-    m_colourBuffer = new int[4*128*128];
 }
 
 void Dataset::setPixelDepthBits(int pixelDepthBits) {
@@ -38,7 +36,6 @@ Dataset::Dataset() : Dataset(1,1,1) {
 Dataset::~Dataset()
 {
     if(obCorrection) delete obCorrection;
-    delete [] m_colourBuffer;
     clear();
 }
 
@@ -1909,27 +1906,20 @@ void Dataset::addLayerColour(int *colour_data, int threshold)
         // Get pointer to current threshold
         int *curr = m_layers[layerIndex];
         assert (curr != nullptr);
-//        int nonZero = 0;
 
         // Sum array contents using pointer arithmetic
         while (n--) {
             *(curr++) += *(colour_data++);
-//            if (threshold == 0 && *(colour_data) > 0){
-//                nonZero++;
-//            }
         }
-
-//        if (nonZero > 0){
-//            qDebug() << "nonZero, th0 =" << nonZero;
-//        }
 
     } else {
 
+        int* colourBuffer = new int[n];
         // Makes a copy of colour_data
-        std::copy(colour_data, colour_data+n, m_colourBuffer);
+        std::copy(colour_data, colour_data+n, colourBuffer);
 
         // Sets the new layer to the copied colour_data
-        setNewLayer(threshold, m_colourBuffer);
+        setNewLayer(threshold, colourBuffer);
     }
 }
 
