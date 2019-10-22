@@ -334,6 +334,7 @@ public slots:
     void setReadoutMode(QString mode);
     void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
+    void setIntegration(bool integrate);
 
     void onRequestForAutoSaveFromServer(bool);
     void onRequestForSettingPathFromServer(QString);

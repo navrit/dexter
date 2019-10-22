@@ -116,6 +116,7 @@ private:
     void setReadoutMode(QJsonObject obj);
     void setReadoutFrequency(QJsonObject obj);
     void loadConfiguration(QJsonObject obj);
+    void setIntegration(QJsonObject obj);
 
 signals:
     void takeImage();
@@ -131,6 +132,7 @@ signals:
     void setReadoutMode(QString mode);
     void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
+    void setIntegration(bool integrate);
 
 public slots:
     void addressChanged_PUB(QString addr); //! Apparently you cannot change addresses for an existing socket or something ???

@@ -60,6 +60,7 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(setReadoutMode(QString)), _mpx3gui->getVisualization(), SLOT(setReadoutMode(QString)));
     connect(this, SIGNAL(setReadoutFrequency(int)), _mpx3gui->getVisualization(), SLOT(setReadoutFrequency(int)));
     connect(this, SIGNAL(loadConfiguration(QString)), _mpx3gui->getVisualization(), SLOT(loadConfiguration(QString)));
+    connect(this, SIGNAL(setIntegration(bool)), _mpx3gui->getVisualization(), SLOT(setIntegration(bool)));
     // -------------------------------------------------------------------
 }
 
@@ -220,6 +221,9 @@ void zmqController::processEvents()
 
         } else if ( JsonContains(root_obj, "command", "load configuration") ) {
             loadConfiguration(root_obj);
+
+        } else if ( JsonContains(root_obj, "command", "set integration") ) {
+            setIntegration(root_obj);
 
         } else {
             qDebug() << "[ERROR]\tZMQ Failed to parse command or something else... : " << root_obj["UUID"].toString() << root_obj["command"].toString() << "\targ1: " << root_obj["arg1"].toString();
@@ -496,6 +500,22 @@ void zmqController::loadConfiguration(QJsonObject obj)
     } else {
         qDebug() << "[ERROR]\tZMQ failed to load configuration from :" << arg1;
         emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load configuration from : ") + arg1);
+    }
+}
+
+void zmqController::setIntegration(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ SET INTEGRATION :"  << obj["command"].toString() << obj["arg1"].toString();
+#endif
+
+    QString arg1 = obj["arg1"].toString().toLower();
+    if (arg1.contains("true") || arg1.contains("on") || arg1.contains("1")) {
+        emit setIntegration(true);
+    } else if (arg1.contains("false") || arg1.contains("off") || arg1.contains("0")) {
+        emit setIntegration(false);
+    } else {
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not set INTEGRATION"));
     }
 }
 

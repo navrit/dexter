@@ -1411,6 +1411,26 @@ void QCstmGLVisualization::loadConfiguration(QString filePath)
     }
 }
 
+void QCstmGLVisualization::setIntegration(bool integrate)
+{
+    //! True  --> Integration ON, save last frame only
+    //! False --> Integration OFF, save all frames
+    //!
+    //! The save path is set by takeAndSaveImageSequence
+
+    // If integrate, save frames as TIFF otherwise save as TIFF16
+    integrate ? onRequestForSettingFormatFromServer(0) : onRequestForSettingFormatFromServer(2);
+    _mpx3gui->set_summing(integrate);
+    onRequestForAutoSaveFromServer(integrate);
+    on_saveAllCheckBox_stateChanged();
+
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Set INTEGRATION:" << active;
+#endif
+
+    emit someCommandHasFinished_Successfully();
+}
+
 void QCstmGLVisualization::onRequestForAutoSaveFromServer(bool val)
 {
     autosaveFromServer = true; //! This is so I don't have to modify on_saveCheckBox_clicked()

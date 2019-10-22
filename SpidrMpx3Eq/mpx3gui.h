@@ -77,7 +77,7 @@ const static int __hdmi_config_page_Id = 8;
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "Dexter";
-const static QString _softwareVersion = QString("v2.0.3 Colour_and_CSM_colour_integration NB - " + QString(GIT_CURRENT_SHA1));
+const static QString _softwareVersion = QString("v2.0.4 ZMQ_set_integration NB - " + QString(GIT_CURRENT_SHA1));
 
 const static int tcpCommandPort = 6351;            //! Diamond - Merlin interface
 const static int tcpDataPort = 6352;               //! Diamond - Merlin interface
