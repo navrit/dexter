@@ -1253,7 +1253,6 @@ void QCstmGLVisualization::takeAndSaveImageSequence(QString folder)
 
     StartDataTaking();
     //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
-
 }
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
@@ -1276,7 +1275,7 @@ void QCstmGLVisualization::saveImageSlot(QString filePath)
 void QCstmGLVisualization::setExposure(int microseconds)
 {
     //! Switch to Sequential RW, then set open and closed time
-    //!    Always 2ms for down time
+    //!    Always 2ms for down time, it's a 'safe' lower limit. 1 ms is likely fine on good machines
     int index = -1;
 
     //! This method looks stupid and is slower but it is more robust to changes in the GUI.
@@ -1293,7 +1292,6 @@ void QCstmGLVisualization::setExposure(int microseconds)
     } else {
         emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not set exposure"));
     }
-
 }
 
 void QCstmGLVisualization::setNumberOfFrames(int number_of_frames)
@@ -1325,8 +1323,8 @@ void QCstmGLVisualization::setGainMode(int mode)
 
 void QCstmGLVisualization::setCSM(bool active)
 {
-    //! True --> CSM ON
-    //! False -> CSM OFF
+    //! True  --> CSM ON
+    //! False --> CSM OFF
     int index = -1;
     if ( active ) {
         index = _mpx3gui->getConfigMonitoring()->getUI()->csmSpmCombo->findText("ON");
@@ -2260,17 +2258,17 @@ void QCstmGLVisualization::setMaximumContRW_FPS(int FPS)
 void QCstmGLVisualization::_loadFromThresholdsVector()
 {
     for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
-        for (int idx = 0; idx < 8; ++idx) {
-            _mpx3gui->GetSpidrController()->setDac(chipId,idx+1,_thresholdsVector[chipId][idx]);
+        for (int idx = 0; idx < __max_colours; ++idx) {
+            _mpx3gui->GetSpidrController()->setDac(chipId, idx+1, _thresholdsVector[chipId][idx]);
         }
     }
 }
 
 void QCstmGLVisualization::initialiseThresholdsVector()
 {
-    for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
-        for (int idx = 0; idx < 8; ++idx) {
-            _thresholdsVector[chip][idx] = _mpx3gui->getConfig()->getDACValue(chip,idx);
+    for (uint chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
+        for (int idx = 0; idx < __max_colours; ++idx) {
+            _thresholdsVector[chip][idx] = _mpx3gui->getConfig()->getDACValue(chip, idx);
         }
     }
 }
@@ -2285,14 +2283,14 @@ void QCstmGLVisualization::onRequestToMaskPixelRemotely(int x , int y)
     _maskingRequestFromServer = true;
     _maskOperation = MASK;
 
-    pixel_selected(QPoint(x,y),QPoint());
+    pixel_selected(QPoint(x, y), QPoint());
 }
 
 void QCstmGLVisualization::onRequestToUnmaskPixelRemotely(int x, int y)
 {
     _maskingRequestFromServer = true;
     _maskOperation = UNMASK;
-    pixel_selected(QPoint(x,y),QPoint());
+    pixel_selected(QPoint(x, y), QPoint());
 }
 
 //! @brief Clear saveLineEdit on_saveCheckBox_stateChanged by a user, every time

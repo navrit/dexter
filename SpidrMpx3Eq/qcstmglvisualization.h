@@ -335,12 +335,11 @@ public slots:
     void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
 
-    //! Used only for TCP interface
     void onRequestForAutoSaveFromServer(bool);
     void onRequestForSettingPathFromServer(QString);
     void onRequestForSettingFormatFromServer(int);
-    void onRequestToMaskPixelRemotely(int,int);
-    void onRequestToUnmaskPixelRemotely(int,int);
+    void onRequestToMaskPixelRemotely(int, int);
+    void onRequestToUnmaskPixelRemotely(int, int);
 
 signals:
     void taking_data_gui();

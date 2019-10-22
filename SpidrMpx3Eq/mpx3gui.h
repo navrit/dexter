@@ -95,65 +95,62 @@ public:
     explicit Mpx3GUI(QWidget *parent = nullptr);
     ~Mpx3GUI();
     void SetupSignalsAndSlots();
-    Ui::Mpx3GUI * GetUI() { return _ui; }
-    static Mpx3GUI* getInstance();
+    Ui::Mpx3GUI *GetUI() { return _ui; }
+    static Mpx3GUI *getInstance();
 
-    GeneralSettings* getGeneralSettings(){ return _generalSettings;}
+    Mpx3Config *getConfig();
+    Dataset *getDataset() {return workingSet;}
+    Dataset *getOriginalDataset() {return originalSet;}
+    DataControllerThread *getDataControllerThread() {return dataControllerThread;}
+    zmqController *getZmqController() {return m_zmqController;}
+
+    SpidrController * GetSpidrController();
+    SpidrDaq *GetSpidrDaq(){ return _spidrdaq; }
+    QCstmEqualization *getEqualization();
+    QCstmGLVisualization *getVisualization();
+    QCstmDacs *getDACs();
+    QCstmConfigMonitoring *getConfigMonitoring();
+    QCstmStepperMotor *getStepperMotor();
+    QCstmCT *getCT();
+    thresholdScan *getTHScan();
+    hdmiConfig *getHdmiConfig();
+
+    GeneralSettings *getGeneralSettings() {return _generalSettings;}
     EnergyCalibrator* getEnergyCalibrator() {return _energyCalibrator;}
-    void updateEnergyCalibratorParameters(void);
-    Mpx3Config* getConfig();
-    void closeRemotely(){on_actionDisconnect_triggered(false);}
-    Dataset* getDataset(){return workingSet;}
-    Dataset* getOriginalDataset(){return originalSet;}
-    DataControllerThread* getDataControllerThread(){return dataControllerThread;}
-    zmqController* getZmqController(){return m_zmqController;}
+    void updateEnergyCalibratorParameters();
 
-    void rebuildCurrentSets(int x, int y, int framesPerLayer);
-
-    bool isArmedOk(){ return _armedOk; }
+    int getStepperMotorPageID();
+    bool isArmedOk() {return _armedOk;}
     void startupActions();
+    void closeRemotely() {on_actionDisconnect_triggered(false);}
 
     void saveOriginalDataset();
     void rewindToOriginalDataset();
     void setWindowWidgetsStatus(win_status s = win_status::startup);
-    pair<int, int> XtoXY(int X, int dimX){
-        return make_pair(X % dimX, X/dimX);
-    }
 
-
-    QCstmEqualization * getEqualization();
-    QCstmGLVisualization * getVisualization();
-    QCstmDacs * getDACs();
-    QCstmConfigMonitoring * getConfigMonitoring();
-    QCstmStepperMotor * getStepperMotor();
-    QCstmCT * getCT();
-    thresholdScan * getTHScan();
-    hdmiConfig * getHdmiConfig();
-
-    SpidrController * GetSpidrController();
-    SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
     void addLayer(int *data, int layer);
 
-    Gradient* getGradient(int index);
+    Gradient *getGradient(int index);
     void resize(int x, int y);
+    void rebuildCurrentSets(int x, int y, int framesPerLayer);
 
     std::vector<int> getOrientation() { return _MPX3RX_ORIENTATION; }
     std::vector<QPoint> getLayout() { return _MPX3RX_LAYOUT; }
 
-    QPoint  getSize();
+    QPoint getSize();
     void getSize(int *x, int *y);
-    int getMode(){return integrate;}
+    int getMode() {return integrate;}
     int getX();
     int getY();
     int getPixelAt(int x, int y, int layer);
     int getFrameCount();
 
+    int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+    pair<int, int> XtoXY(int X, int dimX) { return make_pair(X % dimX, X/dimX); }
+
     QString getLoadButtonFilename();
 
-    int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-
     bool establish_connection();
-
     bool equalizationLoaded();
 
     const QString settingsFile = QApplication::applicationDirPath() + QDir::separator() + "last_configuration.ini";
@@ -166,7 +163,6 @@ public:
 
     QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd");
 
-    int getStepperMotorPageID();
 
     void loadLastConfiguration();
     QString getConfigPath(){ return _configPath;}
