@@ -154,7 +154,7 @@ void DataConsumerThread::run()
                 }
             }
 
-            emit bufferOccupancySig( int((100*(usedFrames->available()/ double((_semaphoreSize))))));
+            emit bufferOccupancySig( int(100.*(usedFrames->available()/ double(_semaphoreSize))));
             emit doneWithOneFrame( _frameId++ );
             if ( _stop ) break;
         }
