@@ -32,14 +32,20 @@ try:
             if sendJSON:
                 UUID = random.randint(1, 123456789123456789123456789)
                 count += 1
-                if count % 2 == 0:
-                    arg1 = 'on'  # random.randint(1,100)
-                    arg2 = count
-                    cmd = 'set integration'
-                else:
+                if count % 3 == 0:
                     arg1 = '/tmp'  # random.randint(100,1000)
                     arg2 = count
                     cmd = 'take and save image sequence'
+
+                elif count % 3 == 1:
+                    arg1 = 'on'  # random.randint(1,100)
+                    arg2 = count
+                    cmd = 'set integration'
+
+                else:
+                    arg1 = 'off'  # random.randint(1,100)
+                    arg2 = count
+                    cmd = 'set integration'
                 # cmd = 'set integration'
                 print(cmd, arg1, arg2)
                 rep = {'component': 'medipix', 'comp_phys': 'medipix', 'command': cmd,

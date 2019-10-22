@@ -1421,8 +1421,7 @@ void QCstmGLVisualization::setIntegration(bool integrate)
     // If integrate, save frames as TIFF otherwise save as TIFF16
     integrate ? onRequestForSettingFormatFromServer(0) : onRequestForSettingFormatFromServer(2);
     _mpx3gui->set_summing(integrate);
-    onRequestForAutoSaveFromServer(integrate);
-    on_saveAllCheckBox_stateChanged();
+    ui->saveAllCheckBox->setChecked(!integrate);
 
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Set INTEGRATION:" << active;

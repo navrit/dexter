@@ -279,7 +279,6 @@ void zmqController::saveImage(QJsonObject obj)
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
         emit someCommandHasFailed( QString("DEXTER --> ACQUILA : Is not connected to a SPIDR, could not execute command : " + obj["UUID"].toString() + "  " +  obj["command"].toString()));
     }
-
 }
 
 void zmqController::setExposure(QJsonObject obj)
