@@ -14,10 +14,25 @@ time.sleep(1)
 
 count = 0
 sendJSON = True
-cmd = 'set integration'
+cmd = 'set number of frames'
+arg1 = 2
+arg2 = ''
 lastUUID = ''
 
 print("\nSTART NOW\n", flush=True)
+
+UUID = random.randint(1, 123456789123456789123456789)
+reply = ''
+rep = ''
+rep2 = ''
+reply_type = ''
+rep = {'component': 'medipix', 'comp_phys': 'medipix', 'command': cmd,
+                       'arg1': str(arg1), 'arg2': str(arg2), 'reply': reply, 'reply type': reply_type,
+                       'comp_type': 'other', 'tick count': count, 'UUID': UUID}
+socket.send_json(rep, flags=0)
+print("SENT JSON : ", rep["UUID"])
+rep2 = client.recv_json()
+print('REPLY:\tUUID : {0} \t reply type : {1}'.format(rep2["UUID"], rep2["reply type"]), flush=True)
 
 try:
     while True:
@@ -31,21 +46,31 @@ try:
             # arg1 = ''
             if sendJSON:
                 UUID = random.randint(1, 123456789123456789123456789)
-                count += 1
-                if count % 3 == 0:
-                    arg1 = '/tmp'  # random.randint(100,1000)
-                    arg2 = count
-                    cmd = 'take and save image sequence'
-
-                elif count % 3 == 1:
-                    arg1 = 'on'  # random.randint(1,100)
-                    arg2 = count
-                    cmd = 'set integration'
-
-                else:
+                time.sleep(1)
+                if cmd == 'save image':
+                    print("---------------------------------")
+                if count % 5 == 0:
                     arg1 = 'off'  # random.randint(1,100)
-                    arg2 = count
+                    arg2 = ''
                     cmd = 'set integration'
+                elif count % 5 == 1:
+                    arg1 = '/tmp/all'  # random.randint(1,100)
+                    arg2 = ''
+                    cmd = 'take and save image sequence'
+                elif count % 5 == 2:
+                    arg1 = 'on'  # random.randint(1,100)
+                    arg2 = ''
+                    cmd = 'set integration'
+                elif count % 5 == 3:
+                    arg1 = ''  # random.randint(100,1000)
+                    arg2 = ''
+                    cmd = 'take image'
+                else:
+                    arg1 = '/tmp/summed'  # random.randint(1,100)
+                    arg2 = ''
+                    cmd = 'save image'
+
+                count += 1
                 # cmd = 'set integration'
                 print(cmd, arg1, arg2)
                 rep = {'component': 'medipix', 'comp_phys': 'medipix', 'command': cmd,
@@ -54,7 +79,6 @@ try:
                 socket.send_json(rep, flags=0)
                 print("SENT JSON : ", rep["UUID"])
                 lastUUID = UUID
-                time.sleep(1)
 
             rep2 = client.recv_json(flags=zmq.NOBLOCK)
             print('REPLY:\tUUID : {0} \t reply type : {1}'.format(rep2["UUID"], rep2["reply type"]), flush=True)
@@ -78,6 +102,7 @@ try:
             # time.sleep(0.1)
         except zmq.Again as e:
             pass
+
 except KeyboardInterrupt:
     client.close()
     socket.close()
