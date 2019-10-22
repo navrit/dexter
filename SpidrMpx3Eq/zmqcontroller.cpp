@@ -251,16 +251,13 @@ void zmqController::takeImage(QJsonObject obj)
 void zmqController::takeAndSaveImageSequence(QJsonObject obj)
 {
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE : "  << obj["command"].toString();
+    qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE : " << obj["command"].toString() << obj["arg1"].toString();
 #endif
     if (_isConnectedToSPIDR) {
         const QString folder = obj["arg1"].toString();
 
-        if (folderExists(folder)) {
-            emit takeAndSaveImageSequence(folder);
-        } else {
-            emit takeAndSaveImageSequence("");
-        }
+        bool success = _mpx3gui->getVisualization()->requestToSetSavePath(folder);
+        success ? emit takeAndSaveImageSequence(folder) : emit takeAndSaveImageSequence("");
 
     } else {
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
