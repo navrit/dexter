@@ -1405,7 +1405,14 @@ void QCstmGLVisualization::setIntegration(bool integrate)
     // If integrate, save frames as TIFF otherwise save as TIFF16
     integrate ? onRequestForSettingFormatFromServer(0) : onRequestForSettingFormatFromServer(2);
     _mpx3gui->set_summing(integrate);
+
+    // Almost the same as onRequestForAutoSaveFromServer
+    autosaveFromServer = true; //! This is so I don't have to modify on_saveCheckBox_clicked()
+    ui->saveCheckBox->setChecked(true);
     ui->saveAllCheckBox->setChecked(!integrate);
+    autosaveFromServer = false; //! So it only skips the GUI call to get the
+                                //! path if it's being called by the TCP server
+    // ------
 
     emit someCommandHasFinished_Successfully();
 }
