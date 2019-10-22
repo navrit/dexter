@@ -1120,22 +1120,6 @@ void QCstmGLVisualization::addThresholdToSelector(int threshold){
     }
 }
 
-void QCstmGLVisualization::changeThresholdToNameAndUpdateSelector(int threshold, QString name) {
-
-    if ( name == "Ca_Z20" ) name = "Unknown";
-    if ( name == "Al_Z13" ) name = "Unknown";
-
-    QString label = QString("Material %1 | %2").arg( name ).arg( threshold ); // The threshold number is needed here !  When reloaded the program finds it by searching for it.  Change this !  TODO
-
-    if ( layerNames.contains(threshold) ) {
-        layerNames[threshold] = label ;
-        ui->layerSelector->setItemText( _mpx3gui->getDataset()->thresholdToIndex(threshold), label );
-    } else {
-        qDebug() << "[QCstmGLVisualization::changeThresholdToNameAndUpdateSelector] The given threshold didn't exist !";
-    }
-
-}
-
 void QCstmGLVisualization::setThreshold(int threshold){
     addThresholdToSelector(threshold);
     //cout << "[INDEX] " << threshold << " --> " << _mpx3gui->getDataset()->thresholdToIndex(threshold) << endl;
@@ -1422,10 +1406,6 @@ void QCstmGLVisualization::setIntegration(bool integrate)
     integrate ? onRequestForSettingFormatFromServer(0) : onRequestForSettingFormatFromServer(2);
     _mpx3gui->set_summing(integrate);
     ui->saveAllCheckBox->setChecked(!integrate);
-
-#ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ Set INTEGRATION:" << active;
-#endif
 
     emit someCommandHasFinished_Successfully();
 }

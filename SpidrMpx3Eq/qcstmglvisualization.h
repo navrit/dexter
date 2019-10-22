@@ -116,11 +116,10 @@ public:
     //! Used in Threshold Scan
     bool runningTHScan = false;
 
-    //!Adds the specified threshold if it didn't exist yet. Then switches to it.
+    //! Adds the specified threshold if it didn't exist yet. Then switches to it.
     void setThreshold(int threshold);
 
-    void changeThresholdToNameAndUpdateSelector(int threshold, QString name);
-    //!Gets the currently active threshold by looking at the value of the layerselector combobox.
+    //! Gets the currently active threshold by looking at the value of the layerselector combobox.
     int getActiveThreshold();
     bool isSaveAllFramesChecked();
 
