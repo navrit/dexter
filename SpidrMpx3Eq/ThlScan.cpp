@@ -6,12 +6,6 @@
 #include "ui_qcstmequalization.h"
 #include "ui_mpx3gui.h"
 
-//! TODO - Reviewed equalisation now
-//!
-//! 1. Investigate why data doesn't appear in the equalisation preview when colour mode is on
-//! 2. Refactor & cleanup
-//! 3. ClangFormat files?
-
 ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 
     _mpx3gui = mpx3gui;

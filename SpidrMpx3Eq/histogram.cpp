@@ -16,13 +16,13 @@ Histogram::Histogram(int max):Histogram(0,max){
 
 Histogram::Histogram(int* data, size_t size) : Histogram(){
     int min = INT_MAX, max = INT_MIN;
-    for(int i = 0; i < (int)size; i++){
+    for(size_t i = 0; i < size; i++) {
         if(data[i] < min)
             min = data[i];
         if(data[i] > max)
             max = data[i];
-    }setRange(min, max);
-    for(int i = 0; i < (int)size; i++){
+    } setRange(min, max);
+    for(size_t i = 0; i < size; i++) {
         *this += data[i];
     }
     setEdgeCaseBehaviour(m_defaultEdgeCaseBehaviour);
@@ -59,25 +59,26 @@ void Histogram::setMax(int max){
     m_bins.resize(size());
 
     //cout << "size max = " << size() << endl;
-    for(int i = offset; i < size(); i++)
+    for(int i = offset; i < size(); i++) {
         m_bins[i] = 0;
+    }
 }
 
 void Histogram::setMin(int min){
-    if(min > m_max)
+    if (min > m_max) {
         setMax(min);
-    int old_size = size();
+    }
+    const int old_size = size();
     m_min = min;
     //cout << "size min = " << size() << endl;
     std::vector<unsigned> new_bins(size());
     const int offset = size()-old_size;
-    if(offset > 0){ //if we need to prepend
-        for(int i = 0; i < offset; i++)//set the first bins to 0.
+    if (offset > 0) { // if we need to prepend
+        for (int i = 0; i < offset; i++) // set the first bins to 0.
             new_bins[i] = 0;
-        for(int i = 0; i < (int)m_bins.size(); i++)//copy the rest.
+        for (int i = 0; i < int(m_bins.size()); i++) // copy the rest.
             new_bins[i+offset] = m_bins[i];
-    }
-    else{//if we need to drop the first bins.
+    } else {//if we need to drop the first bins.
         new_bins.assign(m_bins.begin()-offset, m_bins.end());
     }
     m_bins.swap(new_bins);
@@ -91,9 +92,9 @@ void Histogram::setRange(int min, int max){//TODO: test this when less sleepy
 
 unsigned Histogram::getYMaxCount()
 {
-    int nBins = size();
+    const size_t nBins = size_t(size());
     unsigned maxV = 0;
-    for ( int i = 0 ; i < nBins ; i++ ) {
+    for ( size_t i = 0 ; i < nBins ; i++ ) {
         if( m_bins[i] > maxV ) maxV = m_bins[i];
     }
     return maxV;

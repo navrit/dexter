@@ -923,8 +923,6 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     objParent.insert("SPIDR_Firmware_version", m_SPIDRFirmwareVersion);
     objParent.insert("SPIDR_Software_version", m_SPIDRSoftwareVersion);
 
-    //objParent.insert("", );
-
     // ------------------ Calculations -------------------------------
     int sizex = getDataset()->x();
     int sizey = getDataset()->y();
@@ -947,10 +945,6 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     objParent.insert("Length_x", sizex*nchipsx);
     objParent.insert("Length_y", sizey*nchipsy);
     objParent.insert("Thresholds", thresholds_str);
-
-    // TODO JSON
-    //    objParent.insert("Number of frames", );
-
 
     doc.setObject(objParent);
 
@@ -1054,7 +1048,7 @@ void Mpx3GUI::developerMode()
 
 void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType) {
 
-    QString filename, path, selectedFilter;
+    QString filename, selectedFilter;
     //! Manual or autosave
     if (!requestPath){
         //! Native format - User dialog
@@ -1081,7 +1075,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         //! Autosave
         //!
         //! Get the visualisation dialog UI saveLineEdit text and assign to filename
-        path = getVisualization()->getsaveLineEdit_Text(); // TODO optimise this, no need to call this every loop
+        const QString path = getVisualization()->getsaveLineEdit_Text(); // TODO optimise this, no need to call this every loop
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and a file extension
         filename = QString(path + "/" + QString::number( QDateTime::currentMSecsSinceEpoch()));
 
@@ -1132,7 +1126,6 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
             || selectedFilter == BOTH_TIFF_FILES) {
 
         //! This is a shitty way of doing it but whatever the disk is still the bottleneck... maybe fix it later
-        //!
 
         foreach (int key, dataset->getThresholds()) {
             QString tmpFilename = unmodifiedFilename;
@@ -1187,12 +1180,12 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         emit sig_statusBarAppend(msg,"green");
 
         saveMetadataToJSON(filename);
-    } else {
+    } //else {
         // Autosave
 
         // Not good for high speed without some buffer system
         //saveMetadataToJSON(filename);
-    }
+    //}
 
     return;
 }

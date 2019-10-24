@@ -1609,7 +1609,7 @@ void Dataset::fromASCIIMatrixGetSizeAndLayers(QFile * file, int *x, int *y, int 
 
     *x = cols;
     *y = rowCntr;
-    *framesPerLayer = 1; // Not loading chips yet // TODO
+    *framesPerLayer = 1; // Not loading chips yet
 }
 
 void Dataset::fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer)
@@ -1625,7 +1625,7 @@ void Dataset::fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer)
     m_nx = x;
     m_ny = y;
     m_nFrames = framesPerLayer;
-    int layerCount = 1;         // Not loading layers yet // TODO
+    int layerCount = 1;         // Not loading layers yet
     m_frameLayouts[0] = QPoint(0,0);
     m_frameOrientation[0] = orientationLtRTtB;
     QVector<int> keys(layerCount);
@@ -1766,8 +1766,8 @@ int* Dataset::getFrameAt(int index, int layer){
 //! Can get EXPENSIVE
 int Dataset::getContainingFrame(QPoint pixel){
     QPoint layoutSample((pixel.x()+m_nx)/m_nx -1, (pixel.y()+m_ny)/m_ny-1);
-    for(int i = 0; i < m_frameLayouts.length();i++){
-        if(layoutSample == m_frameLayouts[i])//TODO: orientation messes up sampling!
+    for (int i = 0; i < m_frameLayouts.length();i++) {
+        if (layoutSample == m_frameLayouts[i]) // Roel Deckers (very old): Orientation messes up sampling!
             return i;
     }
     return -1;
@@ -1896,7 +1896,7 @@ void Dataset::addLayer(int *data, int threshold) {
 void Dataset::addLayerColour(int *colour_data, int threshold)
 {
     // Calculate number of pixels to copy from the number of chips * x * y
-    size_t n = size_t(m_nFrames*m_nx*m_ny);
+    size_t n = size_t(m_nFrames*m_nx*m_ny); //! TODO Should be 4*256*256... not 4*128*128... FFS
 
     if (m_thresholdsToIndices.contains(threshold)) {
 

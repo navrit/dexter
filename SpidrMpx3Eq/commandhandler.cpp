@@ -543,7 +543,6 @@ QString FrameHeaderDataStruct::toQString(int frameid) {
     return header.leftJustified(dataOffset, ' ', true);
 }
 
-/* TODO correct the following text - issue #166 */
 QString CommandHandler::getAcquisitionHeader()
 {
     Mpx3Config* config = getGui()->getConfig();
