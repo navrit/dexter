@@ -706,36 +706,36 @@ void setRecordFormatHandler(CommandHandler* ch, Command* cmd){
     }
 }
 
-void getImageHandler(CommandHandler* ch, Command* cmd){
-    Q_UNUSED(ch);
-    // TODO: this function is broken: it will not produce an image in an understandable format
+//void getImageHandler(CommandHandler* ch, Command* cmd){
+//    Q_UNUSED(ch);
+//    // TODO: this function is broken: it will not produce an image in an understandable format
 
-//    QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(0,false);
-//   // QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->getActualData();
+////    QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(0,false);
+////   // QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->getActualData();
 
-//    QString strData ="";
-//    for(int x = 0; x<frame0.length();x++){
-//        if(x != frame0.length() - 1)
-//            strData+=QString::number(frame0.at(x))+",";
-//        else
-//           strData+=QString::number(frame0.at(x));
+////    QString strData ="";
+////    for(int x = 0; x<frame0.length();x++){
+////        if(x != frame0.length() - 1)
+////            strData+=QString::number(frame0.at(x))+",";
+////        else
+////           strData+=QString::number(frame0.at(x));
+////    }
+//    QByteArray im = Mpx3GUI::getInstance()->getDataset()->toByteArray();
+//    QString strData = "";
+//    for(int i = 0; i<20; i++){
+//        int value = 0;
+//        value |= im.at(i*4) | (im.at((i*4)+1)<<8) | (im.at((i*4)+2)<<16) | (im.at((i*4)+3)<<24);
+//        strData += QString::number(value) + ";";
 //    }
-    QByteArray im = Mpx3GUI::getInstance()->getDataset()->toByteArray();
-    QString strData = "";
-    for(int i = 0; i<20; i++){
-        int value = 0;
-        value |= im.at(i*4) | (im.at((i*4)+1)<<8) | (im.at((i*4)+2)<<16) | (im.at((i*4)+3)<<24);
-        strData += QString::number(value) + ";";
-    }
-  //  cmd->setImage();
+//  //  cmd->setImage();
 
-    QByteArray pixels = im.mid(20*4); //17*4 = 68 bytes header later this must become dynamic // 18*4 = 72 bytes for double counter
-    qDebug()<<"pixel length = "<<pixels.length();
+//    QByteArray pixels = im.mid(20*4); //17*4 = 68 bytes header later this must become dynamic // 18*4 = 72 bytes for double counter
+//    qDebug()<<"pixel length = "<<pixels.length();
 
-    cmd->setData(strData);
-    cmd->setImage(pixels);
+//    cmd->setData(strData);
+//    cmd->setImage(pixels);
 
-}
+//}
 
 void setNumberOfFrameHandler(CommandHandler* ch, Command* cmd){
     Q_UNUSED(ch);
