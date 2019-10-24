@@ -84,10 +84,14 @@ void Histogram::setMin(int min){
     m_bins.swap(new_bins);
 }
 
-void Histogram::setRange(int min, int max){//TODO: test this when less sleepy
-    setMin(min);
-    setMax(max);
-    qDebug() << "new size = " << size();
+void Histogram::setRange(int min, int max) {
+    if (min <= max) {
+        setMin(min);
+        setMax(max);
+    } else {
+        setMin(max);
+        setMax(min);
+    }
 }
 
 unsigned Histogram::getYMaxCount()
