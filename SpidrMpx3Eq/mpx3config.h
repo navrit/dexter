@@ -1,7 +1,9 @@
 #ifndef MPX3CONFIG_H
 #define MPX3CONFIG_H
-#include "mpx3defs.h"
-#include "qcstmdacs.h"
+
+#include <stdint.h>
+#include <iterator>
+#include <iostream>
 
 #include <QComboBox>
 #include <QObject>
@@ -10,19 +12,24 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QStandardItem>
+#include <QFile>
+#include <QDebug>
+#include <QRegExp>
 
 #include "SpidrController.h"
+#include "SpidrDaq.h"
+#include "mpx3defs.h"
+#include "mpx3dacsdescr.h"
+#include "qcstmdacs.h"
+#include "EnergyCalibrator.h"
 
 
 class Mpx3GUI;
 
-#include <stdint.h>
 #define __default_IP  "192.168.1.10"
 #define __default_port         50000
-
 #define __default_matrixSizePerChip_X 	256
 #define __default_matrixSizePerChip_Y 	256
-
 #define __efuse_Nnibbles 8
 
 class Mpx3Config : public QObject {
@@ -83,7 +90,7 @@ private:
     uint64_t TriggerLength_us_64 = 0, TriggerDowntime_us_64 = 0;
     // The following are static characteristics read from the SPIDR, not configurable.
     int SystemClock = -1;
-    QVector<int> _dacVals[MPX3RX_DAC_COUNT];
+    QVector<int> _dacVals[MPX3RX_DAC_COUNT] = {{-1}};
     // Stepper
     bool stepperUseCalib = false;
     double stepperAcceleration = -1., stepperSpeed = -1., stepperCalibPos0 = -1., stepperCalibAngle0 = -1., stepperCalibPos1 = -1., stepperCalibAngle1 = -1.;
@@ -94,6 +101,7 @@ private:
     QVector<detector_response> _responseChips;
     QVector<int> _activeChips;
     QVector<uint8_t> _chipIDELAYS = {15, 15, 15, 10};
+    std::array<double, __max_number_of_thresholds> targetEnergies = {{-1.0}};
 
 public:
 
@@ -127,6 +135,7 @@ public:
     int getIndexFromID(int id){return _activeChips.indexOf(id);}
     int getSystemClock() { return SystemClock; }
     double getBiasVoltage() { return biasVolt; }
+    double getTargetEnergies(int threshold);
 
     void checkChipResponse(int devIndx, detector_response dr);
     bool detectorResponds(int devIndx);
@@ -444,6 +453,7 @@ public slots:
 
    void setInhibitShutter(bool turnOn); // Slot to config inhibit_shutter signal
 
+   void setTargetEnergy(int threshold, double energy);
 };
 
 

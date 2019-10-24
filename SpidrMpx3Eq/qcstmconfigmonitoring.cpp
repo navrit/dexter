@@ -895,7 +895,7 @@ void QCstmConfigMonitoring::setWindowWidgetsStatus(win_status s){
     switch (s) {
 
     case win_status::startup:
-        this->setEnabled( false );
+        this->setEnabled( true );
         break;
 
     case win_status::connected:

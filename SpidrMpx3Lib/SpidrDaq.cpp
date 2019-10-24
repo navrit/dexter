@@ -32,22 +32,7 @@ const int   VERSION_ID = 0x18102400;
 //const int VERSION_ID = 0x15051900;
 //const int VERSION_ID = 0x14012400;
 
-// At least one argument needed for QCoreApplication
-//int   Argc = 1;
-//char *Argv[] = { "SpidrDaq" }; 
-//QCoreApplication *SpidrDaq::App = 0;
-// In c'tor?: Create the single 'QCoreApplication' we need for the event loop
-// in the receiver objects  ### SIGNALS STILL DO NOT WORK? Need exec() here..
-//if( App == 0 ) App = new QCoreApplication( Argc, Argv );
-
-// ----------------------------------------------------------------------------
-// Constructor / destructor / info
-// ----------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------
-
-SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
-		    int              readout_mask )
+SpidrDaq::SpidrDaq( SpidrController *spidrctrl, int readout_mask )
 {
   // If a SpidrController object is provided use it to find out the SPIDR's
   // Medipix device configuration and IP destination address, or else assume
@@ -140,18 +125,13 @@ int SpidrDaq::classVersion()
   return VERSION_ID;
 }
 
-// ----------------------------------------------------------------------------
-
-std::string SpidrDaq::ipAddressString( int index )
+//! @brief Note, currently hardcoded to always return NOTHING
+std::string SpidrDaq::ipAddressString( /*int index*/ )
 {
-    Q_UNUSED(index);
-  //if( index < 0 || index >= (int) _frameReceivers.size() )
     return std::string( "" );
-  //return _frameReceivers[index]->ipAddressString();
 }
 
-// ----------------------------------------------------------------------------
-
+//! @brief Note, currently hardcoded to always return NOTHING
 std::string SpidrDaq::errorString()
 {
   std::string str;
@@ -174,8 +154,7 @@ std::string SpidrDaq::errorString()
   return str;
 }
 
-// ----------------------------------------------------------------------------
-
+//! @brief Note, currently hardcoded to always return FALSE
 bool SpidrDaq::hasError()
 { /*
   for( unsigned int i=0; i<_frameReceivers.size(); ++i )

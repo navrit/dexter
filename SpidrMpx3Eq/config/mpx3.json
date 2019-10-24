@@ -134,17 +134,114 @@
         "TriggerMode": 4,
         "nTriggers": 100
     },
+    "EnergyCalibrationCoefficients": {
+        "Offsets": [
+            {
+                "Threshold[0]": 0,
+                "Threshold[1]": 0,
+                "Threshold[2]": 0,
+                "Threshold[3]": 0,
+                "Threshold[4]": 0,
+                "Threshold[5]": 0,
+                "Threshold[6]": 0,
+                "Threshold[7]": 0
+            },
+            {
+                "Threshold[0]": 1,
+                "Threshold[1]": 1,
+                "Threshold[2]": 1,
+                "Threshold[3]": 1,
+                "Threshold[4]": 1,
+                "Threshold[5]": 1,
+                "Threshold[6]": 1,
+                "Threshold[7]": 1
+            },
+            {
+                "Threshold[0]": 2,
+                "Threshold[1]": 2,
+                "Threshold[2]": 2,
+                "Threshold[3]": 2,
+                "Threshold[4]": 2,
+                "Threshold[5]": 2,
+                "Threshold[6]": 2,
+                "Threshold[7]": 2
+            },
+            {
+                "Threshold[0]": 3,
+                "Threshold[1]": 3,
+                "Threshold[2]": 3,
+                "Threshold[3]": 3,
+                "Threshold[4]": 3,
+                "Threshold[5]": 3,
+                "Threshold[6]": 3,
+                "Threshold[7]": 3
+            }
+
+        ],
+        "Slopes": [
+            {
+                "Threshold[0]": 0.3,
+                "Threshold[1]": 0.3,
+                "Threshold[2]": 0.3,
+                "Threshold[3]": 0.3,
+                "Threshold[4]": 0.3,
+                "Threshold[5]": 0.3,
+                "Threshold[6]": 0.3,
+                "Threshold[7]": 0.3
+            },
+            {
+                "Threshold[0]": 0.2,
+                "Threshold[1]": 0.2,
+                "Threshold[2]": 0.2,
+                "Threshold[3]": 0.2,
+                "Threshold[4]": 0.2,
+                "Threshold[5]": 0.2,
+                "Threshold[6]": 0.2,
+                "Threshold[7]": 0.2
+            },
+            {
+                "Threshold[0]": 0.1,
+                "Threshold[1]": 0.1,
+                "Threshold[2]": 0.1,
+                "Threshold[3]": 0.1,
+                "Threshold[4]": 0.1,
+                "Threshold[5]": 0.1,
+                "Threshold[6]": 0.1,
+                "Threshold[7]": 0.1
+            },
+            {
+                "Threshold[0]": 0.05,
+                "Threshold[1]": 0.05,
+                "Threshold[2]": 0.05,
+                "Threshold[3]": 0.05,
+                "Threshold[4]": 0.05,
+                "Threshold[5]": 0.05,
+                "Threshold[6]": 0.05,
+                "Threshold[7]": 0.05
+            }
+        ]
+    },
     "IDELAYConfig": {
         "chip_0": 15,
         "chip_1": 15,
         "chip_2": 15,
         "chip_3": 10
     },
+    "TargetEnergies": {
+        "Threshold[0]": 10,
+        "Threshold[1]": 11,
+        "Threshold[2]": 12,
+        "Threshold[3]": 13,
+        "Threshold[4]": 14,
+        "Threshold[5]": 15,
+        "Threshold[6]": 16,
+        "Threshold[7]": 17
+    },
     "IPConfig": {
         "SpidrControllerIp": "192.168.100.10",
         "SpidrControllerPort": 50000,
-        "ZmqPubAddress": "tcp://192.168.178.9:50001",
-        "ZmqSubAddress": "tcp://192.168.178.9:50000"
+        "ZmqPubAddress": "tcp://192.168.178.1:50001",
+        "ZmqSubAddress": "tcp://192.168.178.1:50000"
     },
     "StepperConfig": {
         "Acceleration": 20000,

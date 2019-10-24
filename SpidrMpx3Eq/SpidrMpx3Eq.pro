@@ -88,8 +88,6 @@ SOURCES += main.cpp \
     datacontrollerthread.cpp \
     thresholdscandelegate.cpp \
     zmqcontroller.cpp \
-    qcstmBHWindow.cpp \
-    qcstmBHdialog.cpp \
     StepperMotorController.cpp \
     qcustomplot.cpp \
     testpulseequalisation.cpp \
@@ -137,8 +135,6 @@ HEADERS += mpx3gui.h \
     datacontrollerthread.h \
     thresholdscandelegate.h \
     zmqcontroller.h \
-    qcstmBHWindow.h \
-    qcstmBHdialog.h \
     StepperMotorController.h \
     qcustomplot.h \
     testpulseequalisation.h \

@@ -20,6 +20,23 @@ hdmiConfig::~hdmiConfig()
     delete ui;
 }
 
+void hdmiConfig::setWindowWidgetsStatus(win_status s)
+{
+    switch (s) {
+
+        case win_status::startup:
+            this->setEnabled( false );
+            break;
+
+        case win_status::connected:
+            this->setEnabled( true );
+            break;
+
+        default:
+            break;
+        }
+}
+
 void hdmiConfig::_loadComboBoxesVector()
 {
     _comboBoxes.push_back(ui->hdmi1Pin1ComboBox);

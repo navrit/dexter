@@ -40,7 +40,7 @@
      <x>12</x>
      <y>12</y>
      <width>421</width>
-     <height>213</height>
+     <height>217</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -67,119 +67,10 @@
          <x>14</x>
          <y>35</y>
          <width>391</width>
-         <height>131</height>
+         <height>133</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="deadpixelsinterpolationCheckbox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>Dead pixel interpolation  (smoothing algorithm)</string>
-          </property>
-          <property name="text">
-           <string>Interlow interpolation</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="bhcorrCheckbox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>Beam hardening correction</string>
-          </property>
-          <property name="text">
-           <string>BH correction</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" colspan="3">
-         <widget class="Line" name="line">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1" colspan="2">
-         <widget class="QLineEdit" name="obcorrLineEdit">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>150</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1" colspan="2">
-         <widget class="QLineEdit" name="bhcorrLineEdit">
-          <property name="minimumSize">
-           <size>
-            <width>150</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="dragEnabled">
-           <bool>false</bool>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QCheckBox" name="obcorrCheckbox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>Open beam correction also known as flat-field correction</string>
-          </property>
-          <property name="text">
-           <string>OB correction</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="highinterpolationCheckbox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>High pixel interpolation  (smoothing algorithm)</string>
-          </property>
-          <property name="text">
-           <string>Interhigh interpolation</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1" rowspan="2" colspan="2">
          <widget class="QDoubleSpinBox" name="noisyPixelMeanMultiplier">
           <property name="sizePolicy">
@@ -205,6 +96,83 @@
           </property>
           <property name="value">
            <double>20.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="obcorrCheckbox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Open beam correction also known as flat-field correction</string>
+          </property>
+          <property name="text">
+           <string>OB correction</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" colspan="2">
+         <widget class="QLineEdit" name="obcorrLineEdit">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="deadpixelsinterpolationCheckbox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Dead pixel interpolation  (smoothing algorithm)</string>
+          </property>
+          <property name="text">
+           <string>Interlow interpolation</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="3">
+         <widget class="Line" name="line">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="highinterpolationCheckbox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>High pixel interpolation  (smoothing algorithm)</string>
+          </property>
+          <property name="text">
+           <string>Interhigh interpolation</string>
           </property>
          </widget>
         </item>
@@ -279,8 +247,6 @@
   <tabstop>noisyPixelMeanMultiplier</tabstop>
   <tabstop>obcorrCheckbox</tabstop>
   <tabstop>obcorrLineEdit</tabstop>
-  <tabstop>bhcorrCheckbox</tabstop>
-  <tabstop>bhcorrLineEdit</tabstop>
   <tabstop>applyCorr</tabstop>
  </tabstops>
  <resources/>

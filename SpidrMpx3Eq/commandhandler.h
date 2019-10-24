@@ -35,10 +35,10 @@ public:
     void setAutoSave(bool);
     bool setRecordPath(QString);
     void setRecordFormat(int);
-    int setThreshold(int,int);
-    int setThreshold(int,int,int);
-    int getThreshold(int, double *);
-    int getThreshold(int,int,int*);
+    int setThreshold(int threshold, int DAC_value);
+    int setThreshold(int chip, int DAC_value, int t);
+    int getThreshold(int threshold, double *DAC_value);
+    int getThreshold(int threshold, int chipId, int *DAC_value);
     int setStartScan(int);
     int setStopScan(int);
     int setStepScan(int);
@@ -106,7 +106,6 @@ public slots:
     void on_someCommandHasFinished_Successfully();
     void on_equalisationPathExported(QString path);
     void setServerStatus(SERVER_BUSY_TYPE status);
-    void testSetThreshold_idx_val_chipId(); /* Test function for set threshold */
 
 private:
     void initializeCmdTable();

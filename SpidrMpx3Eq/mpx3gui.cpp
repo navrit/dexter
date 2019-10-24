@@ -40,142 +40,44 @@
 
 static Mpx3GUI *mpx3GuiInstance;
 
+// Change me when adding extra views
+QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
+QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
+QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
+QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
+QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
+QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
+thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
+hdmiConfig * Mpx3GUI::getHdmiConfig(){ return _ui->hdmiConfigTab; }
+EnergyConfiguration * Mpx3GUI::getEnergyConfiguration() { return _ui->EnergyConfigurationTab; }
+
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
     _ui(new Ui::Mpx3GUI)
 {
     qDebug().noquote() << "[VERSION]\t" << _softwareVersion;
 
-    // Instantiate everything in the UI
-    _ui->setupUi(this);
-    this->setWindowTitle(_softwareName);
-    workingSet = new Dataset(128, 128, 4);
-    originalSet = new Dataset(128, 128, 4);
-    config = new Mpx3Config;
-    config->SetMpx3GUI( this );
+    _initialiseInternalObjects();
+    _initialiseDataset();
+    _initialiseGUITabs();
+    _handleConfigLoading();
+    _connectKeyboardShortcuts();
+    _setupSignalsAndSlots();
+    _intialiseLabels();
+    _initialiseServers();
 
-    dataControllerThread = new DataControllerThread(this);
-    _generalSettings = new GeneralSettings;
-    _energyCalibrator = new EnergyCalibrator;
+    _shutterOpenTimer  = new QTimer(this);
+    _shutterCloseTimer = new QTimer(this);
 
-    //! FleXray - ZMQ to XRE/TeSCAN Acquila interface
-    m_zmqController = new zmqController(this);
-    m_zmqController->SetMpx3GUI(this);
-
-    // The orientations carry the information of how the information
-    //  from a given chip should be drawn in the screen.
-    auto ds = getDataset();
-    ds->setOrientation(0, _MPX3RX_ORIENTATION[0]);
-    ds->setOrientation(1, _MPX3RX_ORIENTATION[1]);
-    ds->setOrientation(2, _MPX3RX_ORIENTATION[2]);
-    ds->setOrientation(3, _MPX3RX_ORIENTATION[3]);
-
-    // The layout is the position of the chip in the assembly.
-    ds->setLayout(0,  _MPX3RX_LAYOUT[0]);
-    ds->setLayout(1,  _MPX3RX_LAYOUT[1]);
-    ds->setLayout(2,  _MPX3RX_LAYOUT[2]);
-    ds->setLayout(3,  _MPX3RX_LAYOUT[3]);
-    ds->computeBoundingBox();
-
-    QString heatmapsFile = "./config/heatmaps.json";
-    gradients = Gradient::fromJsonFile( heatmapsFile );
-    QStringList gradientNames;
-
-    if ( gradients.empty() ) {
-        QMessageBox::critical(this, "Loading configuration error",
-                              QString("Couldn't load the following configuration file: %1 . The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"" ).arg(heatmapsFile).arg(QDir::currentPath()));
-        _armedOk = false; // it won't let the application go into the event loop
-        return;
-    } else {
-        for ( int i = 0 ; i < gradients.length() ; i++ )
-            gradientNames.append(gradients[i]->getName());
-    }
-
-    // Change me when adding extra views
-    //! Preparation of extra new views - add a new tab in the UI file.
-    //! - Look for the widgets by name from the ones below here
-    //! CHANGE the tab class type in the UI file by text
-
-    // Prepare DACs panel
-    _ui->DACsWidget->SetMpx3GUI( this );
-    _ui->DACsWidget->setWindowWidgetsStatus(); // startup status
-
-    // Prepare Equalisation
-    _ui->equalizationWidget->SetMpx3GUI( this );
-    _ui->equalizationWidget->setWindowWidgetsStatus();
-
-    if ( ! gradients.empty() ) {
-        // Prepare Visualization
-        _ui->visualizationGL->SetMpx3GUI(this);
-
-        emit availible_gradients_changed(gradientNames);
-    }
-
-    // Prepare THL Calibration
-    _ui->ThresholdTab->SetMpx3GUI(this);
-
-    //Config & monitoring
-    _ui->CnMWidget->SetMpx3GUI(this);
-    _ui->CnMWidget->widgetInfoPropagation();
-
-    // Stepper Motor control view
-    _ui->stepperMotorTab->SetMpx3GUI(this);
-
-    // CT
-    _ui->ctTab->SetMpx3GUI( this );
-    // Threshold scan
-    _ui->THScan->SetMpx3GUI( this );
-
-    // Read the configuration
-    //QString configFile = "./config/mpx3.json";
-
-    //if ( ! config->fromJsonFile( configFile ) ) {
-    _loadingBeforeConnecting = true;
-    bool configFileLoaded =  _loadConfigsFromGeneralSettings();
-    if (!configFileLoaded)
-    {
-        qDebug() << "["<< _generalSettings->getConfigPath() << "] does not exist. Config file loaded from defualt path.";
-        configFileLoaded = load_config_remotely("./config/mpx3.json");
-
-    }
-
-    if (! configFileLoaded) {
-        QMessageBox::critical(this, "Loading configuration error",
-                              QString("Couldn't load the following configuration file: %1. The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"").arg(_generalSettings->getConfigPath()).arg(QDir::currentPath()));
-        _armedOk = false; // it won't let the application go into the event loop
-        return;
-    }
-    _loadingBeforeConnecting = false;
-    // View keyboard shortcuts
-    // NOTE: Change on_shortcutsSwithPages to match this
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+1", "Switch to viewer") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+2", "Switch to configuration and monitoring") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to Threshold Scan") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+6", "Switch to Scans") ), this)  );
-
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+8", "Switch to Stepper Motor Control") ), this)  );
-
-    SetupSignalsAndSlots();
-
-    m_statusBarMessageLabel.setTextFormat( Qt::RichText );
-
-    // Add the QLabel permanently to the statusBar
-    _ui->statusBar->addPermanentWidget( &m_statusBarMessageLabel, 0 );
-
-    m_statusBarMessageString.clear( );
-
-    initialiseServers();
-    updateEnergyCalibratorParameters();
     mpx3GuiInstance = this;
-    shutterOpenTimer  = new QTimer(this);
-    shutterCloseTimer = new QTimer(this);
+
     QTimer::singleShot(0, this, SLOT(autoConnectToDetector()));
 }
 
 Mpx3GUI::~Mpx3GUI() {
+    delete config;
+    delete workingSet;
+    delete _ui;
 }
 
 void Mpx3GUI::resize(int x, int y) {
@@ -202,7 +104,7 @@ void Mpx3GUI::addLayer(int * data, int layer) {
 }
 
 Gradient* Mpx3GUI::getGradient(int index){
-    return gradients.at(index);
+    return _gradients.at(index);
 }
 
 SpidrController * Mpx3GUI::GetSpidrController(){
@@ -235,8 +137,8 @@ void Mpx3GUI::sendingShutter()
     qDebug() << "ShutterClose_us : " << getConfig()->getTriggerDowntime_64();
     //GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
     //GetSpidrController()->startAutoTrigger(); //openshutter
-    connect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
-    connect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
+    connect(_shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
+    connect(_shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
     _timerStop = false;
     shutterCloseTimer_timeout();
     qDebug() << "_timerStop on_sending: " << _timerStop;
@@ -327,8 +229,8 @@ void Mpx3GUI::loadLastConfiguration()
 void Mpx3GUI::stopTriggerTimers()
 {
     //GetSpidrController()->stopAutoTrigger();
-    disconnect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
-    disconnect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
+    disconnect(_shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
+    disconnect(_shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
     _timerStop = true;
     qDebug() << "_timerStop stopTriggerTimers: " << _timerStop;
 }
@@ -336,95 +238,6 @@ void Mpx3GUI::stopTriggerTimers()
 CommandHandlerWrapper *Mpx3GUI::getCommandHandlerWrapper()
 {
     return commandHandlerWrapper;
-}
-
-void Mpx3GUI::SetupSignalsAndSlots(){
-
-    connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
-    connect( _ui->actionLoad_equalisation_from_folder, SIGNAL(triggered()), this, SLOT( loadEqualisationFromPath()) );
-
-    connect( _ui->actionSave_DACs, SIGNAL(triggered()), this, SLOT( save_config()) );
-    connect( _ui->actionLoad_DACs, SIGNAL(triggered()), this, SLOT( load_config()) );
-    //connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
-
-    connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
-    connect(_ui->actionDiscrete, SIGNAL(triggered()), this, SLOT(set_mode_normal()));
-
-    connect(_ui->actionSave_data, SIGNAL(triggered(bool)), this, SLOT(save_data(bool)));
-    connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _ui->equalizationWidget, SLOT(SaveEqualization()));
-    connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
-    connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(zero_data()));
-    connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
-
-    connect(_ui->actionDeveloper_mode, SIGNAL(triggered()), this, SLOT(developerMode()));
-
-    // Change me when adding extra views
-    // Inform every module of changes in connection status
-    connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool)) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool)) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool)) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool)) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget, SLOT( ConnectionStatusChanged(bool)) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->hdmiConfigTab, SLOT(ConnectionStatusChanged(bool)) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->THScan, SLOT(ConnectionStatusChanged(bool)) );
-
-    connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
-    connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
-    connect( this, &Mpx3GUI::sig_statusBarClean, this, &Mpx3GUI::statusBarClean );
-
-    //! Part 4: Send equalisation loaded from ... to mpx3gui status bar
-    // Connect signal from QCstmEqualization widget to slot here
-    connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
-    connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarClean, this, &Mpx3GUI::statusBarClean);
-
-    connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
-
-    connect( getConfig(), SIGNAL(colourModeChanged(bool)), getTHScan(), SLOT(slot_colourModeChanged()));
-    connect( getConfig(), SIGNAL(readBothCountersChanged(bool)), getTHScan(), SLOT(slot_doubleCounterModeChanged()));
-
-    for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
-        connect( _shortcutsSwitchPages[i], &QShortcut::activated,
-                 this, &Mpx3GUI::on_shortcutsSwitchPages );
-    }
-
-
-
-    // Make Dexter somewhat scriptable via the GUI
-
-    // Connections to Visualisation
-    QShortcut *shortcutStart = new QShortcut(QKeySequence("s"), this);
-    connect(shortcutStart, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutStart()));
-    QShortcut *shortcutIntegrate = new QShortcut(QKeySequence("i"), this);
-    connect(shortcutIntegrate, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrate()));
-    QShortcut *shortcutIntegrateToggle = new QShortcut(QKeySequence("Alt+i"), this);
-    connect(shortcutIntegrateToggle, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrateToggle()));
-    QShortcut *shortcutFrameLength = new QShortcut(QKeySequence("l"), this);
-    connect(shortcutFrameLength, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameLength()));
-    QShortcut *shortcutFrameNumber = new QShortcut(QKeySequence("f"), this);
-    connect(shortcutFrameNumber, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameNumber()));
-
-    // Connections to Configuration and settings
-    QShortcut *shortcutGainModeSLGM = new QShortcut(QKeySequence("g, 4"), this);
-    connect(shortcutGainModeSLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSLGM()));
-    QShortcut *shortcutGainModeLGM = new QShortcut(QKeySequence("g, 3"), this);
-    connect(shortcutGainModeLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeLGM()));
-    QShortcut *shortcutGainModeHGM = new QShortcut(QKeySequence("g, 2"), this);
-    connect(shortcutGainModeHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeHGM()));
-    QShortcut *shortcutGainModeSHGM = new QShortcut(QKeySequence("g, 1"), this);
-    connect(shortcutGainModeSHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSHGM()));
-
-    QShortcut *shortcutCSMOff = new QShortcut(QKeySequence("c, 0"), this);
-    connect(shortcutCSMOff, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOff()));
-    QShortcut *shortcutCSMOn = new QShortcut(QKeySequence("c, 1"), this);
-    connect(shortcutCSMOn, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOn()));
-
-    // Connections to DACs
-    QShortcut *shortcutTH0 = new QShortcut(QKeySequence("t, 0"), this);
-    connect(shortcutTH0, SIGNAL(activated()), _ui->DACsWidget, SLOT(shortcutTH0()));
-    QShortcut *shortcutIkrum = new QShortcut(QKeySequence("Ctrl+D, i"), this);
-    connect(shortcutIkrum, SIGNAL(activated()), _ui->DACsWidget, SLOT(shortcutIkrum()));
-
 }
 
 Mpx3GUI *Mpx3GUI::getInstance()
@@ -441,40 +254,50 @@ void Mpx3GUI::on_shortcutsSwitchPages() {
 
     QKeySequence k = sc->key();
     if ( k.matches( QKeySequence(tr("Ctrl+1")) ) ) {
-        uncheckAllToolbarButtons();
+        _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
         _ui->actionVisualization->setChecked(1);
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+2")) ) ) {
-        uncheckAllToolbarButtons();
+        _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
         _ui->actionConfiguration->setChecked(1);
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+3")) ) ) {
-        uncheckAllToolbarButtons();
+        _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
         _ui->actionDACs->setChecked(1);
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
-        uncheckAllToolbarButtons();
+        _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __equalisation_page_Id );
         _ui->actionEqualization->setChecked(1);
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ) {
-        uncheckAllToolbarButtons();
+        _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
         _ui->actionThreshold_Scan->setChecked(1);
 
+    } else if ( k.matches( QKeySequence(tr("Ctrl+6")) ) ) {
+        _uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __energyConfiguration_page_Id );
+        _ui->actionEnergy_configuration->setChecked(1);
+
+    } else if ( k.matches( QKeySequence(tr("Ctrl+7")) ) ) {
+        _uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __hdmi_config_page_Id );
+        _ui->actionHDMI_Config->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+6")) ) ){
-        uncheckAllToolbarButtons();
+        _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
         //_ui->actionScans->setChecked(1);
     } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+7")) ) ){
-        uncheckAllToolbarButtons();
+        _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
         //_ui-> actionXXX ->setChecked(1);
     } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+8")) ) ){
-        uncheckAllToolbarButtons();
+        _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
         _ui->actionStepper_Motor->setChecked(1);
     }
@@ -492,28 +315,13 @@ void Mpx3GUI::rebuildCurrentSets(int x, int y, int framesPerLayer)
     workingSet->setOrientation(0, _MPX3RX_ORIENTATION[0]);
     workingSet->setLayout(0,  _MPX3RX_LAYOUT[0]);
     workingSet->computeBoundingBox();
-    delete originalSet;
-    originalSet = new Dataset(x, y, framesPerLayer);
 }
 
 void Mpx3GUI::startupActions()
 {
-
-    /////////////////////////////////////////////////////////
-    // startup actions
-    if ( ! gradients.empty() ) {
+    if ( ! _gradients.empty() ) {
         _ui->visualizationGL->startupActions();
-
     }
-
-}
-
-void Mpx3GUI::saveOriginalDataset(){
-    *originalSet = *workingSet;
-}
-
-void Mpx3GUI::rewindToOriginalDataset(){
-    *workingSet = *originalSet;
 }
 
 void Mpx3GUI::setWindowWidgetsStatus(win_status s)
@@ -535,17 +343,16 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
         break;
 
     default:
-
         break;
-
     }
 }
 
 void Mpx3GUI::set_summing(bool shouldSum){
-    if(shouldSum)
+    if (shouldSum) {
         set_mode_integral();
-    else
+    } else {
         set_mode_normal();
+    }
 }
 
 bool Mpx3GUI::establish_connection() {
@@ -628,8 +435,8 @@ bool Mpx3GUI::establish_connection() {
     // SpidrDaq
     _spidrdaq = new SpidrDaq( spidrcontrol );
 
-    for( int i=0; i<4; ++i ){
-        msg += " " + QString::fromStdString(_spidrdaq->ipAddressString(i)) + " ";
+    for(int i=0; i<4; ++i){
+        msg += " " + QString::fromStdString(_spidrdaq->ipAddressString(/*i*/)) + " ";
     }
 
     if ( _spidrdaq->hasError() ) {
@@ -665,11 +472,9 @@ bool Mpx3GUI::establish_connection() {
     //  working on startup.  Now upon connection a new one will be
     //  instantiated.
     delete workingSet;
-    delete originalSet;
 
     int chipSize = config->getColourMode()? __matrix_size_x /2: __matrix_size_x ;
     workingSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth()); //TODO: get framesize from config, load offsets & orientation from config
-    originalSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth());
 
     clear_data( false );
 
@@ -688,7 +493,7 @@ void Mpx3GUI::statusBarAppend(QString mess, QString colorString)
 {
 
     QString toappend;
-    if ( ! m_statusBarMessageString.isEmpty() ) {
+    if ( ! _statusBarMessageString.isEmpty() ) {
         toappend += " | ";
     }
 
@@ -699,24 +504,24 @@ void Mpx3GUI::statusBarAppend(QString mess, QString colorString)
     toappend += "</font>";
 
     // Append
-    m_statusBarMessageString.append( toappend );
+    _statusBarMessageString.append( toappend );
 
     // Associate to the label
-    m_statusBarMessageLabel.setText( m_statusBarMessageString );
+    _statusBarMessageLabel.setText( _statusBarMessageString );
 
     // See if it fits in the status bar other wise cut stuff
-    QRect messRect = m_statusBarMessageLabel.geometry();
+    QRect messRect = _statusBarMessageLabel.geometry();
     QRect statusRect = _ui->statusBar->geometry();
 
     //qDebug() << "mess:" << messRect.width() << "stat:" << statusRect.width() << " | " << m_statusBarMessageString << "\n";
 
     while ( (messRect.width() + 100) > statusRect.width() ) {
 
-        m_statusBarMessageString = removeOneMessage( m_statusBarMessageString );
-        m_statusBarMessageLabel.setText( m_statusBarMessageString );
-        m_statusBarMessageLabel.adjustSize();
+        _statusBarMessageString = removeOneMessage( _statusBarMessageString );
+        _statusBarMessageLabel.setText( _statusBarMessageString );
+        _statusBarMessageLabel.adjustSize();
 
-        messRect = m_statusBarMessageLabel.geometry();
+        messRect = _statusBarMessageLabel.geometry();
         statusRect = _ui->statusBar->geometry();
 
         //qDebug() << "mess:" << messRect.width() << "stat:" << statusRect.width() << " | " << m_statusBarMessageString << "\n";
@@ -724,7 +529,7 @@ void Mpx3GUI::statusBarAppend(QString mess, QString colorString)
     }
 
     _ui->statusBar->update();
-    m_statusBarMessageLabel.update();
+    _statusBarMessageLabel.update();
 
 }
 
@@ -739,24 +544,24 @@ void Mpx3GUI::statusBarWrite(QString mess, QString colorString)
 
 
     // clear all previous messages
-    m_statusBarMessageString.clear();
+    _statusBarMessageString.clear();
 
     //
-    m_statusBarMessageLabel.setText( m_statusBarMessageString );
+    _statusBarMessageLabel.setText( _statusBarMessageString );
 
     _ui->statusBar->update();
-    m_statusBarMessageLabel.update();
+    _statusBarMessageLabel.update();
 
 }
 
 void Mpx3GUI::statusBarClean() {
 
-    m_statusBarMessageString.clear();
-    m_statusBarMessageLabel.setText( m_statusBarMessageString );
+    _statusBarMessageString.clear();
+    _statusBarMessageLabel.setText( _statusBarMessageString );
     _ui->statusBar->clearMessage();
 
     _ui->statusBar->update();
-    m_statusBarMessageLabel.update();
+    _statusBarMessageLabel.update();
 
 }
 
@@ -768,6 +573,261 @@ QString Mpx3GUI::removeOneMessage(QString fullMess){
     }
 
     return fullMess;
+}
+
+void Mpx3GUI::_initialiseInternalObjects()
+{
+    _ui->setupUi(this); // Instantiate everything in the UI
+
+    this->setWindowTitle(_softwareName);
+    workingSet = new Dataset(128, 128, 4);
+
+    config = new Mpx3Config;
+    config->SetMpx3GUI( this );
+
+    dataControllerThread = new DataControllerThread(this);
+    _generalSettings = new GeneralSettings;
+    _energyCalibrator = new EnergyCalibrator;
+
+    //! FleXray - ZMQ to XRE/TeSCAN Acquila interface
+    m_zmqController = new zmqController(this);
+    m_zmqController->SetMpx3GUI(this);
+}
+
+void Mpx3GUI::_initialiseDataset()
+{
+    // The orientations carry the information of how the information
+    //  from a given chip should be drawn in the screen.
+    getDataset()->setOrientation(0, _MPX3RX_ORIENTATION[0]);
+    getDataset()->setOrientation(1, _MPX3RX_ORIENTATION[1]);
+    getDataset()->setOrientation(2, _MPX3RX_ORIENTATION[2]);
+    getDataset()->setOrientation(3, _MPX3RX_ORIENTATION[3]);
+
+    // The layout is the position of the chip in the assembly.
+    getDataset()->setLayout(0,  _MPX3RX_LAYOUT[0]);
+    getDataset()->setLayout(1,  _MPX3RX_LAYOUT[1]);
+    getDataset()->setLayout(2,  _MPX3RX_LAYOUT[2]);
+    getDataset()->setLayout(3,  _MPX3RX_LAYOUT[3]);
+}
+
+void Mpx3GUI::_initialiseGUITabs()
+{
+    QString heatmapsFile = "./config/heatmaps.json";
+    _gradients = Gradient::fromJsonFile( heatmapsFile );
+    QStringList gradientNames;
+
+    if ( _gradients.empty() ) {
+        QMessageBox::critical(this, "Loading configuration error",
+                              QString("Couldn't load the following configuration file: %1 . The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"" ).arg(heatmapsFile).arg(QDir::currentPath()));
+        _armedOk = false; // it won't let the application go into the event loop
+        return;
+    } else {
+        for ( int i = 0 ; i < _gradients.length() ; i++ )
+            gradientNames.append(_gradients[i]->getName());
+    }
+
+    // Change me when adding extra views
+    //! Preparation of extra new views - add a new tab in the UI file.
+    //! - Look for the widgets by name from the ones below here
+    //! CHANGE the tab class type in the UI file by text
+
+    // Prepare DACs panel
+    _ui->DACsWidget->SetMpx3GUI( this );
+    _ui->DACsWidget->setWindowWidgetsStatus(); // startup status
+
+    // Prepare Equalisation
+    _ui->equalizationWidget->SetMpx3GUI( this );
+    _ui->equalizationWidget->setWindowWidgetsStatus();
+
+    if ( ! _gradients.empty() ) {
+        // Prepare Visualization
+        _ui->visualizationGL->SetMpx3GUI(this);
+
+        emit availible_gradients_changed(gradientNames);
+    }
+
+    // Prepare THL Calibration
+    _ui->ThresholdTab->SetMpx3GUI(this);
+
+    //Config & monitoring
+    _ui->CnMWidget->SetMpx3GUI(this);
+    _ui->CnMWidget->setWindowWidgetsStatus();
+    _ui->CnMWidget->widgetInfoPropagation();
+
+    // Stepper Motor control view
+    _ui->stepperMotorTab->SetMpx3GUI(this);
+
+    // CT tab
+    _ui->ctTab->SetMpx3GUI( this );
+
+    // Threshold scan
+    _ui->THScan->SetMpx3GUI( this );
+    _ui->THScan->setWindowWidgetsStatus();
+
+    // Energy configuration
+    _ui->EnergyConfigurationTab->SetMpx3GUI( this );
+    _ui->EnergyConfigurationTab->setWindowWidgetsStatus();
+
+    // HDMI config tab
+    _ui->hdmiConfigTab->SetMpx3GUI( this );
+    _ui->hdmiConfigTab->setWindowWidgetsStatus();
+}
+
+void Mpx3GUI::_handleConfigLoading()
+{
+    bool configFileLoaded =  _loadConfigsFromGeneralSettings();
+    _loadingBeforeConnecting = true;
+
+    if (!configFileLoaded) {
+        qDebug() << "["<< _generalSettings->getConfigPath() << "] does not exist. Config file loaded from defualt path.";
+        configFileLoaded = load_config_remotely("./config/mpx3.json");
+    }
+
+    if (! configFileLoaded) {
+        QMessageBox::critical(this, "Loading configuration error",
+                              QString("Couldn't load the following configuration file: %1. The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"").arg(_generalSettings->getConfigPath()).arg(QDir::currentPath()));
+        _armedOk = false; // it won't let the application go into the event loop
+        return;
+    }
+
+    _loadingBeforeConnecting = false;
+}
+
+void Mpx3GUI::_connectKeyboardShortcuts()
+{
+    // View keyboard shortcuts
+    // NOTE: Change on_shortcutsSwitchPages to match this
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+1", "Switch to viewer") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+2", "Switch to configuration and monitoring") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to Threshold Scan") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to Energy configuration") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+7", "Switch to HDMI Config") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+6", "Switch to Scans") ), this)  );
+
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+8", "Switch to Stepper Motor Control") ), this)  );
+
+    // Make Dexter somewhat scriptable via the GUI
+
+    // Connections to Visualisation
+    QShortcut *shortcutStart = new QShortcut(QKeySequence("s"), this);
+    connect(shortcutStart, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutStart()));
+    QShortcut *shortcutIntegrate = new QShortcut(QKeySequence("i"), this);
+    connect(shortcutIntegrate, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrate()));
+    QShortcut *shortcutIntegrateToggle = new QShortcut(QKeySequence("Alt+i"), this);
+    connect(shortcutIntegrateToggle, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrateToggle()));
+    QShortcut *shortcutFrameLength = new QShortcut(QKeySequence("l"), this);
+    connect(shortcutFrameLength, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameLength()));
+    QShortcut *shortcutFrameNumber = new QShortcut(QKeySequence("f"), this);
+    connect(shortcutFrameNumber, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameNumber()));
+
+    // Connections to Configuration and settings
+    QShortcut *shortcutGainModeSLGM = new QShortcut(QKeySequence("g, 4"), this);
+    connect(shortcutGainModeSLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSLGM()));
+    QShortcut *shortcutGainModeLGM = new QShortcut(QKeySequence("g, 3"), this);
+    connect(shortcutGainModeLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeLGM()));
+    QShortcut *shortcutGainModeHGM = new QShortcut(QKeySequence("g, 2"), this);
+    connect(shortcutGainModeHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeHGM()));
+    QShortcut *shortcutGainModeSHGM = new QShortcut(QKeySequence("g, 1"), this);
+    connect(shortcutGainModeSHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSHGM()));
+
+    QShortcut *shortcutCSMOff = new QShortcut(QKeySequence("c, 0"), this);
+    connect(shortcutCSMOff, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOff()));
+    QShortcut *shortcutCSMOn = new QShortcut(QKeySequence("c, 1"), this);
+    connect(shortcutCSMOn, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOn()));
+}
+
+void Mpx3GUI::_setupSignalsAndSlots()
+{
+    connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
+    connect( _ui->actionLoad_equalisation_from_folder, SIGNAL(triggered()), this, SLOT( loadEqualisationFromPath()) );
+
+    connect( _ui->actionSave_DACs, SIGNAL(triggered()), this, SLOT( save_config()) );
+    connect( _ui->actionLoad_DACs, SIGNAL(triggered()), this, SLOT( load_config()) );
+
+    connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
+    connect(_ui->actionDiscrete, SIGNAL(triggered()), this, SLOT(set_mode_normal()));
+
+    connect(_ui->actionSave_data, SIGNAL(triggered(bool)), this, SLOT(save_data(bool)));
+    connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _ui->equalizationWidget, SLOT(SaveEqualization()));
+    connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
+    connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(zero_data()));
+    connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
+
+    connect(_ui->actionDeveloper_mode, SIGNAL(triggered()), this, SLOT(developerMode()));
+
+    // Change me when adding extra views
+    // Inform every module of changes in connection status
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget , SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->EnergyConfigurationTab, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->THScan, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->hdmiConfigTab, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
+
+    connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
+    connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
+    connect( this, &Mpx3GUI::sig_statusBarClean, this, &Mpx3GUI::statusBarClean );
+
+    //! Part 4: Send equalisation loaded from ... to mpx3gui status bar
+    // Connect signal from QCstmEqualization widget to slot here
+    connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
+    connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarClean, this, &Mpx3GUI::statusBarClean);
+    connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
+
+    connect( getConfig(), SIGNAL(colourModeChanged(bool)), getTHScan(), SLOT(slot_colourModeChanged(bool)));
+    connect( getConfig(), SIGNAL(colourModeChanged(bool)), getDACs(), SLOT(slot_colourModeChanged(bool)));
+    connect( getConfig(), SIGNAL(colourModeChanged(bool)), getEnergyConfiguration(), SLOT(slot_colourModeChanged(bool)));
+    connect( getConfig(), SIGNAL(readBothCountersChanged(bool)), getDACs(), SLOT(slot_readBothCounters(bool)));
+    connect( getConfig(), SIGNAL(readBothCountersChanged(bool)), getEnergyConfiguration(), SLOT(slot_readBothCounters(bool)));
+
+    for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
+        connect( _shortcutsSwitchPages[i], &QShortcut::activated,
+                 this, &Mpx3GUI::on_shortcutsSwitchPages );
+    }
+}
+
+void Mpx3GUI::_intialiseLabels()
+{
+    _statusBarMessageLabel.setTextFormat( Qt::RichText );
+
+    // Add the QLabel permanently to the statusBar
+    _ui->statusBar->addPermanentWidget( &_statusBarMessageLabel, 0 );
+
+    _statusBarMessageString.clear( );
+}
+
+void Mpx3GUI::_initialiseServers()
+{
+    //! Diamond - Merlin interface commands socket
+    tcpServer = new TcpServer;
+    if (!tcpServer->listen(QHostAddress::Any, tcpCommandPort)) {
+        qWarning() << "[ERROR]\tTCP Command server cannot listen on port:" << tcpCommandPort;
+        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpCommandPort;
+        return;
+    } else {
+        qDebug().nospace() << "[INFO]\tTCP Command server listening on \"tcp://*:" << tcpCommandPort << "\"";
+    }
+    commandHandlerWrapper = new CommandHandlerWrapper(this);
+    connect(tcpServer,SIGNAL(dataReceived(QString)),commandHandlerWrapper,SLOT(on_dataReceived(QString)));
+    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
+
+    //! Diamond - Merlin interface data socket
+    dataServer = new TcpServer;
+    if(!dataServer->listen(QHostAddress::Any, tcpDataPort)) {
+        qWarning() << "[ERROR]\tTCP Data server cannot listen on port:" << tcpDataPort;
+        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpDataPort;
+        return;
+    } else {
+        qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
+    }
+    connect(commandHandlerWrapper,SIGNAL(imageIsReady(QByteArray,Canvas)),dataServer,SLOT(on_imageIsReady(QByteArray,Canvas)));
+
 }
 
 void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
@@ -827,8 +887,6 @@ void Mpx3GUI::generateFrame(){
     emit reload_all_layers();
 }
 
-
-
 int Mpx3GUI::getPixelAt(int x, int y, int layer){
     return getDataset()->sample(x,y, layer);
     //if(layer >= data.length() || x >= nx || y >= ny)
@@ -857,7 +915,7 @@ int Mpx3GUI::getFrameCount(){
 }
 
 QString Mpx3GUI::getLoadButtonFilename() {
-    return loadButtonFilenamePath;
+    return _loadButtonFilenamePath;
 }
 
 void Mpx3GUI::saveMetadataToJSON(QString filename){
@@ -960,34 +1018,6 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     qDebug() << "[INFO]\tJSON File saved";
 }
 
-void Mpx3GUI::initialiseServers()
-{
-    //! Diamond - Merlin interface commands socket
-    tcpServer = new TcpServer;
-    if (!tcpServer->listen(QHostAddress::Any, tcpCommandPort)) {
-        qWarning() << "[ERROR]\tTCP Command server cannot listen on port:" << tcpCommandPort;
-        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpCommandPort;
-        return;
-    } else {
-        qDebug().nospace() << "[INFO]\tTCP Command server listening on \"tcp://*:" << tcpCommandPort << "\"";
-    }
-    commandHandlerWrapper = new CommandHandlerWrapper(this);
-    connect(tcpServer,SIGNAL(dataReceived(QString)),commandHandlerWrapper,SLOT(on_dataReceived(QString)));
-    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
-
-    //! Diamond - Merlin interface data socket
-    dataServer = new TcpServer;
-    if(!dataServer->listen(QHostAddress::Any, tcpDataPort)) {
-        qWarning() << "[ERROR]\tTCP Data server cannot listen on port:" << tcpDataPort;
-        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpDataPort;
-        return;
-    } else {
-        qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
-    }
-    connect(commandHandlerWrapper,SIGNAL(imageIsReady(QByteArray,Canvas)),dataServer,SLOT(on_imageIsReady(QByteArray,Canvas)));
-
-}
-
 void Mpx3GUI::_loadEqualizationFromGeneralSettings()
 {
     QDir eqDir(_generalSettings->getEqualisationPath());
@@ -1017,32 +1047,33 @@ bool Mpx3GUI::_loadConfigsFromGeneralSettings()
 
 void Mpx3GUI::updateEnergyCalibratorParameters()
 {
+    const int threshold = 0; /* TODO implement the threshold properly, this is just a quick fix */
     _generalSettings->readSetting();
-    for(int i = 0; i < NUMBER_OF_CHIPS; i++){
-        _energyCalibrator->setSlope(i,_generalSettings->getSlope(i));
-        //qDebug() << "load slope " + QString::number(i) +" : " << _energyCalibrator->getSlope(i);
-        _energyCalibrator->setOffset(i,_generalSettings->getOffset(i));
+    for(int chip = 0; chip < __max_number_of_chips; chip++){
+        _energyCalibrator->setSlope(chip, threshold, _generalSettings->getSlope(chip));
+        _energyCalibrator->setOffset(chip, threshold, _generalSettings->getOffset(chip));
     }
-
 }
 
 void Mpx3GUI::developerMode()
 {
-    if (devMode){
+    if (_devMode){
         //! Have to click on menu item to enable/disable buttons
         //! Disables a bunch of GUI items
 
         qDebug() << "[INFO]\tDisabling items";
         _ui->visualizationGL->developerMode(false);
         getConfigMonitoring()->developerMode(false);
+        _ui->actionEnergy_configuration->setVisible(false);
         _ui->actionDefibrillator->setVisible(false);
-        devMode = false;
+        _devMode = false;
     } else {
         qDebug() << "[INFO]\tEnabling items";
         _ui->visualizationGL->developerMode(true);
         getConfigMonitoring()->developerMode(true);
+        _ui->actionEnergy_configuration->setVisible(true);
         _ui->actionDefibrillator->setVisible(true);
-        devMode = true;
+        _devMode = true;
     }
 }
 
@@ -1247,7 +1278,6 @@ void Mpx3GUI::onConnectionStatusChanged(bool conn)
         m_SPIDRSoftwareVersion = "";
         m_numberOfChipsFound = "";
     }
-
 }
 
 
@@ -1297,12 +1327,9 @@ void Mpx3GUI::open_data(bool saveOriginal){
     emit sizeChanged(int(bbox.width() * getDataset()->x()), int(bbox.height() * getDataset()->y())); // goes to qcstmglplot
     emit reload_all_layers();
 
-    // And keep a copy just as in QCstmGLVisualization::data_taking_finished
-    if ( saveOriginal ) saveOriginalDataset();
-
     this->setWindowTitle( _softwareName + QString(": ")+ filename);
 
-    //Ask whether the loaded data is already OBcorrected or not.
+    // Ask whether the loaded data is already OBcorrected or not.
     QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
     if(reply == QMessageBox::Yes) getDataset()->setCorrected(true);
     else getDataset()->setCorrected(false);
@@ -1318,7 +1345,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
         filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"));
     } else {
         filename = path;
-        loadButtonFilenamePath = path;
+        _loadButtonFilenamePath = path;
     }
 
 //    qDebug() << "[INFO] loading image: " << filename;
@@ -1343,14 +1370,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     emit sizeChanged(int(bbox.width() * getDataset()->x()), int(bbox.height() * getDataset()->y())); // goes to qcstmglplot
     emit reload_all_layers();
 
-    // And keep a copy just as in QCstmGLVisualization::data_taking_finished
-    if ( saveOriginal ) saveOriginalDataset();
-
-    /*if(getDataset()->getLayer(0)[0] == 0) {
-        qDebug() << "Mpx3GUI::open_data_with_path : "<< getDataset()->getLayer(0)[0];
-    }*/
-
-    if(!requestPath) {
+    if (!requestPath) {
         emit returnFilename(filename);
     }
 
@@ -1446,16 +1466,6 @@ void Mpx3GUI::zero_data(bool printToStatusBar)
     }
 }
 
-// Change me when adding extra views???
-QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
-QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
-QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
-QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
-QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
-QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
-thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
-hdmiConfig * Mpx3GUI::getHdmiConfig() { return _ui->hdmiConfigTab; }
-
 void Mpx3GUI::on_actionExit_triggered()
 {
 
@@ -1485,7 +1495,7 @@ void Mpx3GUI::on_actionExit_triggered()
 }
 
 // Change me when adding extra views
-void Mpx3GUI::uncheckAllToolbarButtons(){
+void Mpx3GUI::_uncheckAllToolbarButtons(){
     _ui->actionVisualization->setChecked(0);
     _ui->actionConfiguration->setChecked(0);
     _ui->actionDACs->setChecked(0);
@@ -1493,6 +1503,7 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionThreshold_Scan->setChecked(0);
     _ui->actionStepper_Motor->setChecked(0);
     _ui->actionHDMI_Config->setChecked(0);
+    _ui->actionEnergy_configuration->setChecked(0);
     // _ui-> NEW ACTION ->setChecked(0);
 }
 
@@ -1536,25 +1547,25 @@ void Mpx3GUI::on_actionConnect_triggered() {
 }
 
 void Mpx3GUI::on_actionVisualization_triggered(){
-    uncheckAllToolbarButtons();
+    _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
     _ui->actionVisualization->setChecked(1);
 }
 
 void Mpx3GUI::on_actionConfiguration_triggered(){
-    uncheckAllToolbarButtons();
+    _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
     _ui->actionConfiguration->setChecked(1);
 }
 
 void Mpx3GUI::on_actionDACs_triggered(){
-    uncheckAllToolbarButtons();
+    _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
     _ui->actionDACs->setChecked(1);
 }
 
 void Mpx3GUI::on_actionEqualization_triggered(){
-    uncheckAllToolbarButtons();
+    _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __equalisation_page_Id );
     _ui->actionEqualization->setChecked(1);
 }
@@ -1620,7 +1631,7 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
 
 void Mpx3GUI::on_actionStepper_Motor_triggered(bool)
 {
-    uncheckAllToolbarButtons();
+    _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
 }
 
@@ -1686,16 +1697,23 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
 
 void Mpx3GUI::on_actionThreshold_Scan_triggered()
 {
-    uncheckAllToolbarButtons();
+    _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
     _ui->actionThreshold_Scan->setChecked(1);
 }
 
 void Mpx3GUI::on_actionHDMI_Config_triggered()
 {
-    uncheckAllToolbarButtons();
+    _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __hdmi_config_page_Id );
     _ui->actionHDMI_Config->setChecked(1);
+}
+
+void Mpx3GUI::on_actionEnergy_configuration_triggered()
+{
+    _uncheckAllToolbarButtons();
+    _ui->stackedWidget->setCurrentIndex( __energyConfiguration_page_Id );
+    _ui->actionEnergy_configuration->setChecked(1);
 }
 
 void Mpx3GUI::autoConnectToDetector() {
@@ -1712,14 +1730,14 @@ void Mpx3GUI::autoConnectToDetector() {
 void Mpx3GUI::shutterOpenTimer_timeout() {
   qDebug() << "[INFO]\tShutter timer stop open:" << _timerStop;
   if (_timerStop) {
-    shutterCloseTimer->stop();
-    shutterOpenTimer->stop();
+    _shutterCloseTimer->stop();
+    _shutterOpenTimer->stop();
     return;
   }
   GetSpidrController()->stopAutoTrigger(); // Close shutter
-  shutterOpenTimer->stop();                // Stop shutter open timer
+  _shutterOpenTimer->stop();                // Stop shutter open timer
 
-  shutterCloseTimer->start(int(
+  _shutterCloseTimer->start(int(
       getConfig()->getTriggerDowntime_ms_64())); // Start shutter close timer
   //! NOTE 1. This loses precision (uint64_t to int)
   //!      2. The maximum value will be not as intended, it will be clipped if
@@ -1736,14 +1754,14 @@ void Mpx3GUI::shutterOpenTimer_timeout() {
 void Mpx3GUI::shutterCloseTimer_timeout() {
   qDebug() << "[INFO]\tShutter timer stop close:" << _timerStop;
   if (_timerStop) {
-    shutterCloseTimer->stop();
-    shutterOpenTimer->stop();
+    _shutterCloseTimer->stop();
+    _shutterOpenTimer->stop();
     return;
   }
   auto config = getConfig();
   GetSpidrController()->startAutoTrigger(); // Open shutter
 
-  shutterOpenTimer->start(int(config->getTriggerLength_ms_64()));
+  _shutterOpenTimer->start(int(config->getTriggerLength_ms_64()));
   //! NOTE 1. This loses precision (uint64_t to int)
   //!      2. The maximum value will be not as intended, it will be clipped if
   //!      over 2^32-1
@@ -1753,5 +1771,5 @@ void Mpx3GUI::shutterCloseTimer_timeout() {
       qDebug() << "[WARNING]\tShutter open timer argument has lost precision and the maximum value has been limited to" << INT_MAX;
   }
 
-  shutterCloseTimer->stop();
+  _shutterCloseTimer->stop();
 }

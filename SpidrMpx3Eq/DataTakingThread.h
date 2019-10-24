@@ -9,13 +9,9 @@
 
 #include <QThread>
 #include <QVector>
-
 #include <iostream>
-
 #include "mpx3gui.h"
 #include "mpx3defs.h"
-
-using namespace std;
 
 class QCstmGLVisualization;
 class SpidrController;

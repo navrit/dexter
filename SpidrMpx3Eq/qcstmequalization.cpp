@@ -1989,7 +1989,7 @@ void QCstmEqualization::setWindowWidgetsStatus(win_status s)
     switch (s) {
 
     case win_status::startup:
-        this->setEnabled( false );
+        this->setDisabled( true );
         break;
 
     case win_status::connected:

@@ -3,6 +3,8 @@
 #ifndef SPIDRDATA_H
 #define SPIDRDATA_H
 
+#include "stdint.h"
+
 // Format versioning
 #define EVT_HEADER_VERSION  0x00000001
 #define DEV_HEADER_VERSION  0x00000001
@@ -11,42 +13,42 @@
 
 typedef struct EvtHeader
 {
-  u32 headerId;
-  u32 format;
-  u32 headerSize;
-  u32 dataSize;     // Including device headers but not this header
-  u32 ipAddress;
-  u32 nrOfDevices;
-  u32 ports[4];
-  u32 evtNr;
-  u32 secs;         // Date-time of frame arrival (complete)
-  u32 msecs;
-  u32 pixelDepth;
-  u32 triggerConfig[5];
-  u32 unused[32-19];
+  uint32_t headerId;
+  uint32_t format;
+  uint32_t headerSize;
+  uint32_t dataSize;     // Including device headers but not this header
+  uint32_t ipAddress;
+  uint32_t nrOfDevices;
+  uint32_t ports[4];
+  uint32_t evtNr;
+  uint32_t secs;         // Date-time of frame arrival (complete)
+  uint32_t msecs;
+  uint32_t pixelDepth;
+  uint32_t triggerConfig[5];
+  uint32_t unused[32-19];
 } EvtHeader_t;
 
 typedef struct DevHeader
 {
-  u32 headerId;
-  u32 format;
-  u32 headerSize;
-  u32 dataSize;       // Not including this header
-  u32 deviceId;
-  u32 deviceType;
-  u32 spidrHeader[3]; // Trigger/shutter counter, sequence number, time stamp
-  u32 lostPackets;
-  u32 unused[16-10];
+  uint32_t headerId;
+  uint32_t format;
+  uint32_t headerSize;
+  uint32_t dataSize;       // Not including this header
+  uint32_t deviceId;
+  uint32_t deviceType;
+  uint32_t spidrHeader[3]; // Trigger/shutter counter, sequence number, time stamp
+  uint32_t lostPackets;
+  uint32_t unused[16-10];
 } DevHeader_t;
 
 typedef struct SpidrHeader
 {
   // NB: copy of header produced by the SPIDR module; values are big-endian
-  u16 triggerCnt;
-  u16 sequenceNr;
-  u16 timeLo;
-  u16 timeMi;
-  u16 timeHi;
+  uint16_t triggerCnt;
+  uint16_t sequenceNr;
+  uint16_t timeLo;
+  uint16_t timeMi;
+  uint16_t timeHi;
 } SpidrHeader_t;
 
 #define EVT_HEADER_SIZE      sizeof(EvtHeader_t)

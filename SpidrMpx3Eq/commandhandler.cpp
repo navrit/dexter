@@ -51,8 +51,6 @@ void CommandHandler::initializeCmdTable()
     cmd_struct getCounterDepth{getCounterDepthHandler};
     cmdTable.insert("GetCounterDepth",getCounterDepth);
 
-
-
     //temperatures info
     cmd_struct getChipTemperature{getChipTemperatureHandler};
     cmdTable.insert("GetChipTemperature",getChipTemperature);
@@ -62,8 +60,6 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("GetFpgaTemperature",getFpgaTemperature);
     cmd_struct getHumidity{getHumidityHandler};
     cmdTable.insert("GetHumidity",getHumidity);
-
-
 
     cmd_struct setOperationalMode{setOperationalModeHandler};
     cmdTable.insert("SetOperationalMode",setOperationalMode);
@@ -274,58 +270,47 @@ void CommandHandler::setRecordFormat(int idx)
     emit requestForSettingSaveFormat(idx);
 }
 
-int CommandHandler::setThreshold(int idx, int val)
+int CommandHandler::setThreshold(int chip, int DAC_value)
 {
-    if(idx >= 0 && idx <= 7){
-        QCstmDacs::getInstance()->GetCheckBoxList()[idx]->setChecked(true);
-        QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
+    if (chip >= 0 && chip < __max_number_of_chips) {
+        QCstmDacs::getInstance()->GetCheckBoxList()[chip]->setChecked(true);
+        QCstmDacs::getInstance()->GetSpinBoxList()[chip]->setValue(DAC_value);
         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(true);
-
-        qApp->processEvents(); /* The GUI won't process events if they all occur in a very short timescale unless you make it */
 
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
 }
 
-int CommandHandler::setThreshold(int idx, int val, int chipId)
+int CommandHandler::setThreshold(int chip, int DAC_value, int threshold)
 {
+    if (threshold >= 0 && threshold < __max_number_of_thresholds &&
+            chip >= 0 && chip < __max_number_of_chips) {
 
-    if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
         SpidrController *spidrController = Mpx3GUI::getInstance()->GetSpidrController();
         QCstmDacs::getInstance()->setRemoteRequestForSettingThreshold(true);
         // Set actual DAC
-        spidrController->setDac(chipId,idx+1,val);
-        QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
+        spidrController->setDac(threshold,chip+1,DAC_value);
+        QCstmGLVisualization::getInstance()->setThresholdsVector(chip, threshold,DAC_value);
+        return NO_ERROR;
+    } else {
+        return UNKNOWN_ERROR;
+    }
+}
+
+int CommandHandler::getThreshold(int threshold, double *DAC_value)
+{
+    if (threshold >= 0 && threshold < __max_number_of_thresholds) {
+        *DAC_value = QCstmGLVisualization::getInstance()->getThresholdVector(0, threshold);
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
 }
 
-void CommandHandler::testSetThreshold_idx_val_chipId() {
-    setThreshold(0, 1, 0);
-    setThreshold(0, 2, 0);
-    setThreshold(0, 3, 1);
-    setThreshold(0, 4, 1);
-    setThreshold(0, 5, 1);
-    setThreshold(0, 6, 0);
-}
-
-int CommandHandler::getThreshold(int idx,double *val)
+int CommandHandler::getThreshold(int threshold, int chipId, int *DAC_value)
 {
-    if (idx >= 0 && idx <= 7){
-
-        *val = QCstmGLVisualization::getInstance()->getThresholdVector(0, idx);
-        *val = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(0, *val);
-        return NO_ERROR;
-    }
-    return UNKNOWN_ERROR;
-}
-
-int CommandHandler::getThreshold(int idx,int chipId,int *val)
-{
-    if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
-        *val = QCstmGLVisualization::getInstance()->getThresholdVector(chipId,idx);
+    if (threshold >= 0 && threshold <= __max_number_of_thresholds && chipId >= 0 && chipId < __max_number_of_chips) {
+        *DAC_value = QCstmGLVisualization::getInstance()->getThresholdVector(chipId, threshold);
 
         return NO_ERROR;
     }
@@ -716,12 +701,12 @@ bool CommandHandler::getInhibitShutter()
     return false;
 }
 
-int CommandHandler::setSlope(int chipNum, double val)
+int CommandHandler::setSlope(int chip, double val)
 {
 
-    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
+    if(chip < 0 || chip >= __max_number_of_chips)
         return ARG_VAL_OUT_RANGE;
-    getGui()->getGeneralSettings()->setSlope(chipNum, val);
+    getGui()->getGeneralSettings()->setSlope(chip, val);
     getGui()->updateEnergyCalibratorParameters();
     return NO_ERROR;
 }
@@ -733,7 +718,7 @@ double CommandHandler::getSlope(int chipNum)
 
 int CommandHandler::setOffset(int chipNum, double val)
 {
-    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
+    if(chipNum < 0 || chipNum >= __max_number_of_chips)
         return ARG_VAL_OUT_RANGE;
     getGui()->getGeneralSettings()->setOffset(chipNum, val);
     getGui()->updateEnergyCalibratorParameters();
@@ -749,7 +734,7 @@ double CommandHandler::getOffset(int chipNum)
 int CommandHandler::resetSlopesAndOffsets()
 {
     //this means energy = dac
-    for(int i = 0; i < NUMBER_OF_CHIPS; i++){
+    for(int i = 0; i < __max_number_of_chips; i++){
         getGui()->getGeneralSettings()->setOffset(i, 0);
         getGui()->getGeneralSettings()->setSlope(i, 1);
     }

@@ -1,20 +1,6 @@
 #include "mpx3config.h"
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
-#include "mpx3dacsdescr.h"
-#include "mpx3gui.h"
-#include <iterator>
-#include <iostream>
-
-#include <QFile>
-#include <QDebug>
-#include <QRegExp>
-
-#include "SpidrController.h"
-#include "SpidrDaq.h"
-
-
-using namespace std;
 
 
 Mpx3Config::Mpx3Config()
@@ -53,14 +39,8 @@ bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
 
 QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
 {
-    QJsonObject JSobjectParent, objIp, objDetector, objStepper, objIDELAY;
-    QJsonArray objDacsArray;
-
-    for (int i = 0; i < _chipIDELAYS.size(); ++i) {
-        QString field_name = "chip_";
-        field_name.append(QString::number(i));
-        objIDELAY.insert(field_name, _chipIDELAYS[i]);
-    }
+    QJsonObject JSobjectParent, objIp, objDetector, objStepper, objIDELAY, objEnergyArray, objTargetEnergiesArray;
+    QJsonArray objDacsArray, objEnergySlopesArray, objEnergyOffsetsArray;
 
     objIp.insert("SpidrControllerIp", SpidrAddress.toString());
     objIp.insert("SpidrControllerPort", this->port);
@@ -94,20 +74,57 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
     objStepper.insert("CalibPos1", this->stepperCalibPos1);
     objStepper.insert("CalibAngle1", this->stepperCalibAngle1);
 
+    /* Construct the IDELAY parameters */
+    for (int i = 0; i < _chipIDELAYS.size(); ++i) {
+        QString field_name = "chip_";
+        field_name.append(QString::number(i));
+        objIDELAY.insert(field_name, _chipIDELAYS[i]);
+    }
+
+    /* Construct the target energies */
+    for (int th = 0 ; th < MPX3RX_DAC_THRESH_7; th++) {
+        objTargetEnergiesArray.insert(MPX3RX_DAC_TABLE[th].name, this->getTargetEnergies(th));
+    }
+
+    /* Construct the Slopes and Offsets */
+    for (int chip = 0; chip < this->getDacCount(); chip++) {
+        QJsonObject obj, obj2;
+
+        for(int th = 0 ; th < MPX3RX_DAC_THRESH_7; th++) {
+            obj.insert(MPX3RX_DAC_TABLE[th].name, _mpx3gui->getEnergyCalibrator()->getSlope(chip, th));
+        }
+
+        for(int th = 0 ; th < MPX3RX_DAC_THRESH_7; th++) {
+            obj2.insert(MPX3RX_DAC_TABLE[th].name, _mpx3gui->getEnergyCalibrator()->getOffset(chip, th));
+        }
+
+        objEnergySlopesArray.insert(chip, obj);
+        objEnergyOffsetsArray.insert(chip, obj2);
+    }
+    /* Construct the energy array object with the Slopes and Offsets */
+    objEnergyArray.insert("Slopes", objEnergySlopesArray);
+    objEnergyArray.insert("Offsets", objEnergyOffsetsArray);
+
+    /* The user may or may not want to record the DACs, based on a GUI option */
+    if (includeDacs) {
+        for(int chip = 0; chip < this->getDacCount(); chip++){
+            QJsonObject obj;
+            for (int dac = 0 ; dac < MPX3RX_DAC_COUNT; dac++) {
+                obj.insert(MPX3RX_DAC_TABLE[dac].name, _dacVals[dac][chip]);
+            }
+            objDacsArray.insert(chip, obj);
+        }
+        JSobjectParent.insert("DACs", objDacsArray);
+    }
+
+    /* Insert all top level objects into the main document now */
     JSobjectParent.insert("IDELAYConfig", objIDELAY);
     JSobjectParent.insert("IPConfig", objIp);
     JSobjectParent.insert("DetectorConfig", objDetector);
     JSobjectParent.insert("StepperConfig", objStepper);
+    JSobjectParent.insert("EnergyCalibrationCoefficients", objEnergyArray);
+    JSobjectParent.insert("TargetEnergies", objTargetEnergiesArray);
 
-    if(includeDacs){
-        for(int j = 0; j < this->getDacCount(); j++){
-            QJsonObject obj;
-            for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
-                obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
-            objDacsArray.insert(j, obj);
-        }
-        JSobjectParent.insert("DACs", objDacsArray);
-    }
     QJsonDocument doc;
     doc.setObject(JSobjectParent);
 
@@ -568,6 +585,15 @@ int Mpx3Config::getDataBufferId(int devIndx) {
     return -1;
 }
 
+double Mpx3Config::getTargetEnergies(int threshold)
+{
+    if (threshold >= 0 && threshold < int(targetEnergies.size())) {
+        return targetEnergies[size_t(threshold)];
+    } else {
+        return -1.0;
+    }
+}
+
 void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 
     if ( dr == __CONTROLLER_OK ) { // Check if the detector responds ok to the Controller
@@ -691,7 +717,7 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
     }
 
     itParent = JSobjectParent.find("DetectorConfig");
-    if(itParent != JSobjectParent.end()){
+    if (itParent != JSobjectParent.end()) {
 
         QJsonObject JSobject = itParent.value().toObject();
 
@@ -801,32 +827,91 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 
     }
 
-    if(includeDacs){
-        for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
+    if (includeDacs) {
+        for (int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
             _dacVals[i].clear();
+        }
+
         QJsonArray dacsArray;
         itParent = JSobjectParent.find("DACs");
-        if(itParent != JSobjectParent.end()){
+
+        if (itParent != JSobjectParent.end()) {
             dacsArray = itParent.value().toArray();
-            foreach (const QJsonValue & value, dacsArray) {
+            foreach (const QJsonValue &value, dacsArray) {
                 QJsonObject obj = value.toObject();
-                for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
+                for (int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
                     _dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
-                   // qDebug() << "fromJsonFile: " << obj[MPX3RX_DAC_TABLE[i].name].toInt() << "\n";
+                    //qDebug() << obj[MPX3RX_DAC_TABLE[i].name].toInt();
                 }
             }
         }
     }
 
+    itParent = JSobjectParent.find("EnergyCalibrationCoefficients");
+    if ( itParent != JSobjectParent.end() ) {
+        QJsonObject JSobject = itParent.value().toObject();
+        QJsonArray slopesArray, offsetsArray;
+
+        it = JSobject.find("Slopes");
+        itParent = JSobjectParent.find("Slopes");
+
+        if (it != JSobjectParent.end()) {
+            slopesArray = it.value().toArray();
+            QJsonObject obj = slopesArray.first().toObject();
+
+            for (int chip = 0; chip < slopesArray.size(); ++chip) {
+                QJsonObject s = slopesArray[chip].toObject();
+
+                for (int threshold = 0; threshold < s.size(); ++threshold) {
+                    QJsonValue value = s.value(MPX3RX_DAC_TABLE[threshold].name);
+                    _mpx3gui->getEnergyCalibrator()->setSlope(chip, threshold, value.toDouble());
+                }
+            }
+        }
+
+        it = JSobject.find("Offsets");
+        itParent = JSobjectParent.find("Offsets");
+
+        if (it != JSobjectParent.end()) {
+            slopesArray = it.value().toArray();
+            QJsonObject obj = slopesArray.first().toObject();
+
+            for (int chip = 0; chip < slopesArray.size(); ++chip) {
+                QJsonObject s = slopesArray[chip].toObject();
+
+                for (int threshold = 0; threshold < s.size(); ++threshold) {
+                    QJsonValue value = s.value(MPX3RX_DAC_TABLE[threshold].name);
+                    _mpx3gui->getEnergyCalibrator()->setOffset(chip, threshold, value.toDouble());
+                }
+            }
+        }
+    }
+
+    itParent = JSobjectParent.find("TargetEnergies");
+    if ( itParent != JSobjectParent.end() ) {
+        QJsonObject JSobject = itParent.value().toObject();
+        for (int threshold = 0; threshold < JSobject.size(); ++threshold) {
+            it = JSobject.find(MPX3RX_DAC_TABLE[threshold].name);
+            double energy = it.value().toDouble();
+            if (JSobject.size() != 8) {
+                qDebug() << "[WARN]\tTarget energies size =" << JSobject.size() << " (it should be 8)";
+                 }
+            if (energy < 0 || energy > 500) {
+                qDebug() << "[WARN]\tEnergy looks like it's out of range =" << energy << "| threshold =" << threshold;
+            }
+            setTargetEnergy(threshold, energy);
+            _mpx3gui->getEnergyConfiguration()->updateDACsFromConfig();
+        }
+    }
+
     QSettings settings(_mpx3gui->settingsFile, QSettings::NativeFormat);
-    QString path = filename.section("/",0,-2);
+    QString path = filename.section("/", 0 ,-2);
     if (path != "./config") {
         settings.setValue("last_configuration_path", path);
     }
 
     return true;
 }
-
 
 void Mpx3Config::setIpAddress(QString ipn) {
 
@@ -1008,4 +1093,17 @@ void Mpx3Config::setInhibitShutter(bool turnOn)
     qDebug().noquote() << "[INFO]\tNew HDMI config : " << QString::number(val, 2);
     _isInhibitShutterSelected = turnOn;
     emit inhibitShutterchanged(turnOn);
+}
+
+/*! @brief  This only updates the local config
+ *          It is picked up in the energy calibration after
+ */
+void Mpx3Config::setTargetEnergy(int threshold, double energy)
+{
+    if (threshold >= 0 && threshold < int(targetEnergies.size())) {
+        //qDebug() << "[DEBUG]\tConfig setTargetEnergy th =" << threshold << "| E =" << energy;
+        targetEnergies[size_t(threshold)] = energy;
+    } else {
+        qDebug() << "[ERROR]\tMpx3Config::setTargetEnergy --> threshold out of bounds th =" << threshold << "| targetEnergies size =" << targetEnergies.size();
+    }
 }

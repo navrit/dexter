@@ -112,7 +112,7 @@ void TcpConnections::accept(qintptr handle, TcpConnecton *connection)
 
     connection->moveToThread(QThread::currentThread());
     connection->setSocket(socket);
-    //connect to data_recived
+    //connect to data_received
     connect(connection,SIGNAL(dataReceived(QString)),this,SLOT(on_dataReceived(QString)));
     connect(this,SIGNAL(responseIsReady(QString)),connection,SLOT(on_responseIsReady(QString)));
     //connect(this,SIGNAL(imageIsReady(QByteArray,QByteArray)),connection,SLOT(on_imageIsReady(QByteArray,QByteArray)),Qt::DirectConnection);

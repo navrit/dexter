@@ -9,6 +9,7 @@
 
 #include "thresholdscandelegate.h"
 #include "ServerStatus.h"
+#include "mpx3eq_common.h"
 
 class Mpx3GUI;
 
@@ -50,6 +51,8 @@ public:
     void setThresholdsOnAllChips(int val);
 
     QString getCurrentTimeISOms();
+
+    void setWindowWidgetsStatus(win_status s = win_status::startup);
 
 private:
     Ui::thresholdScan *ui = nullptr;
@@ -99,11 +102,12 @@ public slots:
     void button_startStop_clicked_remotely();
 
 private slots:
-    void ConnectionStatusChanged(bool connected);
+    void ConnectionStatusChanged(bool conn);
+
     void finishedScan();
     void on_button_startStop_clicked();
     void on_pushButton_setPath_clicked();
-    void slot_colourModeChanged();
+    void slot_colourModeChanged(bool);
     void slot_doubleCounterModeChanged();
     void on_lineEdit_path_editingFinished();
     void on_lineEdit_path_textEdited(const QString &path);

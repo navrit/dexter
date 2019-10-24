@@ -5,10 +5,10 @@
 
 #include <stdio.h>
 #include <phidget21.h>
-
 #include <iostream>
 #include <vector>
 #include <map>
+
 using namespace std;
 
 

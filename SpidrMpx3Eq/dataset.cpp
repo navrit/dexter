@@ -1,6 +1,5 @@
 #include "dataset.h"
 #include "mpx3gui.h"
-#include "qcstmBHWindow.h"
 #include "qcstmcorrectionsdialog.h"
 
 #include <QDataStream>
@@ -1350,12 +1349,10 @@ QMap<int, double> Dataset::GetPadMean() {
     return meanvals;
 }
 
-
 void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
 
     if ( ! corrdiag ) return;
 
-    //    if ( corrdiag->isCorrectionsActive() ) {  //Always false. previously set by checkbox.
     QMap<int, double> meanvals;// = Dataset::GetPadMean();
 
     // Corrections
@@ -1365,10 +1362,6 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
     if ( corrdiag->isSelectedOBCorr() ) {
         applyOBCorrection();
     }
-    if ( corrdiag->isSelectedBHCorr()) {
-        corrdiag->callBHCorrection();
-    }
-
 }
 
 void Dataset::applyOBCorrection() {

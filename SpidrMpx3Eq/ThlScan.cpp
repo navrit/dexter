@@ -385,8 +385,6 @@ void ThlScan::FineTuning() {
                 QList<int> scanEqTargets;
                 QList<double> scanSigmas;
 
-                const int __max_number_of_chips = 4; //! HOTFIX: Hardcoded a quad board, this is NOT really proper...
-
                 for ( int chip = 0 ; chip < __max_number_of_chips; chip++ ) {
                     if (GetScanResults(chip) != nullptr ) {
                         scanEqTargets.append(GetScanResults(chip)->equalisationTarget);

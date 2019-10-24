@@ -34,6 +34,7 @@
 #include "commandhandlerwrapper.h"
 #include "GeneralSettings.h"
 #include "EnergyCalibrator.h"
+#include "EnergyConfiguration.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -60,10 +61,12 @@ const static int __configuration_page_Id = 1;
 const static int __dacs_page_Id = 2;
 const static int __equalisation_page_Id = 3;
 const static int __scans_page_Id = 4;
-const static int __ct_page_Id = 5;
-const static int __stepperMotor_page_Id = 6;
+const static int __energyConfiguration_page_Id = 5;
+const static int __hdmi_config_page_Id = 6;
 const static int __thresholdScan_page_Id = 7;
-const static int __hdmi_config_page_Id = 8;
+const static int __stepperMotor_page_Id = 8;
+const static int __ct_page_Id = 9;
+
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"
@@ -77,7 +80,7 @@ const static int __hdmi_config_page_Id = 8;
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "Dexter";
-const static QString _softwareVersion = QString("v2.0.4 ZMQ_set_integration NB - " + QString(GIT_CURRENT_SHA1));
+const static QString _softwareVersion = QString("v2.1.0 Energy_configuration NB - " + QString(GIT_CURRENT_SHA1));
 
 const static int tcpCommandPort = 6351;            //! Diamond - Merlin interface
 const static int tcpDataPort = 6352;               //! Diamond - Merlin interface
@@ -94,17 +97,15 @@ public:
 
     explicit Mpx3GUI(QWidget *parent = nullptr);
     ~Mpx3GUI();
-    void SetupSignalsAndSlots();
     Ui::Mpx3GUI *GetUI() { return _ui; }
     static Mpx3GUI *getInstance();
 
     Mpx3Config *getConfig();
     Dataset *getDataset() {return workingSet;}
-    Dataset *getOriginalDataset() {return originalSet;}
     DataControllerThread *getDataControllerThread() {return dataControllerThread;}
     zmqController *getZmqController() {return m_zmqController;}
 
-    SpidrController * GetSpidrController();
+    SpidrController *GetSpidrController();
     SpidrDaq *GetSpidrDaq(){ return _spidrdaq; }
     QCstmEqualization *getEqualization();
     QCstmGLVisualization *getVisualization();
@@ -114,9 +115,10 @@ public:
     QCstmCT *getCT();
     thresholdScan *getTHScan();
     hdmiConfig *getHdmiConfig();
+    EnergyConfiguration *getEnergyConfiguration();
 
     GeneralSettings *getGeneralSettings() {return _generalSettings;}
-    EnergyCalibrator* getEnergyCalibrator() {return _energyCalibrator;}
+    EnergyCalibrator *getEnergyCalibrator() {return _energyCalibrator;}
     void updateEnergyCalibratorParameters();
 
     int getStepperMotorPageID();
@@ -124,12 +126,9 @@ public:
     void startupActions();
     void closeRemotely() {on_actionDisconnect_triggered(false);}
 
-    void saveOriginalDataset();
-    void rewindToOriginalDataset();
     void setWindowWidgetsStatus(win_status s = win_status::startup);
 
     void addLayer(int *data, int layer);
-
     Gradient *getGradient(int index);
     void resize(int x, int y);
     void rebuildCurrentSets(int x, int y, int framesPerLayer);
@@ -176,7 +175,7 @@ signals:
     void hist_added(int);
     void hist_changed(int);
     void active_frame_changed(int);
-    void availible_gradients_changed(QStringList gradients);
+    void availible_gradients_changed(QStringList _gradients);
     void gradient_added(QString gradient);
     void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
     void summing_set(bool);
@@ -226,7 +225,7 @@ public slots:
     void sendingShutter();
 
 private:
-    bool _loadingBeforeConnecting = false;
+    bool _loadingBeforeConnecting = true;
     EnergyCalibrator *_energyCalibrator = nullptr;
     // ML605 layout
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
@@ -242,35 +241,41 @@ private:
 
     int integrate = 0; //! Summing/integral or 'normal' mode
     Ui::Mpx3GUI * _ui = nullptr;
-    QVector<QShortcut *> _shortcutsSwitchPages;
+    QVector<QShortcut *> _shortcutsSwitchPages; //! Note: do not initialise this, it is populated on startup
 
     Mpx3Config * config = nullptr;
     Dataset * workingSet = nullptr;
-    Dataset * originalSet = nullptr;
 
     SpidrDaq * _spidrdaq = nullptr;
     bool _armedOk = true; //! It won't let the application go into the event loop if set to false
 
-    QVector<Gradient*>  gradients; //! Initialising this as {nullptr} is apparently bad for some signal connection
+    QVector<Gradient*>  _gradients; //! Initialising this as {nullptr} is apparently bad for some signal connection
     void updateHistogram(int layer);
 
-    QLabel m_statusBarMessageLabel;
-    QString m_statusBarMessageString;
+    QLabel _statusBarMessageLabel;
+    QString _statusBarMessageString;
 
     bool m_appActiveFirstTime = false;
 
-    void uncheckAllToolbarButtons();
+    void _uncheckAllToolbarButtons();
 
-    QString loadButtonFilenamePath = "";
+    QString _loadButtonFilenamePath = "";
 
     void saveMetadataToJSON(QString);
 
-    bool devMode = false;
+    bool _devMode = false;
 
     DataControllerThread *dataControllerThread = nullptr;
     zmqController *m_zmqController = nullptr;
 
-    void initialiseServers();
+    void _initialiseInternalObjects();
+    void _initialiseDataset();
+    void _initialiseGUITabs();
+    void _handleConfigLoading();
+    void _connectKeyboardShortcuts();
+    void _setupSignalsAndSlots();
+    void _intialiseLabels();
+    void _initialiseServers();
 
     bool m_offset = false; //! Used for generating different patterns per test pattern
 
@@ -280,8 +285,8 @@ private:
     GeneralSettings *_generalSettings;
     void _loadEqualizationFromGeneralSettings();
     bool _loadConfigsFromGeneralSettings();
-    QTimer *shutterOpenTimer; //used for periods longer than 100 seconds
-    QTimer *shutterCloseTimer; //used for periods longer than 100 seconds
+    QTimer *_shutterOpenTimer; //used for periods longer than 100 seconds
+    QTimer *_shutterCloseTimer; //used for periods longer than 100 seconds
     bool _timerStop = false;
 
     QString _lastTriedIPAddress = "";
@@ -301,6 +306,7 @@ private slots:
     void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered();
     void on_actionHDMI_Config_triggered();
+    void on_actionEnergy_configuration_triggered();
 
     void autoConnectToDetector();
     void shutterOpenTimer_timeout();

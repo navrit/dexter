@@ -9,7 +9,7 @@ FrameSet::FrameSet()
 }
 
 FrameSet::~FrameSet() {
-    for (int i = 0; i < number_of_chips; i++)
+    for (int i = 0; i < Config::number_of_chips; i++)
       for (int j = 0; j < 2; j++)
         if (frame[j][i] != nullptr) {
             delete frame[j][i];
@@ -24,7 +24,7 @@ void FrameSet::setBothCounters(bool b) {
  * @brief FrameSet::clear marks the ChipFrames as clear
  */
 void FrameSet::clear() {
-    for (int i = 0; i < number_of_chips; i++)
+    for (int i = 0; i < Config::number_of_chips; i++)
       for (int j = 0; j < 2; j++)
         if (frame[j][i] != nullptr) {
             //delete frame[j][i];
@@ -41,7 +41,7 @@ void FrameSet::clear() {
  */
 bool FrameSet::isComplete(int chipMask) {
     for (int j = 0; j < counters; j++)
-        for (int i = 0; i < number_of_chips; i++)
+        for (int i = 0; i < Config::number_of_chips; i++)
             if (((chipMask >> i) & 1) && frame[j][i] == nullptr)
                 return false;
 
@@ -55,7 +55,7 @@ bool FrameSet::isComplete(int chipMask) {
  * @return the ChipFrame or nullptr
  */
 ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
-    assert (chipIndex >= 0 && chipIndex < number_of_chips);
+    assert (chipIndex >= 0 && chipIndex < Config::number_of_chips);
     if (counterH) counters = 2;
     ChipFrame **spot = &(frame[counterH ? 1 : 0][chipIndex]);
     ChipFrame *result = *spot;
@@ -71,7 +71,7 @@ ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
  * @param the ChipFrame
  */
 void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
-    assert (chipIndex >= 0 && chipIndex < number_of_chips);
+    assert (chipIndex >= 0 && chipIndex < Config::number_of_chips);
     assert (cf != nullptr);
     // in 24 bit mode use both counters, not in CRW;
     if (cf->omr.getCountL() == 3) counters = 2;
@@ -124,7 +124,7 @@ void FrameSet::copyTo32(int chipIndex, bool counterH, uint32_t *dest) {
 int FrameSet::pixelsLost() {
     int count = 0;
     for (int j = 0; j < counters; j++)
-        for (int i = 0; i < number_of_chips; i++)
+        for (int i = 0; i < Config::number_of_chips; i++)
             if (frame[j][i] != nullptr)
                 //count += MPX_PIXELS;		// it's not there
             //else

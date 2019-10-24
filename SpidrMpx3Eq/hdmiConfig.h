@@ -5,9 +5,12 @@
 #include <QComboBox>
 #include <QVector>
 #include <QHash>
+#include "mpx3eq_common.h"
+
+class Mpx3GUI;
 
 namespace Ui {
-class hdmiConfig;
+    class hdmiConfig;
 }
 
 class hdmiConfig : public QWidget
@@ -15,37 +18,27 @@ class hdmiConfig : public QWidget
     Q_OBJECT
 
 public:
-    explicit hdmiConfig(QWidget *parent = 0);
+    explicit hdmiConfig(QWidget *parent = nullptr);
     ~hdmiConfig();
 
-private slots:
-    void on_hdmi1Pin1ComboBox_currentIndexChanged(int index);
-
-    void on_hdmi1Pin2ComboBox_currentIndexChanged(int index);
-
-    void on_hdmi1Pin3ComboBox_currentIndexChanged(int index);
-
-    void on_hdmi2Pin1ComboBox_currentIndexChanged(int index);
-
-    void on_hdmi2Pin2ComboBox_currentIndexChanged(int index);
-
-    void on_hdmi2Pin3ComboBox_currentIndexChanged(int index);
-
-    void on_submitPb_released();
-
-    void ConnectionStatusChanged(bool con);
+    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
+    void setWindowWidgetsStatus(win_status s = win_status::startup);
 
 private:
-    Ui::hdmiConfig *ui;
+    Mpx3GUI * _mpx3gui = nullptr;
+    Ui::hdmiConfig *ui = nullptr;
     QVector <QComboBox*> _comboBoxes;
+
     void _loadComboBoxesVector();
     void _configComboxItems(int itemIndex, QComboBox *excludeComboBox);
     unsigned _comboBoxIndexToHdmiCode(int comboBoxIndex);
-    void _setHdmiRegister(unsigned code,unsigned shift);
+    void _setHdmiRegister(unsigned code, unsigned shift);
+
     //combo box index for HDMI input
     static const int INPUT_INDEX_START = 1;
     static const int INPUT_INDEX_END  = 2;//could be expanded
     static const int _inputItemsTableSize = INPUT_INDEX_END - INPUT_INDEX_START + 1;
+
     //comboboxes enable/disable flags
     static const int notSelected  = 0;
     static const int hdmi1Pin1ComboBoxIndex = 1;
@@ -54,6 +47,7 @@ private:
     static const int hdmi2Pin1ComboBoxIndex = 4;
     static const int hdmi2Pin2ComboBoxIndex = 5;
     static const int hdmi2Pin3ComboBoxIndex = 6;
+
     //hdmi register position (shift)
     static const unsigned hdmi1Pin1RegisterPosition = 0;
     static const unsigned hdmi1Pin2RegisterPosition = 1;
@@ -61,6 +55,7 @@ private:
     static const unsigned hdmi2Pin1RegisterPosition = 3;
     static const unsigned hdmi2Pin2RegisterPosition = 4;
     static const unsigned hdmi2Pin3RegisterPosition = 5;
+
     //hdmi I/O codes
     static const unsigned externalShutterIn = 0x5;
     static const unsigned inhibitShutterInOn = 0x8;
@@ -75,6 +70,15 @@ private:
 
     int _inputItemsTable[_inputItemsTableSize];
 
+private slots:
+    void on_hdmi1Pin1ComboBox_currentIndexChanged(int index);
+    void on_hdmi1Pin2ComboBox_currentIndexChanged(int index);
+    void on_hdmi1Pin3ComboBox_currentIndexChanged(int index);
+    void on_hdmi2Pin1ComboBox_currentIndexChanged(int index);
+    void on_hdmi2Pin2ComboBox_currentIndexChanged(int index);
+    void on_hdmi2Pin3ComboBox_currentIndexChanged(int index);
+    void on_submitPb_released();
+    void ConnectionStatusChanged(bool con);
 };
 
 #endif // HDMICONFIG_H

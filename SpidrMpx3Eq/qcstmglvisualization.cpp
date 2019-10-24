@@ -80,23 +80,26 @@ QCstmGLVisualization *QCstmGLVisualization::getInstance()
     return qCstmGLVisualizationInst;
 }
 
-void QCstmGLVisualization::setThresholdsVector(int chipId, int idx, int value)
+void QCstmGLVisualization::setThresholdsVector(int chipId, int threshold, int DAC_value)
 {
-    if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
-        _thresholdsVector[chipId][idx] = value;
+    if (chipId >=0 && chipId < __max_number_of_chips && threshold >=0 && threshold < __max_number_of_thresholds) {
+        _thresholdsVector[chipId][threshold] = DAC_value;
+    } else {
+        qDebug() << "[ERROR]\tOut of bounds --> chip =" << chipId << "| threshold =" << threshold << "| DAC_value =" << DAC_value;
+    }
 }
 
-int QCstmGLVisualization::getThresholdVector(int chipId, int idx)
+int QCstmGLVisualization::getThresholdVector(int chipId, int threshold)
 {
-    if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
-        return _thresholdsVector[chipId][idx];
+    if(chipId >=0 && chipId < __max_number_of_chips && threshold >=0 && threshold < __max_number_of_thresholds)
+        return _thresholdsVector[chipId][threshold];
     return -1;
 }
 
 void QCstmGLVisualization::clearThresholdsVector()
 {
-    for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
-        for (int idx = 0; idx < 8; ++idx) {
+    for (int chip = 0; chip < __max_number_of_chips; ++chip) {
+        for (int idx = 0; idx < __max_number_of_thresholds; ++idx) {
             _thresholdsVector[chip][idx] = 0;
         }
     }
@@ -357,8 +360,6 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
     }
 
     if ( ! _takingData ) { // new data
-        //_loadFromThresholdsVector();
-        //qDebug() << "start taking data .. ";
         _takingData = true;
 
         if (!runningTHScan) {
@@ -566,6 +567,8 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
         ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
 
         sig_statusBarAppend(_statsString.devicesIdString,"green");
+
+        initialiseThresholdsVector();
 
     } else {
         FinishDataTakingThread();
@@ -2018,109 +2021,6 @@ void QCstmGLVisualization::on_testBtn_clicked()
     qDebug()<< "PERIOD: " << per;
     _mpx3gui->GetSpidrController()->getSpidrReg(0x029C,&freq);
     qDebug()<< "SHUTTER OPEN: " << freq;
-
-
-//    for(int i = 0; i< 4; i++)
-//    {
-//    int val22 = 0;
-//    Mpx3GUI::getInstance()->GetSpidrController()->getDac(i,MPX3RX_DAC_TABLE[ 0 ].code,&val22);
-//    qDebug() << "value : " << val22;
-//    }
-
-//    Dataset *ds = _mpx3gui->getDataset();
-//    for (int key = 0; key < 8; ++key) {
-//        int * layer = ds->getLayer(key);
-//        if (layer == nullptr){
-//            qDebug() << "Layer [" << key <<"] is null.";
-//        }
-//        else
-//            qDebug() << "Layer [" << key <<"] has data.";
-
-//    }
-
-
-
-//    qDebug () << "SlOPE 0 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(0);
-//    qDebug () << "SlOPE 1 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(1);
-//    qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(2);
-//    qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(3);
-//    qDebug () << "Trigger Mode: " << Mpx3GUI::getInstance()->getConfig()->getTriggerMode();
-    //Mpx3GUI::getInstance()->GetSpidrController()->setDac(1,0+1,16);
-//    for (int chip = 0; chip < 4; chip++) {
-//        for (int idx = 0; idx < 8; idx++) {
-//            int val = 0;
-//            _mpx3gui->GetSpidrController()->getDac(chip,idx+1,&val);
-//            qDebug() << "Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< val;
-//        }
-//    }
-
-//    for (int chip = 0; chip < 4; chip++) {
-//        for (int idx = 0; idx < 8; idx++) {
-//            _thresholdsVector[chip][idx];
-//            qDebug() << "[Matrix] : Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< _thresholdsVector[chip][idx];;
-//        }
-//    }
-
-    //Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(true);
-   // Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(false);
-
-//    GeneralSettings *settings = new GeneralSettings;
-//    //settings->setConfigPath("Kiavash");
-//    //settings->setEqualizationPath("Matin");
-//    //settings->writeSetting();
-//    settings->readSetting();
-//    qDebug() << "Equalization path : " << settings->getEqualizationPath();
-//    qDebug() << "Config path : " << settings->getConfigPath();
-
-
-//    std::pair<const char*,int> image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
-//    qDebug() << "Image size is : " << image.second;
-
-//    QString filename = "Pixel.txt";
-//    QFile file(filename);
-//    file.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
-//    QTextStream stream(&file);
-
-//    QString filename2 = "Pixel2.txt";
-//    QFile file2(filename2);
-//    file2.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
-//    QTextStream stream2(&file2);
-
-
-
-
-//    int idx = 0;
-//    uint32_t* pp = (uint32_t*) image.first;
-//    while(idx < image.second){
-//        uint32_t pixel = *pp;
-//        stream << pixel << endl;
-//        pp++;
-//        idx = idx + 4;
-//    }
-//    file.close();
-//    qDebug() << "Save is done.";
-
-//    QByteArray testBa(100,'0');
-//    qDebug() << "Size of testba : " << testBa.length();
-//    QByteArray rep;
-//    rep.append((255 & 0x000000FF));
-//    rep.append((155 & 0x000000FF));
-//    rep.append((25 & 0x000000FF));
-//    rep.append((205 & 0x000000FF));
-//    testBa.replace(10,4,rep);
-//    qDebug() << "Size of testba : " << testBa.length();
-//    qDebug() << "testba : " << (uint8_t) testBa.at(9);
-//    qDebug() << "testba : " << (uint8_t) testBa.at(10);
-//    qDebug() << "testba : " << (uint8_t) testBa.at(11);
-//    qDebug() << "testba : " << (uint8_t) testBa.at(12);
-//    qDebug() << "testba : " << (uint8_t) testBa.at(13);
-//    qDebug() << "testba : " << (uint8_t) testBa.at(14);
-
-
-//    int big = 0xFFFFFFF0;
-//    uint16_t small = big;
-//    qDebug()<< " big == " << big;
-//    qDebug()<< " small == " << small;
 }
 
 void QCstmGLVisualization::on_saveLineEdit_editingFinished()
@@ -2259,18 +2159,18 @@ void QCstmGLVisualization::setMaximumContRW_FPS(int FPS)
 
 void QCstmGLVisualization::_loadFromThresholdsVector()
 {
-    for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
-        for (int idx = 0; idx < __max_colours; ++idx) {
-            _mpx3gui->GetSpidrController()->setDac(chipId, idx+1, _thresholdsVector[chipId][idx]);
+    for (int chip = 0; chip < __max_number_of_chips; ++chip) {
+        for (int DAC_index = 0; DAC_index < __max_colours; ++DAC_index) {
+            _mpx3gui->getDACs()->setDAC_index(nullptr, chip, DAC_index, _thresholdsVector[chip][DAC_index]);
         }
     }
 }
 
 void QCstmGLVisualization::initialiseThresholdsVector()
 {
-    for (uint chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
-        for (int idx = 0; idx < __max_colours; ++idx) {
-            _thresholdsVector[chip][idx] = _mpx3gui->getConfig()->getDACValue(chip, idx);
+    for (int chip = 0; chip < __max_number_of_chips; ++chip) {
+        for (int DAC_index = 0; DAC_index < __max_number_of_thresholds; ++DAC_index) {
+            _thresholdsVector[chip][DAC_index] = _mpx3gui->getConfig()->getDACValue(uint(chip), DAC_index);
         }
     }
 }

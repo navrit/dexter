@@ -57,17 +57,15 @@ public:
 
     explicit QCstmDacs(QWidget *parent = nullptr);
     ~QCstmDacs() override;
+
     void PopulateDACValues();
     UpdateDACsThread * FillDACValues(int devId = -1, bool updateInTheChip = true);
 
     bool GetDACsFromConfiguration();
-    bool WriteDACsFile(string);
-    static QCstmDacs *getInstance();
+    bool WriteDACsFile(std::string);
 
+    static QCstmDacs *getInstance(); //! TODO Get rid of this
 
-public:
-
-    //Ui::Mpx3GUI
     Ui::QCstmDacs  * GetUI() { return ui; }
     QSpinBox ** GetSpinBoxList() { return _dacSpinBoxes; }
     QSlider ** GetSliderList() { return _dacSliders; }
@@ -93,23 +91,34 @@ public:
     void changeDAC(int threshold, int value); //! For all chips
     void setRemoteRequestForSettingThreshold(bool);
 
+    void setDAC_index(SpidrController *spidrcontrol, int chip, int DAC_index, double DAC_value);
+    void setDAC_code(SpidrController *spidrcontrol, int chip, int DAC_code, int DAC_value);
 
 private:
+    /* Internal variables and functions */
 
-    Ui::QCstmDacs * ui = nullptr;
+    Mpx3GUI *_mpx3gui = nullptr; // Connectivity between modules
+    SenseDACsThread *_senseThread = nullptr;
+    ScanDACsThread *_scanThread = nullptr;
+    UpdateDACsThread *_updateDACsThread = nullptr;
 
     void FillWidgetVectors();
     void SetLimits();
+    void enablePossibleThresholds();
 
-    // Connectivity between modules
-    Mpx3GUI * _mpx3gui = nullptr;
+    int _scanStep; // Scan
+    int _chipIndex; // Current chip
+    int _nSamples; // Samples
 
-    // Currently active graph
-    QCPGraph *_graph = nullptr;
+    bool _dacsSimultaneous; // Simultaneous settings
 
-    SenseDACsThread * _senseThread = nullptr;
-    ScanDACsThread * _scanThread = nullptr;
-    UpdateDACsThread * _updateDACsThread = nullptr;
+    /* END - Internal variables and functions */
+
+
+    /* GUI related */
+
+    Ui::QCstmDacs * ui = nullptr;
+    QCPGraph *_graph = nullptr; // Currently active graph
 
     // Vectors of Widgets
     QSpinBox  * _dacSpinBoxes[MPX3RX_DAC_COUNT];
@@ -117,35 +126,22 @@ private:
     QLabel    * _dacVLabels[MPX3RX_DAC_COUNT];
     QLabel    * _dacLabels[MPX3RX_DAC_COUNT];
     QCheckBox * _dacCheckBoxes[MPX3RX_DAC_COUNT];
-
-    // Scan
-    int _scanStep;
-    // Current device Id
-    uint _deviceIndex;
-    // Samples
-    int _nSamples;
-    // Simultaneous settings
-    bool _dacsSimultaneous;
-
-    // In case only a subset of the DACs are selected
-    //  to produce the scan, keep track of the id's
-    map<int, int> _plotIdxMap;
-    int _plotIdxCntr;
-
     QSignalMapper * _signalMapperSliderSpinBoxConn;
     QSignalMapper * _signalMapperSlider;
     QSignalMapper * _signalMapperSpinBox;
+
+    // In case only a subset of the DACs are selected
+    //  to produce the scan, keep track of the id's
+    std::map<int, int> _plotIdxMap;
+
+    int _plotIdxCntr;
+    uint _deviceIndex; // Current device Id
     bool _remoteRequestForSettingThreshold = false;
 
-
-public slots:
-    void shortcutTH0();
-    void shortcutIkrum();
+    /* END - GUI related */
 
 private slots:
-
     void onDevNumChanged(int);
-
     void on_allDACSimultaneousCheckBox_toggled(bool checked);
 
     void setTextWithIdx(QString,int);
@@ -157,17 +153,23 @@ private slots:
     void FromSpinBoxUpdateSlider(int);
     void FromSliderUpdateSpinBox(int);
     void SenseDACs();
-    void ChangeDeviceIndex(int);
     void ChangeNSamples(int);
     void ChangeScanStep(int);
     void addData(int, int, double);
     void addData(int);
     void scanFinished();
-    void slideAndSpin(int, int);
+    void slideAndSpin(int DAC_index, int DAC_value);
     void openWriteMenu();
     void ConnectionStatusChanged(bool);
     void sendThresholdToDac();
     void on_remoteThresholdpushButton_clicked();
+
+public slots:
+    void ChangeDeviceIndex(int);
+
+    void slot_colourModeChanged(bool);
+    void slot_readBothCounters(bool);
+
 signals:
     void busy(SERVER_BUSY_TYPE);
 };

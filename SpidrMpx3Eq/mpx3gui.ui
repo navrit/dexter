@@ -40,10 +40,11 @@
       <widget class="QCstmDacs" name="DACsWidget"/>
       <widget class="QCstmEqualization" name="equalizationWidget"/>
       <widget class="QCstmThreshold" name="ThresholdTab"/>
-      <widget class="QCstmCT" name="ctTab"/>
-      <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
-      <widget class="thresholdScan" name="THScan"/>
+      <widget class="EnergyConfiguration" name="EnergyConfigurationTab"/>
       <widget class="hdmiConfig" name="hdmiConfigTab"/>
+      <widget class="thresholdScan" name="THScan"/>
+      <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
+      <widget class="QCstmCT" name="ctTab"/>
      </widget>
     </item>
    </layout>
@@ -54,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>19</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -105,6 +106,8 @@
     <addaction name="actionDACs"/>
     <addaction name="actionEqualization"/>
     <addaction name="actionThreshold_Scan"/>
+    <addaction name="actionEnergy_configuration"/>
+    <addaction name="actionHDMI_Config"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -157,8 +160,9 @@
    <addaction name="actionDACs"/>
    <addaction name="actionEqualization"/>
    <addaction name="actionThreshold_Scan"/>
-   <addaction name="actionDefibrillator"/>
+   <addaction name="actionEnergy_configuration"/>
    <addaction name="actionHDMI_Config"/>
+   <addaction name="actionDefibrillator"/>
    <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -434,6 +438,9 @@ adj_* and mask_*</string>
    <property name="text">
     <string>Developer mode</string>
    </property>
+   <property name="toolTip">
+    <string>Show/hide various UI elements etc.</string>
+   </property>
   </action>
   <action name="actionThreshold_Scan">
    <property name="checkable">
@@ -448,12 +455,30 @@ adj_* and mask_*</string>
    </property>
   </action>
   <action name="actionHDMI_Config">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/hdmi.png</normaloff>:/icons/hdmi.png</iconset>
    </property>
    <property name="text">
-    <string>HDMI Config</string>
+    <string>HDMI Config (Ctrl+7)</string>
+   </property>
+  </action>
+  <action name="actionEnergy_configuration">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/calibration-mark.png</normaloff>:/icons/calibration-mark.png</iconset>
+   </property>
+   <property name="text">
+    <string>Energy configuration (Ctrl+6)</string>
+   </property>
+   <property name="toolTip">
+    <string>Set energy thresholds</string>
    </property>
   </action>
  </widget>
@@ -514,6 +539,12 @@ adj_* and mask_*</string>
    <class>hdmiConfig</class>
    <extends>QWidget</extends>
    <header>hdmiConfig.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EnergyConfiguration</class>
+   <extends>QWidget</extends>
+   <header>EnergyConfiguration.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

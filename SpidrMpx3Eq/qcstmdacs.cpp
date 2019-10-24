@@ -96,15 +96,7 @@ QCstmDacs::QCstmDacs(QWidget *parent):
     // The labels:
     ui->plotScan->xAxis->setLabel("DAC setting");
     ui->plotScan->yAxis->setLabel("DAC out [V]");
-    //connect(ui->updateThresholdsPushButton,SIGNAL(released()),this,SLOT(sendThresholdToDac()));
-//    connect(ui->dac0SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
-//    connect(ui->dac1SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
-//    connect(ui->dac2SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
-//    connect(ui->dac3SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
-//    connect(ui->dac4SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
-//    connect(ui->dac5SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
-//    connect(ui->dac6SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
-//    connect(ui->dac7SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+
     qCstmDacsInst = this;
 }
 
@@ -173,14 +165,57 @@ void QCstmDacs::changeDAC(int threshold, int value)
 void QCstmDacs::setRemoteRequestForSettingThreshold(bool val)
 {
     _remoteRequestForSettingThreshold = val;
-    //QTimer::singleShot(0,this,SLOT(updateThresholdFromServer()));
+}
+
+void QCstmDacs::setDAC_index(SpidrController *spidrcontrol, int chip, int DAC_index, double DAC_value)
+{
+    /* Input validation */
+    if (chip < 0 || chip > __max_number_of_chips) {
+        qDebug() << "[ERROR]\tChip requested does not exist, chip =" << chip;
+        return;
+    }
+    if (DAC_index < 0 || DAC_index > MPX3RX_DAC_COUNT-1) {
+        qDebug() << "[ERROR]\tDAC index requested to set is out of bounds, index =" << DAC_index << "| value =" << DAC_value;
+        return;
+    }
+    if (DAC_value < 0 || DAC_value > __max_DAC_range) {
+        qDebug() << "[ERROR]\tDAC value requested to set is out of bounds, value =" << DAC_value << "| index =" << DAC_index;
+        return;
+    }
+
+    /* Get the main controller if not supplied one */
+    if (spidrcontrol == nullptr) {
+        spidrcontrol = _mpx3gui->GetSpidrController();
+    }
+
+    /* We only want some code to run if we are setting a threshold */
+    /* TODO Make this generic for all DACs */
+    if (DAC_index >= 0 && DAC_index < __max_number_of_thresholds) {
+        setRemoteRequestForSettingThreshold(true);
+        _mpx3gui->getVisualization()->setThresholdsVector(chip, DAC_index, DAC_value);
+    }
+    /* Set DACs in the GUI and in the hardware via UpdateDACsThread */
+    ChangeDeviceIndex(chip);
+
+    /* Set DACs in the local config, this is very necessary */
+    _mpx3gui->getDACs()->SetDACValueLocalConfig( uint(chip), DAC_index, DAC_value);
+
+    /* Not necessary but why not */
+    GetCheckBoxList()[DAC_index]->setChecked(true);
+
+    /* Update GUI from the internal threshold vector */
+    onDevNumChanged(chip);
+}
+
+void QCstmDacs::setDAC_code(SpidrController *spidrcontrol, int chip, int DAC_code, int DAC_value)
+{
+    /* NOTE: this mapping from code to index is not always just -1 */
+    setDAC_index(spidrcontrol, chip, GetDACIndex(DAC_code), DAC_value);
 }
 
 UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-
-
 
     // Threads
     if ( _updateDACsThread ) {
@@ -247,12 +282,10 @@ void QCstmDacs::ConnectionStatusChanged(bool conn) {
     // Widgets status
     if ( conn ) {
         setWindowWidgetsStatus( win_status::connected );
+        PopulateDACValues(); // Fill the DACs
     } else {
         setWindowWidgetsStatus( win_status::disconnected );
     }
-
-    // Fill the DACs
-    if ( conn ) PopulateDACValues();
 }
 
 void QCstmDacs::sendThresholdToDac()
@@ -263,16 +296,16 @@ void QCstmDacs::sendThresholdToDac()
     }
 
     if (ui->allDACSimultaneousCheckBox->isChecked()) {
-        for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
-            for (int idx = 0; idx < 8; ++idx) {
-                QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,_dacSpinBoxes[idx]->value());
+        for (int chipId = 0; chipId < __max_number_of_chips; ++chipId) {
+            for (int threshold = 0; threshold < __max_number_of_thresholds; ++threshold) {
+                QCstmGLVisualization::getInstance()->setThresholdsVector(chipId, threshold, _dacSpinBoxes[threshold]->value());
             }
         }
 
         return;
     }
-    for (int idx = 0; idx < 8; ++idx) {
-        QCstmGLVisualization::getInstance()->setThresholdsVector(ui->deviceIdSpinBox->value(),idx,_dacSpinBoxes[idx]->value());
+    for (int threshold = 0; threshold < __max_number_of_thresholds; ++threshold) {
+        QCstmGLVisualization::getInstance()->setThresholdsVector(ui->deviceIdSpinBox->value(), threshold, _dacSpinBoxes[threshold]->value());
     }
 }
 
@@ -496,34 +529,102 @@ void QCstmDacs::SetLimits() {
     }
 }
 
-void QCstmDacs::shortcutTH0()
+void QCstmDacs::enablePossibleThresholds()
 {
-    qDebug() << "[INFO] Focus on DAC 0: TH0";
-    ui->dac0SpinBox->setFocus();
+    if ( _mpx3gui->getConfig()->getColourMode() ) {
+        if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
+            // 8 thresholds
+            ui->dac0hSlider->setEnabled(1);
+            ui->dac1hSlider->setEnabled(1);
+            ui->dac2hSlider->setEnabled(1);
+            ui->dac3hSlider->setEnabled(1);
+            ui->dac4hSlider->setEnabled(1);
+            ui->dac5hSlider->setEnabled(1);
+            ui->dac6hSlider->setEnabled(1);
+            ui->dac7hSlider->setEnabled(1);
+
+            ui->dac0SpinBox->setEnabled(1);
+            ui->dac1SpinBox->setEnabled(1);
+            ui->dac2SpinBox->setEnabled(1);
+            ui->dac3SpinBox->setEnabled(1);
+            ui->dac4SpinBox->setEnabled(1);
+            ui->dac5SpinBox->setEnabled(1);
+            ui->dac6SpinBox->setEnabled(1);
+            ui->dac7SpinBox->setEnabled(1);
+        } else {
+            // 4 thresholds
+            ui->dac0hSlider->setEnabled(1);
+            ui->dac1hSlider->setEnabled(1);
+            ui->dac2hSlider->setEnabled(1);
+            ui->dac3hSlider->setEnabled(1);
+            ui->dac4hSlider->setEnabled(0);
+            ui->dac5hSlider->setEnabled(0);
+            ui->dac6hSlider->setEnabled(0);
+            ui->dac7hSlider->setEnabled(0);
+
+            ui->dac0SpinBox->setEnabled(1);
+            ui->dac1SpinBox->setEnabled(1);
+            ui->dac2SpinBox->setEnabled(1);
+            ui->dac3SpinBox->setEnabled(1);
+            ui->dac4SpinBox->setEnabled(0);
+            ui->dac5SpinBox->setEnabled(0);
+            ui->dac6SpinBox->setEnabled(0);
+            ui->dac7SpinBox->setEnabled(0);
+        }
+    } else {
+        if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
+            // 2 thresholds
+            ui->dac0hSlider->setEnabled(1);
+            ui->dac1hSlider->setEnabled(1);
+            ui->dac2hSlider->setEnabled(0);
+            ui->dac3hSlider->setEnabled(0);
+            ui->dac4hSlider->setEnabled(0);
+            ui->dac5hSlider->setEnabled(0);
+            ui->dac6hSlider->setEnabled(0);
+            ui->dac7hSlider->setEnabled(0);
+
+            ui->dac0SpinBox->setEnabled(1);
+            ui->dac1SpinBox->setEnabled(1);
+            ui->dac2SpinBox->setEnabled(0);
+            ui->dac3SpinBox->setEnabled(0);
+            ui->dac4SpinBox->setEnabled(0);
+            ui->dac5SpinBox->setEnabled(0);
+            ui->dac6SpinBox->setEnabled(0);
+            ui->dac7SpinBox->setEnabled(0);
+        } else {
+            // 1 threshold
+            ui->dac0hSlider->setEnabled(1);
+            ui->dac1hSlider->setEnabled(0);
+            ui->dac2hSlider->setEnabled(0);
+            ui->dac3hSlider->setEnabled(0);
+            ui->dac4hSlider->setEnabled(0);
+            ui->dac5hSlider->setEnabled(0);
+            ui->dac6hSlider->setEnabled(0);
+            ui->dac7hSlider->setEnabled(0);
+
+            ui->dac0SpinBox->setEnabled(1);
+            ui->dac1SpinBox->setEnabled(0);
+            ui->dac2SpinBox->setEnabled(0);
+            ui->dac3SpinBox->setEnabled(0);
+            ui->dac4SpinBox->setEnabled(0);
+            ui->dac5SpinBox->setEnabled(0);
+            ui->dac6SpinBox->setEnabled(0);
+            ui->dac7SpinBox->setEnabled(0);
+        }
+    }
 }
 
-void QCstmDacs::shortcutIkrum()
+/*! @brief  Update the DAC spinboxes in the GUI from the thresholds
+ *          vector in visualisation.
+ */
+void QCstmDacs::onDevNumChanged(int chip)
 {
-    qDebug() << "[INFO] Focus on DAC 9: Ikrum";
-    ui->dac9SpinBox->setFocus();
+    auto vis = _mpx3gui->getVisualization();
+
+    for (int threshold = 0; threshold < __max_number_of_thresholds; ++threshold) {
+        slideAndSpin(threshold, vis->getThresholdVector(chip, threshold));
+    }
 }
-
-void QCstmDacs::onDevNumChanged(int dev)
-{
-
-    ui->dac0SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,0));
-    ui->dac1SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,1));
-    ui->dac2SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,2));
-    ui->dac3SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,3));
-    ui->dac4SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,4));
-    ui->dac5SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,5));
-    ui->dac6SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,6));
-    ui->dac7SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,7));
-
-
-}
-
-
 
 void QCstmDacs::UncheckAllDACs() {
 
@@ -614,6 +715,7 @@ void QCstmDacs::setValueDAC(int i) {
 void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
 
     SpidrController *spidrcontrol = _mpx3gui->GetSpidrController();
+    auto vis = _mpx3gui->getVisualization();
 
     int val = _dacSpinBoxes[i]->value(); // Set the value
     _dacSliders[i]->setValue(val); // Set the slider according to the new value in the Spin Box
@@ -628,12 +730,12 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
                 continue;
             }
             spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[i].code, val );
-            _mpx3gui->getVisualization()->setThresholdsVector(int(chip), i, val);
+            vis->setThresholdsVector(int(chip), i, val);
             SetDACValueLocalConfig(chip, i, val); // Change it in the local database
         }
     } else {
          spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
-         _mpx3gui->getVisualization()->setThresholdsVector(int(_deviceIndex), i, val);
+         vis->setThresholdsVector(int(_deviceIndex), i, val);
 
         SetDACValueLocalConfig( _deviceIndex, i, val); // Change it in the local database
     }
@@ -669,7 +771,6 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
 
-    //_mpx3gui->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
     // Only under user request
     GetLabelsList()[i]->setText("");
 
@@ -797,9 +898,8 @@ void QCstmDacs::setTextWithIdx(QString s, int i) {
     GetLabelsList()[i]->setText(s);
 }
 
-/**
- * In case I have the dac code and I want to know to which slider/spinBox it corresponds
- */
+/*! @brief IMPORTANT: In case I have the DAC code and I want to know to which slider/spinBox it corresponds
+  */
 int QCstmDacs::GetDACIndex(int dac_code) {
     for(int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
         if ( MPX3RX_DAC_TABLE[i].code == dac_code ) return i;
@@ -821,13 +921,13 @@ int QCstmDacs::GetNSamples() {
     }
 }
 
-void QCstmDacs::slideAndSpin(int i, int val) {
+void QCstmDacs::slideAndSpin(int DAC_index, int DAC_value) {
     // Temporarily disconnect the signal that triggers the message to the hardware
     QObject::disconnect( _signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) );
 
     // Slide n' Spin
-    GetSpinBoxList()[i]->setValue( val );
-    GetSliderList()[i]->setValue( val );
+    GetSpinBoxList()[DAC_index]->setValue( DAC_value );
+    GetSliderList()[DAC_index]->setValue( DAC_value );
 
     // Connect it back
     QObject::connect( _signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) );
@@ -1228,13 +1328,23 @@ void QCstmDacs::openWriteMenu(){//TODO: change to signal slot method
 
 void QCstmDacs::on_remoteThresholdpushButton_clicked()
 {
-    RemoteThresholdDlg *_remotThresholdDlg = new RemoteThresholdDlg;
-    for (int i = 0; i < NUMBER_OF_CHIPS; ++i) {
-        for (int j = 0; j < 8; ++j) {
-           _remotThresholdDlg->setThresholdInfo(i,j,_mpx3gui->getVisualization()->getThresholdVector(i,j));
+    RemoteThresholdDlg *_remoteThresholdDialog = new RemoteThresholdDlg;
+    for (int chip = 0; chip < __max_number_of_chips; ++chip) {
+        for (int threshold = 0; threshold < __max_number_of_thresholds; ++threshold) {
+           _remoteThresholdDialog->setThresholdInfo(chip, threshold, _mpx3gui->getVisualization()->getThresholdVector(chip, threshold));
         }
     }
 
-    _remotThresholdDlg->setModal(true);
-    _remotThresholdDlg->exec();
+    _remoteThresholdDialog->setModal(true);
+    _remoteThresholdDialog->exec();
+}
+
+void QCstmDacs::slot_colourModeChanged(bool)
+{
+    enablePossibleThresholds();
+}
+
+void QCstmDacs::slot_readBothCounters(bool)
+{
+    enablePossibleThresholds();
 }

@@ -42,6 +42,24 @@ thresholdScan *thresholdScan::getInstance()
     return thresholdScanInst;
 }
 
+void thresholdScan::setWindowWidgetsStatus(win_status s)
+{
+    switch (s) {
+
+    case win_status::startup:
+        this->setDisabled( true );
+        break;
+    case win_status::connected:
+        this->setEnabled( true );
+        break;
+    case win_status::disconnected:
+        this->setDisabled( true );
+        break;
+    default:
+        break;
+    }
+}
+
 void thresholdScan::initTableView()
 {
     _myThresholdScanDelegate = new ThresholdScanDelegate(this);
@@ -515,9 +533,13 @@ void thresholdScan::button_startStop_clicked_remotely()
     }
 }
 
-void thresholdScan::ConnectionStatusChanged(bool connected)
+void thresholdScan::ConnectionStatusChanged(bool conn)
 {
-    this->setEnabled(connected);
+    if ( conn ) {
+        setWindowWidgetsStatus( win_status::connected );
+    } else {
+        setWindowWidgetsStatus( win_status::disconnected );
+    }
 }
 
 void thresholdScan::startDataTakingThread()
@@ -663,7 +685,7 @@ void thresholdScan::on_pushButton_setPath_clicked()
     ui->lineEdit_path->setText(getPath("Choose a folder to save the files to."));
 }
 
-void thresholdScan::slot_colourModeChanged()
+void thresholdScan::slot_colourModeChanged(bool)
 {
     enableOrDisableGUIItems();
 }

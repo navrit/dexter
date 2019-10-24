@@ -17,32 +17,27 @@
 #include "histogram.h"
 #include "GeneralSettings.h"
 #include "commandhandlerwrapper.h"
-
+#include <vector>
 #include <QQueue>
 #include <QVector>
 
-#define __display_eta_granularity 200 // ms
-#define __overhead 0.01
-
-#include <vector>
-
-using namespace std;
-
 class DataTakingThread;
 class DataConsumerThread;
-
 class QCstmCorrectionsDialog;
 class StatsDialog;
 class ProfileDialog;
 
+const static int __display_eta_granularity = 200; // ms
+const static double __overhead = 0.01;
+
 namespace Ui {
-class QCstmGLVisualization;
+    class QCstmGLVisualization;
 }
 
 class QCstmGLVisualization : public QWidget
 {
-    enum MASK_OPERATION { MASK,UNMASK,MASK_ALL_OVERFLOW,MASK_ALL_ACTIVE, NULL_MASK };
     Q_OBJECT
+
     Mpx3GUI * _mpx3gui = nullptr;
     bool _takingData;
     bool _busyDrawing = false;
@@ -55,13 +50,15 @@ class QCstmGLVisualization : public QWidget
     StatsDialog * _statsdialog = nullptr;
     ProfileDialog * _profiledialog = nullptr;
 
+    enum MASK_OPERATION { MASK, UNMASK, MASK_ALL_OVERFLOW, MASK_ALL_ACTIVE, NULL_MASK };
+
 public:
     explicit QCstmGLVisualization(QWidget *parent = nullptr);
     ~QCstmGLVisualization();
     static QCstmGLVisualization* getInstance();
 
-    void setThresholdsVector(int chipId,int idx, int value);
-    int getThresholdVector(int chipId,int idx);
+    void setThresholdsVector(int chipId, int threshold, int DAC_value);
+    int getThresholdVector(int chipId, int threshold);
     void clearThresholdsVector();
     void initialiseThresholdsVector();
 
@@ -168,7 +165,7 @@ private:
 
     MASK_OPERATION _maskOperation = MASK;
     bool _maskingRequestFromServer = false;
-    int _thresholdsVector [NUMBER_OF_CHIPS][8] = {{0}}; //! TODO: KIA? Refactor the hardcoded 8 from this?
+    int _thresholdsVector [__max_number_of_chips][__max_number_of_thresholds] = {{0}}; //! TODO: KIA? Refactor the hardcoded 8 from this?
     void _loadFromThresholdsVector();
 
     typedef struct {

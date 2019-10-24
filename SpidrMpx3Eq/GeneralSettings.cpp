@@ -1,13 +1,7 @@
 #include "GeneralSettings.h"
 
 GeneralSettings::GeneralSettings(QObject *parent) : QObject(parent)
-{
-    // set a default value for thl to energy calibration slope parameters
-    for(int i=0; i<NUMBER_OF_CHIPS; i++) {
-        _slopes[i] = 1;
-    }
-
-}
+{}
 
 void GeneralSettings::setEqualisationPath(QString path)
 {
@@ -35,16 +29,15 @@ QString GeneralSettings::getConfigPath()
 
 void GeneralSettings::setOffset(int chipNum, double val)
 {
-    if(chipNum >= 0 && chipNum < NUMBER_OF_CHIPS){
+    if(chipNum >= 0 && chipNum < __max_number_of_chips){
         _offsets[chipNum] = val;
         writeSetting();
     }
-
 }
 
 double GeneralSettings::getOffset(int chipNum)
 {
-    if(chipNum >= 0 && chipNum < NUMBER_OF_CHIPS){
+    if(chipNum >= 0 && chipNum < __max_number_of_chips){
         readSetting();
         return _offsets[chipNum];
     }
@@ -53,7 +46,7 @@ double GeneralSettings::getOffset(int chipNum)
 
 void GeneralSettings::setSlope(int chipNum, double val)
 {
-    if(chipNum >= 0 && chipNum < NUMBER_OF_CHIPS){
+    if(chipNum >= 0 && chipNum < __max_number_of_chips){
         _slopes[chipNum] = val;
         writeSetting();
     }
@@ -61,7 +54,7 @@ void GeneralSettings::setSlope(int chipNum, double val)
 
 double GeneralSettings::getSlope(int chipNum)
 {
-    if(chipNum >= 0 && chipNum < NUMBER_OF_CHIPS){
+    if(chipNum >= 0 && chipNum < __max_number_of_chips){
         readSetting();
         return _slopes[chipNum];
     }

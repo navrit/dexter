@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QVector>
 #include "merlinCommandsDef.h"
+#include "mpx3eq_common.h"
 
 class Mpx3GUI;
 
@@ -78,8 +79,7 @@ private:
     QHash<QString,QString> cmdTable;
     void initializeTables();
 
-    const int CHIPS_NUM = 4;
-    const int FRAME_HEADER_SIZE = 256 + (128*CHIPS_NUM);
+    const int FRAME_HEADER_SIZE = 256 + (128* __max_number_of_chips);
 
     friend class MerlinCommand;
 };

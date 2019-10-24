@@ -2,11 +2,10 @@
 #define FRAMESET_H
 
 #include "ChipFrame.h"
+#include "configs.h"
 
-const static int number_of_chips = 4;
+class FrameSet {
 
-class FrameSet
-{
 public:
     FrameSet();
     ~FrameSet();
@@ -21,7 +20,7 @@ public:
 
 private:
     int counters = 1;
-    ChipFrame* frame[2][number_of_chips];
+    ChipFrame* frame[2][Config::number_of_chips];
 
 };
 
