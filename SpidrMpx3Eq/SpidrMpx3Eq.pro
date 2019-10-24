@@ -57,6 +57,7 @@ unix {
 LIBS += -lSpidrMpx3Lib -lphidget21 -lzmq
 
 SOURCES += main.cpp \
+    EnergyConfiguration.cpp \
     qcstmplotheatmap.cpp \
     histogram.cpp \
     qcstmplothistogram.cpp \
@@ -105,6 +106,7 @@ SOURCES += main.cpp \
     hdmiConfig.cpp
 
 HEADERS += mpx3gui.h \
+    EnergyConfiguration.h \
     qcstmplotheatmap.h \
     histogram.h \
     qcstmplothistogram.h \
@@ -156,6 +158,7 @@ HEADERS += mpx3gui.h \
     hdmiConfig.h
 
 FORMS    += mpx3gui.ui \
+    EnergyConfiguration.ui \
     qcstmequalization.ui \
     qcstmdacs.ui \
     gradientwidget.ui \

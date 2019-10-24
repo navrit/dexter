@@ -2,37 +2,32 @@
 #define ENERGYCALIBRATOR_H
 
 #include <QObject>
-#define NUMBER_OF_CHIPS 4
+#include "mpx3eq_common.h"
 
-
-// y = ax + b
-// _energy = _slop X _dacs + _offset
+/* y = ax + b
+ * energy = slope * dac_value + offset */
 
 class EnergyCalibrator : public QObject
 {
     Q_OBJECT
-public:
-    explicit EnergyCalibrator(QObject *parent = 0);
-    void setSlope(int idx,double value);
-    void setOffset(int idx,double value);
-    double getSlope(int idx);
-    double getOffset(int idx);
-    double getEnergy(int idx);
-    int getDac(int idx);
-    double calcEnergy(int idx,int dac);
-    int calDac(int idx,double energy);
 
+public:
+    explicit EnergyCalibrator(QObject *parent = nullptr);
+    void setSlope(int chip, int threshold, double value);
+    void setOffset(int chip, int threshold, double value);
+    double getSlope(int chip, int threshold);
+    double getOffset(int chip, int threshold);
+    double getEnergy(int chip, int threshold);
+    double getDac(int chip, int threshold);
+    double calcEnergy(int chip, int threshold, double DAC_value);
+    double calcDac(int chip, int threshold, double energy);
 
 private:
-    double _slopes[NUMBER_OF_CHIPS];
-    double _offsets[NUMBER_OF_CHIPS];
-    double _energies[NUMBER_OF_CHIPS];
-    int    _dacs[NUMBER_OF_CHIPS];
-    bool   _indexChecker(int idx);
-
-signals:
-
-public slots:
+    double _slopes[__max_number_of_chips][__max_number_of_thresholds] = {{-1}};
+    double _offsets[__max_number_of_chips][__max_number_of_thresholds] = {{-1}};
+    double _energies[__max_number_of_chips][__max_number_of_thresholds] = {{-1}};
+    int    _dacs[__max_number_of_chips][__max_number_of_thresholds] = {{-1}};
+    bool   _indexChecker(int chip, int threshold);
 };
 
 #endif // ENERGYCALIBRATOR_H
