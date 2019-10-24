@@ -169,7 +169,7 @@ private:
     MASK_OPERATION _maskOperation = MASK;
     bool _maskingRequestFromServer = false;
     int _thresholdsVector [NUMBER_OF_CHIPS][8] = {{0}}; //! TODO: KIA? Refactor the hardcoded 8 from this?
-    void _loadFromThresholdsVector(void);
+    void _loadFromThresholdsVector();
 
     typedef struct {
         QString counts;

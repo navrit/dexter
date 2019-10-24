@@ -31,7 +31,7 @@ public:
     explicit CommandHandler(QObject *parent = nullptr);
     Mpx3GUI* getGui();
     void startLiveCamera(bool);
-    void startSnap(void);
+    void startSnap();
     void setAutoSave(bool);
     bool setRecordPath(QString);
     void setRecordFormat(int);
@@ -45,25 +45,25 @@ public:
     int setThresholdScan(int);
     int setFramesPerScan(int);
     int setScanPath(QString);
-    void startThrsholdScan(void);
-    int getStartScan(void);
-    int getStopScan(void);
-    int getStepScan(void);
-    int getThresholdScan(void);
-    int getFramesPerScan(void);
-    QString getScanPath(void);
-    void startScan(void);
-    void stopEqualization(void);
+    void startThrsholdScan();
+    int getStartScan();
+    int getStopScan();
+    int getStepScan();
+    int getThresholdScan();
+    int getFramesPerScan();
+    QString getScanPath();
+    void startScan();
+    void stopEqualization();
 
     void startSendingImage(bool);
-    QString getAcquisitionHeader(void);
-    void getImage(void);
+    QString getAcquisitionHeader();
+    void getImage();
     int setPixelMask(int,int);
     int setPixelUnmask(int,int);
     int loadEqualizationRemotely(QString path);
     QString getEqualizationPath();
     int loadConfigRemotely(QString path);
-    QString getConfigPath(void);
+    QString getConfigPath();
     int saveConfigRemotely(QString);
     int doEqualizationRemotely(QString path);
     int setInhibitShutter(bool);
@@ -75,8 +75,8 @@ public:
     int setOffset(int chipNum,double val);
     double getOffset(int chipNum);
 
-    int resetSlopesAndOffsets(void);
-    int getServerStatus(void);
+    int resetSlopesAndOffsets();
+    int getServerStatus();
 
     //data
     void emitrequestForAnotherSocket(int);
@@ -86,7 +86,7 @@ signals:
     void imageIsReady(QByteArray,Canvas);
     void requestForDataTaking(bool);
     void requestForInfDataTracking(bool);
-    void requestForSnap(void);
+    void requestForSnap();
     void requestForAutoSave(bool);
     void requestForSettingSavePath(QString);
     void requestForSettingSaveFormat(int);
@@ -94,7 +94,7 @@ signals:
     void requestToMaskPixelRemotely(int,int);
     void requestToUnmaskPixelRemotely(int,int);
     void requestToLoadEqualizationRemotely(QString);
-    void requestToStartStopThresholdScan(void);
+    void requestToStartStopThresholdScan();
     void requestToDoEqualizationRemotely(QString);
     void requestToSetInhibitShutterRemotely(bool);
     void requestToLoadConfigRemotely(QString);
@@ -103,13 +103,13 @@ signals:
 
 public slots:
     void on_doneWithOneFrame(int);
-    void on_someCommandHasFinished_Successfully(void);
+    void on_someCommandHasFinished_Successfully();
     void on_equalisationPathExported(QString path);
     void setServerStatus(SERVER_BUSY_TYPE status);
     void testSetThreshold_idx_val_chipId(); /* Test function for set threshold */
 
 private:
-    void initializeCmdTable(void);
+    void initializeCmdTable();
     char* getTimeStamp();
     bool _sendingImage = false;
     QString _equalisationPath = "";
@@ -121,11 +121,11 @@ class Command {
 public:
     Command(QString command);
     void invoke(CommandHandler* ch, SERVER_BUSY_TYPE serverStatus);
-    QString getData(void);
+    QString getData();
     void setData(QString);
     void setImage(QByteArray);
     bool enoughArguments(int, QString);
-    ERROR_TYPE getError(void);
+    ERROR_TYPE getError();
     void setError(ERROR_TYPE);
     void merlinErrorToPslError(int errNum);
     QVector<QString> arguments; // command's arguments
@@ -135,7 +135,7 @@ private:
     QString data;               // command data string to repond to commands excepts 'GetImage'
     QByteArray imageToSend;     // image to be sent when 'GetImage' received
     ERROR_TYPE _error = NO_ERROR;
-    void print(void); //test
+    void print(); //test
 
 
 };

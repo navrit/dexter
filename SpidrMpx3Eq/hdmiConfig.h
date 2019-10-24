@@ -38,7 +38,7 @@ private slots:
 private:
     Ui::hdmiConfig *ui;
     QVector <QComboBox*> _comboBoxes;
-    void _loadComboBoxesVector(void);
+    void _loadComboBoxesVector();
     void _configComboxItems(int itemIndex, QComboBox *excludeComboBox);
     unsigned _comboBoxIndexToHdmiCode(int comboBoxIndex);
     void _setHdmiRegister(unsigned code,unsigned shift);

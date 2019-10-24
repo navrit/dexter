@@ -76,7 +76,7 @@ private:
     QHash<QString,QString> setTable; //key => merlin's command name; value => PSL's command name
     QHash<QString,QString> getTable;
     QHash<QString,QString> cmdTable;
-    void initializeTables(void);
+    void initializeTables();
 
     const int CHIPS_NUM = 4;
     const int FRAME_HEADER_SIZE = 256 + (128*CHIPS_NUM);
@@ -94,9 +94,9 @@ public:
     MerlinCommand(QString, MerlinInterface&); //get the merlin command and parse it to PSL command
                                 //e.g MPX,0000000024,GET,SOFTWAREVERSION  ==> Hello
     QString argParser(PSL_ARG_TYPES);
-    QString makeSetCmdResponse(void);
+    QString makeSetCmdResponse();
     QString makeGetResponse(QString);
-    QString getCommandType(void);
+    QString getCommandType();
     void setErrorExternally(int);
 
     int     _cmdLength = 0;

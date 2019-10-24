@@ -20,7 +20,7 @@ public:
 private:
     Ui::RemoteThresholdDlg *ui;
     QLabel *_thresholdLabels[4][8];
-    void _initializeThersholdLabels(void);
+    void _initializeThersholdLabels();
 };
 
 #endif // REMOTETHRESHOLDDLG_H

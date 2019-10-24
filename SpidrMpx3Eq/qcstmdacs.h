@@ -166,7 +166,7 @@ private slots:
     void slideAndSpin(int, int);
     void openWriteMenu();
     void ConnectionStatusChanged(bool);
-    void sendThresholdToDac(void);
+    void sendThresholdToDac();
     void on_remoteThresholdpushButton_clicked();
 signals:
     void busy(SERVER_BUSY_TYPE);

@@ -166,8 +166,8 @@ public:
 
     void loadLastConfiguration();
     QString getConfigPath(){ return _configPath;}
-    void stopTriggerTimers(void);
-    CommandHandlerWrapper* getCommandHandlerWrapper(void);
+    void stopTriggerTimers();
+    CommandHandlerWrapper* getCommandHandlerWrapper();
 
 signals:
     void dataChanged();
@@ -223,7 +223,7 @@ public slots:
     void loadEqualisationFromPathRemotely(QString path);
 
     void onEqualizationPathExported(QString path);
-    void sendingShutter(void);
+    void sendingShutter();
 
 private:
     bool _loadingBeforeConnecting = false;

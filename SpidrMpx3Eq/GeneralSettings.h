@@ -29,9 +29,9 @@ public:
     void writeSetting();
     void readSetting();
     void setEqualisationPath(QString path);
-    QString getEqualisationPath(void);
+    QString getEqualisationPath();
     void setConfigPath(QString path);
-    QString getConfigPath(void);
+    QString getConfigPath();
     void setLastThresholdPath(QString folder);
     QString getLastThresholdPath();
 
