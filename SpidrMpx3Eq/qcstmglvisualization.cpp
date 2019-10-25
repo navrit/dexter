@@ -375,7 +375,7 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
         ArmAndStartTimer();
         ConfigureGUIForDataTaking();
 
-        _timerId = this->startTimer( 16 ); // Refresh readout information at ~60 Hz
+        _timerId = this->startTimer( 100 ); // Refresh readout information at ~60 Hz
 
     } else { // stop
         // By premature user signal !
