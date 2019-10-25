@@ -80,7 +80,7 @@ const static int __ct_page_Id = 9;
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "Dexter";
-const static QString _softwareVersion = QString("v2.1.0 Energy_configuration NB - " + QString(GIT_CURRENT_SHA1));
+const static QString _softwareVersion = QString("v2.1.1 BugFix-Raw_TIFF_16 NB - " + QString(GIT_CURRENT_SHA1));
 
 const static int tcpCommandPort = 6351;            //! Diamond - Merlin interface
 const static int tcpDataPort = 6352;               //! Diamond - Merlin interface
@@ -138,7 +138,7 @@ public:
 
     QPoint getSize();
     void getSize(int *x, int *y);
-    int getMode() {return integrate;}
+    int getIntegrate() {return integrate;}
     int getX();
     int getY();
     int getPixelAt(int x, int y, int layer);

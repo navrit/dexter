@@ -1254,11 +1254,14 @@ void QCstmGLVisualization::saveImageSlot(QString filePath)
 
     on_saveLineEdit_textEdited();
     on_saveLineEdit_editingFinished();
-    _mpx3gui->save_data(true, 0, "Raw TIFF16");
+    if (_mpx3gui->getIntegrate()) {
+        _mpx3gui->save_data(true, 0, "Raw TIFF");
+        qDebug() << "[INFO]\tZMQ \n\tSaved raw tiff (32-bit) to :" << filePath;
+    } else {
+        _mpx3gui->save_data(true, 0, "Raw TIFF16");
+        qDebug() << "[INFO]\tZMQ \n\tSaved raw tiff (16-bit) to :" << filePath;
+    }
 
-#ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff (16-bit) to :" << filePath;
-#endif
     emit someCommandHasFinished_Successfully();
 }
 
