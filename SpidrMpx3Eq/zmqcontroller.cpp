@@ -1,14 +1,15 @@
 #include "zmqcontroller.h"
 #include "QDebug"
 #include "QMessageBox"
+#include <QFileInfo>
+#include <QRegExp>
+
 #include "mpx3config.h"
 #include "qcstmglvisualization.h"
-#include <QFileInfo>
 
 #include "qjsonobject.h"
 #include "qjsondocument.h"
 
-#include <QRegExp>
 
 zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 {

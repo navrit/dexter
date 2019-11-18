@@ -1890,7 +1890,7 @@ void Dataset::addLayer(int *data, int threshold) {
 void Dataset::addLayerColour(int *colour_data, int threshold)
 {
     // Calculate number of pixels to copy from the number of chips * x * y
-    size_t n = size_t(m_nFrames*m_nx*m_ny); //! TODO Should be 4*256*256... not 4*128*128... FFS
+    size_t n = size_t(m_nFrames*m_nx*m_ny);
 
     if (m_thresholdsToIndices.contains(threshold)) {
 
@@ -1908,12 +1908,19 @@ void Dataset::addLayerColour(int *colour_data, int threshold)
 
     } else {
 
-        int* colourBuffer = new int[n];
+        int* colourBuffer = new (std::nothrow) int[n];
+        if ( colourBuffer == nullptr ) {
+            qDebug() << "[FAIL] Memory allocation failed - colour buffer";
+            return;
+        }
+
         // Makes a copy of colour_data
         std::copy(colour_data, colour_data+n, colourBuffer);
 
         // Sets the new layer to the copied colour_data
         setNewLayer(threshold, colourBuffer);
+
+        delete[] colourBuffer;
     }
 }
 

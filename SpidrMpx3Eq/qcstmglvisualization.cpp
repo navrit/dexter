@@ -1205,11 +1205,13 @@ void QCstmGLVisualization::takeImage()
     qDebug() << ("[INFO]\tZMQ \n\t + Delete current image \n\t + Trigger start data taking \n\t + Turn off autosave");
 #endif
 
-    zmqRunning = true;
+    auto t1 = std::chrono::high_resolution_clock::now();
 
-    _mpx3gui->zero_data();
-    ui->saveCheckBox->setChecked(false);
+    zmqRunning = true;
+    _mpx3gui->zero_data(false);
     StartDataTaking();
+
+    qDebug() << "takeImage time (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::high_resolution_clock::now() - t1 ).count();
 
     //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
 }
@@ -1247,6 +1249,8 @@ void QCstmGLVisualization::takeAndSaveImageSequence(QString folder)
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     //! TODO More error checking here?
     requestToSetSavePath(filePath);
     onRequestForAutoSaveFromServer(true);
@@ -1254,6 +1258,10 @@ void QCstmGLVisualization::saveImageSlot(QString filePath)
 
     on_saveLineEdit_textEdited();
     on_saveLineEdit_editingFinished();
+
+    qDebug() << "saveImageSlot time 1 (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::high_resolution_clock::now() - t1 ).count();
+    t1 = std::chrono::high_resolution_clock::now();
+
     if (_mpx3gui->getIntegrate()) {
         _mpx3gui->save_data(true, 0, "Raw TIFF");
         qDebug() << "[INFO]\tZMQ \n\tSaved raw tiff (32-bit) to :" << filePath;
@@ -1261,6 +1269,8 @@ void QCstmGLVisualization::saveImageSlot(QString filePath)
         _mpx3gui->save_data(true, 0, "Raw TIFF16");
         qDebug() << "[INFO]\tZMQ \n\tSaved raw tiff (16-bit) to :" << filePath;
     }
+
+    qDebug() << "saveImageSlot time 2 (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::high_resolution_clock::now() - t1 ).count();
 
     emit someCommandHasFinished_Successfully();
 }
