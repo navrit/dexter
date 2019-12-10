@@ -22,7 +22,7 @@ QCstmCT::~QCstmCT()
 
 void QCstmCT::resetMotor()
 {
-    qDebug() << "[CT] Resetting motor to position 0";
+    qDebug() << "[CT]\tResetting motor to position 0";
 
     // Update stepper motor UI to 0
     setTargetPosition(0);
@@ -60,49 +60,52 @@ void QCstmCT::update_timeGUI()
     ui->progressBar->setValue( float(iteration) / float(numberOfProjections) * 100);
 }
 
-void QCstmCT::applyCorrection(QString correctionMethod)
-{
-    if (correctionMethod == "None") {
-        return;
-    } else if (correctionMethod == "Open Beam"){
-        // Get an Open Beam image
-        qDebug() << "[CT] Correction: Open Beam" << correctionFilename << endl;
+//void QCstmCT::applyCorrection(QString correctionMethod)
+//{
+//    if (correctionMethod == "None") {
+//        return;
+//    } else if (correctionMethod == "Open Beam"){
+//        qDebug() << "[CT]\tCorrections disabled";
 
-        _mpx3gui->getDataset()->removeCorrection();
-        QFile OBfile(correctionFilename);
-        if ( !OBfile.open(QIODevice::ReadOnly) ) {
-            string messg = "Couldn't open: ";
-            messg += correctionFilename.toStdString();
-            messg += "\nNo output written!";
-            QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
-            return;
-        }
+//        // Get an Open Beam image
+//        qDebug() << "[CT]\tCorrection: Open Beam" << correctionFilename << endl;
 
-        _mpx3gui->getDataset()->loadCorrection(OBfile.readAll());
-        _mpx3gui->getDataset()->applyOBCorrection();
+//        _mpx3gui->getDataset()->removeCorrection();
+//        QFile OBfile(correctionFilename);
+//        if ( !OBfile.open(QIODevice::ReadOnly) ) {
+//            string messg = "Couldn't open: ";
+//            messg += correctionFilename.toStdString();
+//            messg += "\nNo output written!";
+//            QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
+//            return;
+//        }
 
-    } else if (correctionMethod == "Beam Hardening"){
-        // Get a Beam hardening JSON
-        qDebug() << "[CT] Correction: Beam Hardening";
-        emit doBHCorrection();
+//        _mpx3gui->getDataset()->loadCorrection(OBfile.readAll());
+//        _mpx3gui->getDataset()->applyOBCorrection();
 
-    } else {
-        qDebug() << "[CT] Correction: Unknown option?!?!?!";
-        return;
-    }
-}
+//    } else if (correctionMethod == "Beam Hardening"){
+//        qDebug() << "[CT]\tCorrections disabled";
 
-QString QCstmCT::getCorrectionFile()
-{
-    if (ui->correctionMethod->currentText() == "Open Beam"){
-        return QFileDialog::getOpenFileName(this, tr("Select Open Beam image"), ".", BIN_FILES );
-    } else if (ui->correctionMethod->currentText() == "Beam Hardening") {
-        return QFileDialog::getOpenFileName(this, tr("Select Beam Hardening JSON"), ".", JSON_FILES );
-    } else {
-        return "";
-    }
+//        // Get a Beam hardening JSON
+//        qDebug() << "[CT]\tCorrection: Beam Hardening";
+//        emit doBHCorrection();
 
-}
+//    } else {
+//        qDebug() << "[CT]\tCorrection: Unknown option?!?!?!";
+//        return;
+//    }
+//}
+
+//QString QCstmCT::getCorrectionFile()
+//{
+//    if (ui->correctionMethod->currentText() == "Open Beam"){
+//        return QFileDialog::getOpenFileName(this, tr("Select Open Beam image"), ".", BIN_FILES );
+//    } else if (ui->correctionMethod->currentText() == "Beam Hardening") {
+//        return QFileDialog::getOpenFileName(this, tr("Select Beam Hardening JSON"), ".", JSON_FILES );
+//    } else {
+//        return "";
+//    }
+//}
 
 QString QCstmCT::getMotorPositionStatus()
 {
@@ -111,58 +114,70 @@ QString QCstmCT::getMotorPositionStatus()
 
 void QCstmCT::startDataTakingThread()
 {
-    if( getMotorPositionStatus() == "Stopped" || getMotorPositionStatus() == "..."){
-        qDebug() << "[CT] STARTED DT @ " << QDateTime::currentDateTimeUtc();
+    const QString motorPositionStatus = getMotorPositionStatus();
+    if (motorPositionStatus == "Stopped" || motorPositionStatus == "...") {
 
-        _mpx3gui->getVisualization()->StartDataTaking("CT");
+        if (_mpx3gui->getConfig()->isConnected()) {
+            qDebug() << "[CT]\tStarted DataTaking @ " << QDateTime::currentDateTimeUtc();
 
-        //! Note: MUST end function here to return back to Qt event loop
+            _mpx3gui->getVisualization()->StartDataTaking("CT");
+
+            //! Note: MUST end function here to return back to Qt event loop
+
+        } else {
+            qDebug() << "[CT]\tNot connected to a detector, I guess you're just playing with the motors!";
+        }
     }
 }
 
 void QCstmCT::startCT()
 {
-    //! Use acquisition settings from other view
-    _stop = false;
-    iteration = 0;
-    targetAngle = 0;
-    _mpx3gui->getDataset()->clear();
+    if (_mpx3gui->getConfig()->isConnected()) {
+        //! Use acquisition settings from other view
+        _stop = false;
+        iteration = 0;
+        targetAngle = 0;
+        _mpx3gui->getDataset()->clear();
 
-    angleDelta = ui->spinBox_rotationAngle->value() /
-            ui->spinBox_numberOfProjections->value();
-    numberOfProjections = ui->spinBox_numberOfProjections->value() + 1;
+        angleDelta = ui->spinBox_rotationAngle->value() /
+                ui->spinBox_numberOfProjections->value();
+        numberOfProjections = ui->spinBox_numberOfProjections->value() + 1;
 
-    //! Get correction file
-    correctionFilename = getCorrectionFile();
+        //! Get correction file
+        // correctionFilename = getCorrectionFile();
 
-    ui->label_timeLeft->setText(QString::number((numberOfProjections) *
-                                                ui->spinBox_ExposureTimePerPosition->value()));
-    ui->progressBar->setValue(0);
-    ui->CTPushButton->setText("Stop CT");
+        ui->label_timeLeft->setText(QString::number((numberOfProjections) *
+                                                    ui->spinBox_ExposureTimePerPosition->value()));
+        ui->progressBar->setValue(0);
+        ui->CTPushButton->setText("Stop CT");
 
-    qDebug() << "[CT] --------------------------------------";
-    qDebug() << "[CT] Starting CT function - stop and shoot.";
+        qDebug() << "[CT]\t--------------------------------------";
+        qDebug() << "[CT]\tStarting CT function - stop and shoot.";
 
-    //! Initialise for measurement
-    qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
-    qDebug() << "[CT] Take" << numberOfProjections << "frames";
-    qDebug() << "[CT] --------------------------------------";
+        //! Initialise for measurement
+        qDebug() << "[CT]\tRotate by a small angle increment: " << angleDelta << "°";
+        qDebug() << "[CT]\tTake" << numberOfProjections << "frames";
+        qDebug() << "[CT]\t--------------------------------------";
 
-    setSpeed(32768);
-    resetMotor();
-    // These numbers happen to work reliably and are fast
-    setSpeed(32000);
-    setAcceleration(500000);
+        setSpeed(32768);
+        resetMotor();
+        // These numbers happen to work reliably and are fast
+        setSpeed(32000);
+        setAcceleration(500000);
 
-    update_timeGUI();
-    ui->CTPushButton->setText("Stop CT");
+        update_timeGUI();
+        ui->CTPushButton->setText("Stop CT");
 
-    startDataTakingThread();
+        startDataTakingThread();
+
+    } else {
+        qDebug() << "[CT]\tNot connected to a detector, cannot run a CT scan...";
+    }
 }
 
 void QCstmCT::stopCT()
 {
-    qDebug() << "[CT] GUI Interrupt: Stopping CT function.";
+    qDebug() << "[CT]\tGUI Interrupt: Stopping CT function.";
     _stop = true;
 
     // Cleanup
@@ -194,23 +209,18 @@ void QCstmCT::resumeCT()
     // Essentially a global for (i < numberOfProjections) loop
     if (iteration < numberOfProjections-1) {
         // Correct image
-        QString corrMethod = ui->correctionMethod->currentText();
-        applyCorrection( corrMethod );
+        // QString corrMethod = ui->correctionMethod->currentText();
+        // applyCorrection( corrMethod );
 
         // Save/send file?
-        QString filename = CTfolder; /*+
-                //QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
-                "img_" +
-                QString::number(iteration) +
-                ".tif";*/
+        QString filename = CTfolder;
 
-        //qDebug() << "[CT] Saving TIFF:" << filename;
-        if (corrMethod == "Beam Hardening"){
-            _mpx3gui->getVisualization()->saveImage(filename, corrMethod);
-        } else {
-            _mpx3gui->getVisualization()->saveImage(filename);
-        }
-        _mpx3gui->getDataset()->clear();
+//        if (corrMethod == "Beam Hardening"){
+//            _mpx3gui->getVisualization()->saveImage(filename, corrMethod);
+//        } else {
+//
+        _mpx3gui->getVisualization()->saveImage(filename);
+//        }
 
 
         // Rotate by a small angle
@@ -229,7 +239,7 @@ void QCstmCT::resumeCT()
 
         update_timeGUI();
 
-        qDebug() << "[CT] Target angle: " << targetAngle;
+        qDebug() << "[CT]\tTarget angle: " << targetAngle;
         // ---------------------------------------------------------------------------
 
     } else {
@@ -258,10 +268,9 @@ void QCstmCT::resumeCT()
             saveNotes.close();
         }
 
-        qDebug() << "[CT] ------------ End ------------";
+        qDebug() << "[CT]\t------------ End ------------";
         return;
     }
-
 }
 
 void QCstmCT::on_CTPushButton_clicked()
@@ -270,7 +279,7 @@ void QCstmCT::on_CTPushButton_clicked()
 
     if ( ui->CTPushButton->text() == "Connect to motors" ){
         // Connect to motors
-        qDebug() << "[CT] Connect to motors";
+        qDebug() << "[CT]\tConnect to motors";
 
         if ( activeMotors ){
 
@@ -300,7 +309,7 @@ void QCstmCT::on_CTPushButton_clicked()
         stopCT();
 
     } else {
-        qDebug() << "[CT] ---------------------\n WEIRD AF ERROR \n-----------------------\n";
+        qDebug() << "[CT]\t---------------------\n WEIRD AF ERROR \n-----------------------\n";
         return;
     }
 }

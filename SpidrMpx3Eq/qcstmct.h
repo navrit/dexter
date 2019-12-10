@@ -27,20 +27,20 @@ public:
 
 private:
 
-    Ui::QCstmCT *ui;
-    Mpx3GUI * _mpx3gui;
+    Ui::QCstmCT *ui = nullptr;
+    Mpx3GUI *_mpx3gui = nullptr;
     void resetMotor();
     void setAcceleration(double acceleration);
     void setSpeed(double speed);
     void setTargetPosition(double position);
     void motor_goToTarget();
     void update_timeGUI();
-    void applyCorrection(QString correctionMethod);
-    QString getCorrectionFile();
-    QString correctionFilename;
+    //void applyCorrection(QString correctionMethod);
+    //QString getCorrectionFile();
+    //QString correctionFilename;
     int  iteration = 0;
     double targetAngle = 0;
-    float angleDelta = 0;
+    double angleDelta = 0;
     int numberOfProjections = 0;
     QString getMotorPositionStatus();
     void startDataTakingThread();
@@ -54,7 +54,7 @@ private:
 
 signals:
     void sig_connectToMotors( bool );
-    void doBHCorrection();
+//    void doBHCorrection();
 
 public slots:
     void slot_connectedToMotors();

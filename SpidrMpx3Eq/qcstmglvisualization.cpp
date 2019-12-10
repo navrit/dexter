@@ -319,14 +319,14 @@ void QCstmGLVisualization::saveImage(QString filename)
     _mpx3gui->save_data(true, 0, "Raw TIFF");
 }
 
-/*! @brief Only used in CT currently (2019-05-07) */
-void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
-{
-    if (corrMethod == "Beam Hardening"){
-        //! Only do spatial correction in this mode
-        _mpx3gui->getDataset()->toTIFF(filename, true, true);
-    }
-}
+///*! @brief Only used in CT currently (2019-05-07) */
+//void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
+//{
+//    if (corrMethod == "Beam Hardening"){
+//        //! Only do spatial correction in this mode
+//        _mpx3gui->getDataset()->toTIFF(filename, true, true);
+//    }
+//}
 
 void QCstmGLVisualization::StartDataTaking(QString mode) {
 

@@ -49,8 +49,8 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 
     //! Straight name mapping to appropriate slots in visualisation, could go anywhere
     connect(this, SIGNAL(takeImage()), _mpx3gui->getVisualization(), SLOT(takeImage()));
-    connect(this, SIGNAL(takeImageAndSaveImage()), _mpx3gui->getVisualization(), SLOT(takeAndSaveImage()));
-    connect(this, SIGNAL(takeAndSaveImageSequence(QString)), _mpx3gui->getVisualization(), SLOT(takeAndSaveImageSequence(QString)));
+    connect(this, SIGNAL(takeAndSaveImage()), _mpx3gui->getVisualization(), SLOT(takeAndSaveImage()));
+    connect(this, SIGNAL(takeAndSaveImageSequence()), _mpx3gui->getVisualization(), SLOT(takeAndSaveImageSequence()));
     connect(this, SIGNAL(saveImageSignal(QString)), _mpx3gui->getVisualization(), SLOT(saveImageSlot(QString)));
     connect(this, SIGNAL(setExposure(int)), _mpx3gui->getVisualization(), SLOT(setExposure(int)));
     connect(this, SIGNAL(setNumberOfFrames(int)), _mpx3gui->getVisualization(), SLOT(setNumberOfFrames(int)));
@@ -63,7 +63,7 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(setReadoutFrequency(int)), _mpx3gui->getVisualization(), SLOT(setReadoutFrequency(int)));
     connect(this, SIGNAL(loadConfiguration(QString)), _mpx3gui->getVisualization(), SLOT(loadConfiguration(QString)));
     connect(this, SIGNAL(setIntegration(bool)), _mpx3gui->getVisualization(), SLOT(setIntegration(bool)));
-    connect(this, SIGNAL(setImageSavePath()), _mpx3gui->getVisualization(), SLOT(setImageSavePath()));
+    connect(this, SIGNAL(setImageSavePath(QString)), _mpx3gui->getVisualization(), SLOT(setImageSavePath(QString)));
     // -------------------------------------------------------------------
 }
 

@@ -107,7 +107,7 @@ public:
 
     //! Used in CT
     void saveImage(QString filename);
-    void saveImage(QString filename, QString corrMethod);
+    //void saveImage(QString filename, QString corrMethod);
     bool runningCT = false;
 
     //! Used in Threshold Scan
