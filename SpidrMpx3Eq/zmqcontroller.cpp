@@ -49,6 +49,7 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 
     //! Straight name mapping to appropriate slots in visualisation, could go anywhere
     connect(this, SIGNAL(takeImage()), _mpx3gui->getVisualization(), SLOT(takeImage()));
+    connect(this, SIGNAL(takeImageAndSaveImage()), _mpx3gui->getVisualization(), SLOT(takeAndSaveImage()));
     connect(this, SIGNAL(takeAndSaveImageSequence(QString)), _mpx3gui->getVisualization(), SLOT(takeAndSaveImageSequence(QString)));
     connect(this, SIGNAL(saveImageSignal(QString)), _mpx3gui->getVisualization(), SLOT(saveImageSlot(QString)));
     connect(this, SIGNAL(setExposure(int)), _mpx3gui->getVisualization(), SLOT(setExposure(int)));
@@ -62,6 +63,7 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(setReadoutFrequency(int)), _mpx3gui->getVisualization(), SLOT(setReadoutFrequency(int)));
     connect(this, SIGNAL(loadConfiguration(QString)), _mpx3gui->getVisualization(), SLOT(loadConfiguration(QString)));
     connect(this, SIGNAL(setIntegration(bool)), _mpx3gui->getVisualization(), SLOT(setIntegration(bool)));
+    connect(this, SIGNAL(setImageSavePath()), _mpx3gui->getVisualization(), SLOT(setImageSavePath()));
     // -------------------------------------------------------------------
 }
 
@@ -226,6 +228,12 @@ void zmqController::processEvents()
         } else if ( JsonContains(root_obj, "command", "set integration") ) {
             setIntegration(root_obj);
 
+        } else if ( JsonContains(root_obj, "command", "take and save image") ) {
+            takeAndSaveImage(root_obj);
+
+        } else if ( JsonContains(root_obj, "command", "set image save path") ) {
+            setImageSavePath(root_obj);
+
         } else {
             qDebug() << "[ERROR]\tZMQ Failed to parse command or something else... : " << root_obj["UUID"].toString() << root_obj["command"].toString() << "\targ1: " << root_obj["arg1"].toString();
 
@@ -249,16 +257,27 @@ void zmqController::takeImage(QJsonObject obj)
     }
 }
 
+void zmqController::takeAndSaveImage(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE : " << obj["command"].toString() << obj["arg1"].toString();
+#endif
+    if (_isConnectedToSPIDR) {
+        takeAndSaveImage();
+
+    } else {
+        qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
+        emit someCommandHasFailed();
+    }
+}
+
 void zmqController::takeAndSaveImageSequence(QJsonObject obj)
 {
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE : " << obj["command"].toString() << obj["arg1"].toString();
 #endif
     if (_isConnectedToSPIDR) {
-        const QString folder = obj["arg1"].toString();
-
-        bool success = _mpx3gui->getVisualization()->requestToSetSavePath(folder);
-        success ? emit takeAndSaveImageSequence(folder) : emit takeAndSaveImageSequence("");
+        emit takeAndSaveImageSequence();
 
     } else {
         qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
@@ -514,6 +533,23 @@ void zmqController::setIntegration(QJsonObject obj)
     }
 }
 
+void zmqController::setImageSavePath(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ SET IMAGE SAVE PATH :"  << obj["command"].toString();
+#endif
+
+    QString arg1 = obj["arg1"].toString();
+
+    if ( _mpx3gui->getVisualization()->requestToSetSavePath(arg1) ) {
+        emit setImageSavePath(arg1);
+        qDebug() << "[INFO]\tZMQ set image save path to :" << arg1;
+    } else {
+        qDebug() << "[ERROR]\tZMQ failed to set image save path to :" << arg1;
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to set image save path to : ") + arg1);
+    }
+}
+
 bool zmqController::JsonContains(QJsonObject obj, QString key, QString string)
 {
     if ( obj[key].toString().toLower().contains(string) ) {
@@ -573,7 +609,7 @@ void zmqController::tryToProcessEvents()
 void zmqController::tryToSendFeedback()
 {
     //! Doesn't matter if the eventQueue is empty
-    if(_processingEvents) {
+    if (_processingEvents) {
         QJsonObject root_obj = _JsonDocument.object();
         root_obj["reply type"] = QString("FDB");
         root_obj["UUID"] = _currentUUID;

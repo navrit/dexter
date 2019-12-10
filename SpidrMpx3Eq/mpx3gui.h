@@ -80,7 +80,7 @@ const static int __ct_page_Id = 9;
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "Dexter";
-const static QString _softwareVersion = QString("v2.1.2 BugFix-ColourMemoryLeakFix NB - " + QString(GIT_CURRENT_SHA1));
+const static QString _softwareVersion = QString("v2.1.3 ZMQ_takeAndSaveImage_setImageSavePath NB - " + QString(GIT_CURRENT_SHA1));
 
 const static int tcpCommandPort = 6351;            //! Diamond - Merlin interface
 const static int tcpDataPort = 6352;               //! Diamond - Merlin interface

@@ -1919,8 +1919,6 @@ void Dataset::addLayerColour(int *colour_data, int threshold)
 
         // Sets the new layer to the copied colour_data
         setNewLayer(threshold, colourBuffer);
-
-        delete[] colourBuffer;
     }
 }
 

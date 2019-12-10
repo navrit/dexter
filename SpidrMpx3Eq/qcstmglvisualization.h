@@ -318,7 +318,8 @@ public slots:
 
     //! Used for ZMQ interface + TCP interface
     void takeImage();
-    void takeAndSaveImageSequence(QString folder);
+    void takeAndSaveImage();
+    void takeAndSaveImageSequence();
     void saveImageSlot(QString filePath);
     void setExposure(int microseconds);
     void setNumberOfFrames(int number_of_frames);
@@ -331,6 +332,7 @@ public slots:
     void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
     void setIntegration(bool integrate);
+    void setImageSavePath(QString path);
 
     void onRequestForAutoSaveFromServer(bool);
     void onRequestForSettingPathFromServer(QString);

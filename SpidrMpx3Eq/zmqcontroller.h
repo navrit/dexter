@@ -104,6 +104,7 @@ private:
     bool _isConnectedToSPIDR = false;
 
     void takeImage(QJsonObject obj);
+    void takeAndSaveImage(QJsonObject obj);
     void takeAndSaveImageSequence(QJsonObject obj);
     void saveImage(QJsonObject obj);
     void setExposure(QJsonObject obj);
@@ -117,10 +118,12 @@ private:
     void setReadoutFrequency(QJsonObject obj);
     void loadConfiguration(QJsonObject obj);
     void setIntegration(QJsonObject obj);
+    void setImageSavePath(QJsonObject obj);
 
 signals:
     void takeImage();
-    void takeAndSaveImageSequence(QString folder);
+    void takeAndSaveImage();
+    void takeAndSaveImageSequence();
     void saveImageSignal(QString filePath);
     void setExposure(int microseconds);
     void setNumberOfFrames(int number_of_frames);
@@ -133,6 +136,7 @@ signals:
     void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
     void setIntegration(bool integrate);
+    void setImageSavePath(QString folder);
 
 public slots:
     void addressChanged_PUB(QString addr); //! Apparently you cannot change addresses for an existing socket or something ???

@@ -1198,79 +1198,63 @@ void QCstmGLVisualization::shortcutFrameNumber()
 
 void QCstmGLVisualization::takeImage()
 {
-    //! Delete current image
-    //! Turn off autosave
+    //! SKIP: Delete current image
+    //! SKIP: Turn off autosave
+    //!
     //! Trigger start data taking
 #ifdef QT_DEBUG
-    qDebug() << ("[INFO]\tZMQ \n\t + Delete current image \n\t + Trigger start data taking \n\t + Turn off autosave");
+    qDebug() << ("[INFO]\tZMQ \n\t + Trigger start data taking");
 #endif
 
-    auto t1 = std::chrono::high_resolution_clock::now();
-
     zmqRunning = true;
-    _mpx3gui->zero_data(false);
-    StartDataTaking();
 
-    qDebug() << "takeImage time (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::high_resolution_clock::now() - t1 ).count();
+    if (_mpx3gui->getIntegrate() && _mpx3gui->getConfig()->getNTriggers() == 1) {
+        _mpx3gui->set_summing(false);
+    }
+
+    StartDataTaking();
 
     //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
 }
 
-void QCstmGLVisualization::takeAndSaveImageSequence(QString folder)
+void QCstmGLVisualization::takeAndSaveImage()
 {
-    //! Activate autosave to the specified path or if empty, the home directory
     //! Trigger data taking
 #ifdef QT_DEBUG
-    qDebug() << ("[INFO]\tZMQ Activate autosave to the specified path or if empty, the home directory\n\t + Trigger data taking");
+    qDebug() << ("[INFO]\tZMQ takeAndSaveImage - Trigger data taking");
 #endif
 
     zmqRunning = true;
 
-    if (ui->saveLineEdit->text().isEmpty() || (folder.isEmpty())) {
-        ui->saveLineEdit->setText(QDir::homePath() + QDir::separator());
-    } else {
-        requestToSetSavePath(folder);
-    }
-    //! Otherwise there's something there already,
-    //! validate in on_saveLineEdit_textEdited() and on_saveLineEdit_editingFinished()
+    StartDataTaking();
+    //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
+}
 
+void QCstmGLVisualization::takeAndSaveImageSequence()
+{
+    //! Trigger data taking
+#ifdef QT_DEBUG
+    qDebug() << ("[INFO]\tZMQ Turn integration off\n\t + Trigger data taking");
+#endif
     //! Turn integration off, that is not valid when using takeAndSaveImageSequence
     _mpx3gui->set_summing(false);
 
-    onRequestForAutoSaveFromServer(true);
-    on_saveAllCheckBox_stateChanged();
-
-    on_saveLineEdit_textEdited();
-    on_saveLineEdit_editingFinished();
-
-    StartDataTaking();
-    //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
+    takeAndSaveImage();
 }
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    //! TODO More error checking here?
-    requestToSetSavePath(filePath);
-    onRequestForAutoSaveFromServer(true);
-    on_saveAllCheckBox_stateChanged();
-
-    on_saveLineEdit_textEdited();
-    on_saveLineEdit_editingFinished();
-
-    qDebug() << "saveImageSlot time 1 (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::high_resolution_clock::now() - t1 ).count();
-    t1 = std::chrono::high_resolution_clock::now();
-
     if (_mpx3gui->getIntegrate()) {
         _mpx3gui->save_data(true, 0, "Raw TIFF");
-        qDebug() << "[INFO]\tZMQ \n\tSaved raw tiff (32-bit) to :" << filePath;
+        qDebug() << "[INFO]\tZMQ Saved raw tiff (32-bit) to :" << filePath;
     } else {
         _mpx3gui->save_data(true, 0, "Raw TIFF16");
-        qDebug() << "[INFO]\tZMQ \n\tSaved raw tiff (16-bit) to :" << filePath;
+        qDebug() << "[INFO]\tZMQ Saved raw tiff (16-bit) to :" << filePath;
     }
 
-    qDebug() << "saveImageSlot time 2 (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::high_resolution_clock::now() - t1 ).count();
+    qDebug() << "saveImageSlot time (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::high_resolution_clock::now() - t1 ).count();
 
     emit someCommandHasFinished_Successfully();
 }
@@ -1427,6 +1411,16 @@ void QCstmGLVisualization::setIntegration(bool integrate)
     // ------
 
     emit someCommandHasFinished_Successfully();
+}
+
+void QCstmGLVisualization::setImageSavePath(QString path)
+{
+    requestToSetSavePath(path);
+    onRequestForAutoSaveFromServer(true);
+    on_saveAllCheckBox_stateChanged();
+
+    on_saveLineEdit_textEdited();
+    on_saveLineEdit_editingFinished();
 }
 
 void QCstmGLVisualization::onRequestForAutoSaveFromServer(bool val)
