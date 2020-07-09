@@ -991,9 +991,9 @@ void QCstmEqualization::UpdateHeatMap(int * data, int sizex, int sizey) {
     // [0](0 ---> nx*ny) [1](0 ---> nx*ny) [2](0 ---> nx*ny) [3](0 ---> nx*ny)
 
     int * _plotdata = new int[ulong(sizex * sizey)];
+    int xoffset, yoffset;
     uint xswitch = 1;
     uint yswitch = 0;
-    int xoffset = 0, yoffset = 0;
     int sizex_chip = sizex / 2;
     int sizey_chip = sizey / 2;
     int totCntr = 0;
@@ -1050,8 +1050,8 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     _eqMap[devId]->ExtrapolateAdjToTarget( int(defaultNoiseEqualisationTarget), GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
 
     int * adj_matrix = nullptr;
-    if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_L ) adj_matrix = _eqMap[devId]->GetAdjustementMatrix();
-    if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_H ) adj_matrix = _eqMap[devId]->GetAdjustementMatrix(Mpx3EqualizationResults::__ADJ_H);
+    if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_L ) adj_matrix = _eqMap[devId]->GetAdjustmentMatrix();
+    if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_H ) adj_matrix = _eqMap[devId]->GetAdjustmentMatrix(Mpx3EqualizationResults::__ADJ_H);
 
     return adj_matrix;
 }
@@ -1061,7 +1061,7 @@ void QCstmEqualization::DAC_Disc_Optimization_DisplayResults(ScanResults * res) 
     DisplayStatsInTextBrowser(0, res->DAC_DISC_setting, res);
 }
 
-std::string QCstmEqualization::BuildChartName(int val, QString leg) {
+std::string QCstmEqualization::BuildChartName(int val, const QString& leg) {
 
     QString chartName = "[";
     chartName += QString::number(val, 'd', 0);
@@ -1153,7 +1153,8 @@ void QCstmEqualization::DAC_Disc_Optimization_150() {
 
     // DAC_DiscL=150
     for ( ulong i = 0 ; i < _workChipsIndx.size(); i++ ) {
-        spidrcontrol->setDac( int(_workChipsIndx[i]), _steeringInfo[i]->currentDAC_DISC, _steeringInfo[i]->currentDAC_DISC_OptValue );
+        SetDAC_propagateInGUI(spidrcontrol, int(_workChipsIndx[i]), _steeringInfo[i]->currentDAC_DISC, _steeringInfo[i]->currentDAC_DISC_OptValue);
+        spidrcontrol->setInternalTestPulse(int(_workChipsIndx[i]), false);
     }
     tscan->DoScan( _steeringInfo[0]->currentTHx, _setId++,  _steeringInfo[0]->currentDAC_DISC, 1, false, false );
     tscan->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
@@ -1240,7 +1241,7 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
     AppendToTextBrowser(statsString);
 }
 
-void QCstmEqualization::SaveEqualization(QString path, bool toTempDir, bool fetchFromTempDir) {
+void QCstmEqualization::SaveEqualization(const QString& path, bool toTempDir, bool fetchFromTempDir) {
 
     QString filenameEqualisation = "";
     QString savePath = path;
@@ -1580,7 +1581,7 @@ void QCstmEqualization::clearPreviousData(uint chipListSize)
 {
     _resdataset->clear();
     for ( uint i = 0 ; i < chipListSize ; i++ ) {
-        int * da = _eqMap[int(_workChipsIndx[i])]->GetAdjustementMatrix();
+        int * da = _eqMap[int(_workChipsIndx[i])]->GetAdjustmentMatrix();
         _resdataset->setFrame(da, int(_workChipsIndx[i]), 0);
     }
     int * fulladjdata = _resdataset->getLayer( 0 );
@@ -1606,6 +1607,9 @@ void QCstmEqualization::updateTestpulseVariables()
         defaultNoiseEqualisationTarget = testPulseEqualisationDialog->getEqualisationTarget();
         DAC_DISC_1_value = testPulseEqualisationDialog->get_1st_DAC_DISC_val();
         DAC_DISC_2_value = testPulseEqualisationDialog->get_2nd_DAC_DISC_val();
+        qDebug() << "Updated test pulse variables defaultNoiseEqualisationTarget =" << defaultNoiseEqualisationTarget << " DAC_DISC_1_value =" << DAC_DISC_1_value << " DAC_DISC_2_value =" << DAC_DISC_2_value;
+    } else {
+        qDebug() << "Did NOT update test pulse variables";
     }
 }
 
@@ -1663,7 +1667,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     }
 
     spidrcontrol->resetPixelConfig();
-    QSet<int> maskedPixels = _eqMap[chipIndex]->GetMaskedPixels();
+//    QSet<int> maskedPixels = _eqMap[chipIndex]->GetMaskedPixels();
 
     int testBitsOn = 0;
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
@@ -1674,13 +1678,6 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             spidrcontrol->configCtpr( chipIndex, pix.first, int(testbit) );
         }
 
-        bool val = false;
-        if (testbit && !maskedPixels.contains(i)) {
-            val = true;
-        } else {
-            val = false;
-        }
-
         // val = spidrcontrol->getPixelTestBitMpx3rx(pix.first,pix.second); // TODO Maybe use this?
 
         //! Test pulses are turned off here if testbit=true isn't passed
@@ -1689,8 +1686,8 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                     pix.second,
                     _eqMap[chipIndex]->GetPixelAdj(i),
                     _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
-                    val );
-        if (testbit && val) testBitsOn++;
+                    testbit );
+        if (testbit) testBitsOn++;
     }
     if (testbit) {
         spidrcontrol->setCtpr( chipIndex );
@@ -1721,10 +1718,9 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
             QSet<int>::iterator i = tomask.begin();
             QSet<int>::iterator iE = tomask.end();
-            pair<int, int> pix;
             qDebug() << "[INFO] Masking pixels :";
 
-            for ( ; i != iE ; i++ ) {
+            for ( ; i != iE ; ++i ) {
                 pix = XtoXY( (*i), __matrix_size_x );
                 int xToXy = XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
                 qDebug() << "     chipID:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << xToXy;
@@ -2154,7 +2150,7 @@ bool QCstmEqualization::initialiseTestPulses(SpidrController * spidrcontrol)
 bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int * maskedPixels)
 {
     pair<int, int> pix;
-    bool testbit = false;
+    bool testbit;
     int testBitsOn = 0;
 
     //! Turn test pulse bit on for that chip
@@ -2172,7 +2168,7 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
             testbit = true;
             testBitsOn++;
             spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
-            //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
+            qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
         } else {
             testbit = false;
             spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
@@ -2190,7 +2186,7 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
     }
     spidrcontrol->setCtpr( chipID );
 
-    //qDebug() << "[TEST PULSES] CTPRs set on chip" << chipID;
+//    qDebug() << "[TEST PULSES] CTPRs set on chip" << chipID;
     qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
 
     if ( ! spidrcontrol->setPixelConfigMpx3rx( chipID ) ) {
@@ -2509,7 +2505,7 @@ void QCstmEqualization::ShowEqualization(Mpx3EqualizationResults::lowHighSel sel
         }
 
         // Get adj matrix for one chip
-        int * adj_matrix = _eqMap[i]->GetAdjustementMatrix( sel );
+        int * adj_matrix = _eqMap[i]->GetAdjustmentMatrix( sel );
         // Stack
         _resdataset->setFrame(adj_matrix, i, 0);
     }
@@ -2684,8 +2680,8 @@ void QCstmEqualization::ClearTextBrowser(){
     return NPixelsActive;
 }*/
 
-pair<int, int> QCstmEqualization::XtoXY(int X, int dimX){
-    return make_pair(X % dimX, X/dimX);
+inline pair<int, int> QCstmEqualization::XtoXY(int X, int dimX){
+    return std::make_pair(X % dimX, X/dimX);
 }
 
 void QCstmEqualization::SetMinScan(int min) {
@@ -2837,7 +2833,7 @@ bool Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
 /**
  * Convert the map to an array to feed the heatmap in the display
  */
-int * Mpx3EqualizationResults::GetAdjustementMatrix(lowHighSel sel) {
+int * Mpx3EqualizationResults::GetAdjustmentMatrix(lowHighSel sel) {
 
     int * mat = new int[__matrix_size];
     for ( int j = 0 ; j < __matrix_size ; j++ ) {

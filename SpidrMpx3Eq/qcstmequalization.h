@@ -92,7 +92,7 @@ public:
     QSet<QPair<int,int>> GetMaskedPixels2D() {
         return maskedPixels2D;
     }
-    int * GetAdjustementMatrix(lowHighSel sel = __ADJ_L);
+    int * GetAdjustmentMatrix(lowHighSel sel = __ADJ_L);
     void ExtrapolateAdjToTarget(int target, double eta_Adj_THL, lowHighSel sel = __ADJ_L);
     bool WriteAdjBinaryFile(QString fn);
     bool ReadAdjBinaryFile(QString fn);
@@ -234,7 +234,7 @@ public:
     void ClearAllAdjustmentBits(int devId = 0);
 
     Mpx3EqualizationResults * GetEqualizationResults(int chipIndex);
-    pair<int, int> XtoXY(int X, int dimX);
+    inline pair<int, int> XtoXY(int X, int dimX);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 
 
@@ -258,7 +258,7 @@ public:
     void InitializeBarChartsAdjustments();
     void DistributeAdjHistogramsInGridLayout();
     void UpdateHeatMap(int * _data, int sizex, int sizey);
-    std::string BuildChartName(int val, QString leg);
+    std::string BuildChartName(int val, const QString &leg);
 
 
     //! Getters and setters etc.
@@ -388,7 +388,7 @@ private:
     void safeCopy(QString copyFrom, QString copyTo, QString files);
 
 public slots:
-    void SaveEqualization(QString path = "", bool toTempDir = false, bool fetchfromtempdir = false);
+    void SaveEqualization(const QString &path = "", bool toTempDir = false, bool fetchfromtempdir = false);
     void on_h1LogyCheckBox_toggled(bool checked);
 
 private slots:
