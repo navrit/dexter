@@ -47,7 +47,6 @@ void Dataset::loadCorrection(QByteArray serialized) {
 void Dataset::rewindScores() {
     m_scores.packetsLost = 0;
     m_scores.framesLost = 0;
-    m_scores.dataMisaligned = false;
     m_scores.mpx3ClockStops = 0;
 }
 

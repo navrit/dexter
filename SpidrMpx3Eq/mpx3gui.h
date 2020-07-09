@@ -63,9 +63,9 @@ const static int __equalisation_page_Id = 3;
 const static int __scans_page_Id = 4;
 const static int __energyConfiguration_page_Id = 5;
 const static int __hdmi_config_page_Id = 6;
-const static int __thresholdScan_page_Id = 7;
+const static int __ct_page_Id = 7;
 const static int __stepperMotor_page_Id = 8;
-const static int __ct_page_Id = 9;
+const static int __thresholdScan_page_Id = 9;
 
 
 #define BIN_FILES "Binary (*.bin)"
@@ -198,7 +198,7 @@ public slots:
     void clear_data(bool printToStatusBar = true);
     void zero_data(bool printToStatusBar = true);
     void save_data(bool requestPath, int frameId = 0, QString selectedFileType = "");
-    void open_data(bool saveOriginal = true);
+    void open_data();
     void open_data_with_path(bool saveOriginal = true, bool requestPath = false, QString path = "");
     void set_mode_integral();
     void set_mode_normal();
@@ -303,10 +303,11 @@ private slots:
     void on_actionDisconnect_triggered(bool checked);
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
-    void on_actionStepper_Motor_triggered(bool checked);
-    void on_actionThreshold_Scan_triggered();
     void on_actionHDMI_Config_triggered();
+    void on_actionCT_triggered();
+    void on_actionStepper_Motor_triggered(bool checked);
     void on_actionEnergy_configuration_triggered();
+    void on_actionThreshold_Scan_triggered();
 
     void autoConnectToDetector();
     void shutterOpenTimer_timeout();

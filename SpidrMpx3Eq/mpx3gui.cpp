@@ -45,11 +45,11 @@ QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
-QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
-QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
-thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
-hdmiConfig * Mpx3GUI::getHdmiConfig(){ return _ui->hdmiConfigTab; }
 EnergyConfiguration * Mpx3GUI::getEnergyConfiguration() { return _ui->EnergyConfigurationTab; }
+hdmiConfig * Mpx3GUI::getHdmiConfig(){ return _ui->hdmiConfigTab; }
+QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
+QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
+thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
 
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
@@ -288,20 +288,21 @@ void Mpx3GUI::on_shortcutsSwitchPages() {
         _ui->stackedWidget->setCurrentIndex( __hdmi_config_page_Id );
         _ui->actionHDMI_Config->setChecked(1);
 
+    } else if ( k.matches( QKeySequence(tr("Ctrl+8")) ) ){
+        _uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
+        _ui->actionCT->setChecked(1);
+
+    } else if ( k.matches( QKeySequence(tr("Ctrl+9")) ) ){
+        _uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
+        _ui->actionStepper_Motor->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+6")) ) ){
         _uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
         //_ui->actionScans->setChecked(1);
-    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+7")) ) ){
-        _uncheckAllToolbarButtons();
-        _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
-        //_ui-> actionXXX ->setChecked(1);
-    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+8")) ) ){
-        _uncheckAllToolbarButtons();
-        _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
-        _ui->actionStepper_Motor->setChecked(1);
     }
-
 }
 
 Mpx3Config* Mpx3GUI::getConfig() {
@@ -656,6 +657,7 @@ void Mpx3GUI::_initialiseGUITabs()
 
     // Stepper Motor control view
     _ui->stepperMotorTab->SetMpx3GUI(this);
+    _ui->stepperMotorTab->setWindowWidgetsStatus();
 
     // CT tab
     _ui->ctTab->SetMpx3GUI( this );
@@ -693,6 +695,7 @@ void Mpx3GUI::_handleConfigLoading()
     _loadingBeforeConnecting = false;
 }
 
+// Change me when adding extra views
 void Mpx3GUI::_connectKeyboardShortcuts()
 {
     // View keyboard shortcuts
@@ -706,8 +709,8 @@ void Mpx3GUI::_connectKeyboardShortcuts()
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+7", "Switch to HDMI Config") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+6", "Switch to Scans") ), this)  );
 
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+8", "Switch to Stepper Motor Control") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+8", "Switch to CT") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+9", "Switch to Stepper Motor Control") ), this)  );
 
     // Make Dexter somewhat scriptable via the GUI
 
@@ -768,6 +771,8 @@ void Mpx3GUI::_setupSignalsAndSlots()
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->EnergyConfigurationTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->THScan, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->hdmiConfigTab, SLOT( ConnectionStatusChanged(bool) ) );
+//    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->ctTab, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
@@ -1108,7 +1113,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         //! Get the visualisation dialog UI saveLineEdit text and assign to filename
         const QString path = getVisualization()->getsaveLineEdit_Text(); // TODO optimise this, no need to call this every loop
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and a file extension
-        filename = QString(path + "/" + QString::number( QDateTime::currentMSecsSinceEpoch()));
+        filename = QString(QDir::cleanPath(path + QDir::separator() + QString::number( QDateTime::currentMSecsSinceEpoch())));
 
         //! if saving all frames, append the frame ID too - more than 1 frame may be saved within 1 ms
         if ( getVisualization()->isSaveAllFramesChecked() ) { // TODO optimise this, no need to call this every loop
@@ -1281,7 +1286,7 @@ void Mpx3GUI::onConnectionStatusChanged(bool conn)
 }
 
 
-void Mpx3GUI::open_data(bool saveOriginal){
+void Mpx3GUI::open_data() {
 
     QString selectedFilter;
     QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"), &selectedFilter);
@@ -1501,12 +1506,13 @@ void Mpx3GUI::_uncheckAllToolbarButtons(){
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
     _ui->actionThreshold_Scan->setChecked(0);
-    _ui->actionStepper_Motor->setChecked(0);
     _ui->actionHDMI_Config->setChecked(0);
     _ui->actionEnergy_configuration->setChecked(0);
+    _ui->actionCT->setChecked(0);
+    _ui->actionStepper_Motor->setChecked(0);
+
     // _ui-> NEW ACTION ->setChecked(0);
 }
-
 
 void Mpx3GUI::on_actionConnect_triggered() {
     const QString ipAddr_10Gbit = "192.168.100.10";
@@ -1546,6 +1552,7 @@ void Mpx3GUI::on_actionConnect_triggered() {
     }
 }
 
+// Change me when adding extra views
 void Mpx3GUI::on_actionVisualization_triggered(){
     _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
@@ -1616,15 +1623,7 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             newLine +
             newLine +
             QString("Contributors: ") +
-            QString("Frans Schreuder, Henk Boterenbrood, Martin van Beuzekom") +
-            newLine +
-            newLine +
-            newLine +
-            frameworks +
-            newLine +
-            newLine +
-            newLine +
-            QString("ASI B.V. All rights reserved.") ;
+            QString("Frans Schreuder, Henk Boterenbrood, Martin van Beuzekom");
     msgBox.setText( msg );
     msgBox.exec();
 }
@@ -1634,7 +1633,6 @@ void Mpx3GUI::on_actionStepper_Motor_triggered(bool)
     _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
 }
-
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
     // See if there is anything running
@@ -1707,6 +1705,13 @@ void Mpx3GUI::on_actionHDMI_Config_triggered()
     _uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __hdmi_config_page_Id );
     _ui->actionHDMI_Config->setChecked(1);
+}
+
+void Mpx3GUI::on_actionCT_triggered()
+{
+    _uncheckAllToolbarButtons();
+    _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
+    _ui->actionCT->setChecked(1);
 }
 
 void Mpx3GUI::on_actionEnergy_configuration_triggered()

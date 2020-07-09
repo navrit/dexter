@@ -1215,7 +1215,9 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
 
     // Desired mean value = defaultNoiseEqualisationTarget + 3.2 sigma
     // Taking sigma from the first scan.
-    double meanTHL_for_opt_IDAC_DISC = defaultNoiseEqualisationTarget + 3.2*res_100->sigma;
+    const double OPTIMAL_EQUALISATION_SIGMA_VALUE = 3; // v2.1.7 and before = 3.2
+
+    double meanTHL_for_opt_IDAC_DISC = defaultNoiseEqualisationTarget + OPTIMAL_EQUALISATION_SIGMA_VALUE * res_100->sigma;
 
     // Using the relation DAC_Disc[L/H](THL) we can find the value of DAC_Disc
     GetSteeringInfo(devId)->currentDAC_DISC_OptValue = int(EvalLinear(GetSteeringInfo(devId)->currentEta_THx_DAC_Disc, GetSteeringInfo(devId)->currentCut_THx_DAC_Disc, meanTHL_for_opt_IDAC_DISC));
@@ -2799,8 +2801,7 @@ bool Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 
 bool Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
 
-    ofstream fd;
-    fd.open (fn.toStdString().c_str(), ios::out);
+    ofstream fd(fn.toStdString().c_str());
     qDebug() << "[INFO]\tWriting mask file to: " << fn;
 
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
@@ -2813,8 +2814,7 @@ bool Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
 
 bool Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
 
-    ifstream fd;
-    fd.open (fn.toStdString().c_str(), ios::out);
+    ifstream fd(fn.toStdString().c_str());
     qDebug() << "[INFO]\tReading mask file from: " << fn;
 
     int val;

@@ -301,13 +301,13 @@ void ThlScan::FineTuning() {
     bool finishScan = false;
     bool doReadFrames = false;
     int progressMax = _numberOfLoops;
-    int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex ); // Note: The data buffer id doesn't necessarily corresponds to _deviceIndex
+    // int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex ); // Note: The data buffer id doesn't necessarily corresponds to _deviceIndex
 
     //_stepScan = 1;
 
     if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
 
-    qDebug() << "[INFO] [Fine Tuning]\tRun a Scan. devIndex:" << _deviceIndex << " | databuffer:" << idDataFetch << "\n";
+    qDebug() << "[INFO] [Fine Tuning]\tRun a Scan. devIndex:" << _deviceIndex;// << " | databuffer:" << idDataFetch << "\n";
 
     file_fineTuningStats.open("log_fineTuningStats.csv", std::ios::app);
     file_fineTuningStats << "Changed adj bits, Not equalised, Scheduled, Done, Adj OoB, Non-reactive, Stuck left, Never react, adj-1, > target, < target, OoB \n";
@@ -352,7 +352,7 @@ void ThlScan::FineTuning() {
 
                 for ( unsigned long devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
                     if ( ! SetEqualizationMask(spidrcontrol, int(_workChipsIndx[devId]), _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                        qDebug() << "[FAIL]\tCould not set equalisation mask";
+                        qDebug() << "[FAIL]\tFine tuning, could not set equalisation mask, chip =" << devId;
                         return;
                     }
                     nMasked += pmasked;
@@ -465,7 +465,7 @@ void ThlScan::FineTuning() {
                             for ( int idx = 0 ; idx < nChips ; idx++ ) {
                                 if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
 
-                                idDataFetch = _mpx3gui->getConfig()->getDataBufferId( idx );
+                                // idDataFetch = _mpx3gui->getConfig()->getDataBufferId( idx );
 
                                 _dataset->setFrame(frameSet, idx, 0); // Stack
                             }
@@ -877,7 +877,7 @@ void ThlScan::EqualizationScan() {
             pmasked = 0;
             for ( uint devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
                 if ( ! SetEqualizationMask(spidrcontrol, int(_workChipsIndx[devId]), _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                    qDebug() << "[FAIL]\tCould not set equalisation mask";
+                    qDebug() << "[FAIL]\tNot fine tuning - could not set equalisation mask, chip =" << devId;
                     return;
                 }
 

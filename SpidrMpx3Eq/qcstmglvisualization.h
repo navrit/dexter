@@ -289,7 +289,6 @@ public slots:
     void changeBinCount(int count); //! user requested a different bin-count. Recomputes the histograms for each threshold.
     void updateETA();
 
-    void data_misaligned(bool);
     void mpx3clock_stops(int);
 
 

@@ -56,7 +56,7 @@ QCstmDacs::QCstmDacs(QWidget *parent):
     ui->deviceIdSpinBox->setValue( _deviceIndex );
     _nSamples = 1;
     ui->samplesSpinBox->setMaximum(100);
-    ui->samplesSpinBox->setMinimum(0);
+    ui->samplesSpinBox->setMinimum(1);
     ui->samplesSpinBox->setValue( _nSamples );
 
     ui->progressBar->setValue( 0 );

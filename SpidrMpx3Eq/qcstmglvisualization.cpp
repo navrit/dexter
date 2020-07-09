@@ -315,7 +315,7 @@ void QCstmGLVisualization::saveImage(QString filename)
     if (filename == "") {
         filename = QDir::homePath();
     }
-    _mpx3gui->getVisualization()->GetUI()->saveLineEdit->setText(filename);
+    ui->saveLineEdit->setText(filename);
     _mpx3gui->save_data(true, 0, "Raw TIFF");
 }
 
@@ -782,32 +782,22 @@ void QCstmGLVisualization::BuildStatsString() {
         _statsString.displayString += _statsString.overflow;
     }
 
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) {
-        _statsString.displayString += " | MISALIGNED !";
-    }
-
-
     // Use the string to set the label
     ui->statsLabel->setText( _statsString.displayString );
-
 }
 
 void QCstmGLVisualization::BuildStatsStringCounts(uint64_t counts)
 {
-
     QString plS = "<font color=\"black\">";
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
     plS += QString::number( counts, 'd', 0 );
     plS += "</font>";
 
     _statsString.counts = plS;
-
     BuildStatsString();
 }
 
 void QCstmGLVisualization::BuildStatsStringLostPackets(uint64_t lostPackets)
 {
-
     if ( lostPackets == 0 ) {
         _statsString.lostPackets.clear();
         return;
@@ -815,17 +805,14 @@ void QCstmGLVisualization::BuildStatsStringLostPackets(uint64_t lostPackets)
 
     // Retrieve the counter and display
     QString plS = "<font color=\"black\">";
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
     plS += QString::number( lostPackets, 'd', 0 );
     plS += "</font>";
 
     _statsString.lostPackets = plS;
-
 }
 
 void QCstmGLVisualization::BuildStatsStringLostFrames(uint64_t lostFrames)
 {
-
     if ( lostFrames == 0 ) {
         _statsString.lostFrames.clear();
         return;
@@ -833,17 +820,14 @@ void QCstmGLVisualization::BuildStatsStringLostFrames(uint64_t lostFrames)
 
     // Retrieve the counter and display
     QString plS = "<font color=\"black\">";
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
     plS += QString::number( lostFrames, 'd', 0 );
     plS += "</font>";
 
     _statsString.lostFrames = plS;
-
 }
 
 void QCstmGLVisualization::BuildStatsStringMpx3ClockStops(uint64_t stops)
 {
-
     if ( stops == 0 ) {
         _statsString.mpx3ClockStops.clear();
         return;
@@ -851,12 +835,10 @@ void QCstmGLVisualization::BuildStatsStringMpx3ClockStops(uint64_t stops)
 
     // Retrieve the counter and display
     QString plS = "<font color=\"black\">";
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
     plS += QString::number( stops, 'd', 0 );
     plS += "</font>";
 
     _statsString.mpx3ClockStops = plS;
-
 }
 
 void QCstmGLVisualization::BuildStatsStringOverflow(bool overflow)
@@ -972,13 +954,6 @@ void QCstmGLVisualization::OperationModeSwitched(int indx)
         ui->triggerLengthSpinBoxLabel->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
         ui->triggerLengthSpinBox->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
     }
-}
-
-void QCstmGLVisualization::data_misaligned(bool misaligned) {
-
-    // Increase the current packet loss
-    _mpx3gui->getDataset()->setDataMisaligned( misaligned );
-
 }
 
 void QCstmGLVisualization::mpx3clock_stops(int stops) {
