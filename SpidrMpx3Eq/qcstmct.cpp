@@ -117,7 +117,17 @@ void QCstmCT::startDataTakingThread()
     const QString motorPositionStatus = getMotorPositionStatus();
     if (motorPositionStatus == "Stopped" || motorPositionStatus == "...") {
 
-        if (_mpx3gui->getConfig()->isConnected()) {
+        if (_mpx3gui->getConfig()->isConnected() ) {
+            if (_mpx3gui->getVisualization()->isTakingData()) {
+                if (_mpx3gui->getConfig()->getNTriggers() == 0) {
+                    qDebug() << "[CT]\tStopped data acquisition, tried to start a CT scan with inf running. Fix it.";
+                    _mpx3gui->getVisualization()->StopDataTakingThread();
+                    stopCT();
+                }
+                qDebug() << "[CT]\tData taking thread already running, will not try to start it again. Doing nothing.";
+                return;
+            }
+
             qDebug() << "[CT]\tStarted DataTaking @ " << QDateTime::currentDateTimeUtc();
 
             _mpx3gui->getVisualization()->StartDataTaking("CT");
@@ -213,7 +223,7 @@ void QCstmCT::resumeCT()
         // applyCorrection( corrMethod );
 
         // Save/send file?
-        QString filename = CTfolder;
+        QString filename = CTfolder; // CT folder is currently hardcoded to the home directory.
 
 //        if (corrMethod == "Beam Hardening"){
 //            _mpx3gui->getVisualization()->saveImage(filename, corrMethod);

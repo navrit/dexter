@@ -42,9 +42,9 @@
       <widget class="QCstmThreshold" name="ThresholdTab"/>
       <widget class="EnergyConfiguration" name="EnergyConfigurationTab"/>
       <widget class="hdmiConfig" name="hdmiConfigTab"/>
-      <widget class="thresholdScan" name="THScan"/>
-      <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
       <widget class="QCstmCT" name="ctTab"/>
+      <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
+      <widget class="thresholdScan" name="THScan"/>
      </widget>
     </item>
    </layout>
@@ -108,6 +108,8 @@
     <addaction name="actionThreshold_Scan"/>
     <addaction name="actionEnergy_configuration"/>
     <addaction name="actionHDMI_Config"/>
+    <addaction name="actionCT"/>
+    <addaction name="actionStepper_Motor"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -163,6 +165,8 @@
    <addaction name="actionEnergy_configuration"/>
    <addaction name="actionHDMI_Config"/>
    <addaction name="actionDefibrillator"/>
+   <addaction name="actionCT"/>
+   <addaction name="actionStepper_Motor"/>
    <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -405,17 +409,17 @@
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/motor.png</normaloff>:/icons/motor.png</iconset>
    </property>
    <property name="text">
-    <string>Stepper Motor</string>
+    <string>Stepper Motor (Ctrl+9)</string>
    </property>
    <property name="toolTip">
-    <string>Stepper Motor</string>
+    <string>Phidgets Stepper Motor interface (Ctrl+9)</string>
    </property>
   </action>
   <action name="actionLoad_equalisation_from_folder">
@@ -478,7 +482,22 @@ adj_* and mask_*</string>
     <string>Energy configuration (Ctrl+6)</string>
    </property>
    <property name="toolTip">
-    <string>Set energy thresholds</string>
+    <string>Set energy thresholds (Ctrl+6)</string>
+   </property>
+  </action>
+  <action name="actionCT">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/ct.png</normaloff>:/icons/ct.png</iconset>
+   </property>
+   <property name="text">
+    <string>CT (Ctrl+8)</string>
+   </property>
+   <property name="toolTip">
+    <string>Computed Tomography with Phidgets motor (Ctrl+8)</string>
    </property>
   </action>
  </widget>

@@ -34,5 +34,6 @@
         <file>icons/UI/circle-solid.png</file>
         <file>icons/hdmi.png</file>
         <file>icons/calibration-mark.png</file>
+        <file>icons/ct.png</file>
     </qresource>
 </RCC>
