@@ -676,6 +676,18 @@ bool SpidrController::setPixelMaskMpx3rx( int x, int y, bool b )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::setPixelTestBitMpx3rx( int x, int y, bool b )
+{
+  return this->setPixelBit( x, y, MPX3RX_CFG_TESTBIT, b );
+}
+
+bool SpidrController::getPixelTestBitMpx3rx( int x, int y)
+{
+  return (_pixelConfig[y][x] & MPX3RX_CFG_TESTBIT) != 0;
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::setPixelConfigMpx3rx( int  dev_nr,
                         bool readback,
                         bool with_replies )

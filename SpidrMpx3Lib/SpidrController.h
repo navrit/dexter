@@ -113,6 +113,9 @@ class MY_LIB_API SpidrController
                                  bool testbit = false );
   bool setPixelMaskMpx3rx      ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
                                  bool b = true );
+  bool setPixelTestBitMpx3rx   ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
+                                 bool b = true );
+  bool getPixelTestBitMpx3rx   ( int x, int y);
   bool setPixelConfigMpx3rx    ( int  dev_nr,
                                  bool readback = false,
                                  bool with_replies = true );
