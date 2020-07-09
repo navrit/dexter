@@ -1602,54 +1602,57 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         else _maskOperation = NULL_MASK;
     }
 
+    auto dataset = _mpx3gui->getDataset();
+    int nx = dataset->x();
+    auto eqRes = _mpx3gui->getEqualization()->GetEqualizationResults(deviceID);
+
     if (_maskOperation == MASK) {
         if ( _mpx3gui->getConfig()->getColourMode() ) {
 
             //qDebug() << "Nat[" << deviceID << "]:"
             //       << naturalFlatCoord
             //       << naturalFlatCoord+1
-            //       << naturalFlatCoord+_mpx3gui->getX()*2
-            //       << naturalFlatCoord+1+_mpx3gui->getX()*2;
+            //       << naturalFlatCoord+nx*2
+            //       << naturalFlatCoord+1+nx*2;
 
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1);
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+_mpx3gui->getX()*2);
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1+_mpx3gui->getX()*2);
+            eqRes->maskPixel(naturalFlatCoord);
+            eqRes->maskPixel(naturalFlatCoord+1);
+            eqRes->maskPixel(naturalFlatCoord+nx*2);
+            eqRes->maskPixel(naturalFlatCoord+1+nx*2);
         } else {
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
-            //_mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel2D(QPair<int,int>(chipIndex.x(),chipIndex.y()));
+            eqRes->maskPixel(naturalFlatCoord);
+            //eqRes->maskPixel2D(QPair<int,int>(chipIndex.x(),chipIndex.y()));
         }
     } else if(_maskOperation == UNMASK) {
         if (_mpx3gui->getConfig()->getColourMode()) {
 
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+1);
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+_mpx3gui->getX()*2);
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+1+_mpx3gui->getX()*2);
+            eqRes->unmaskPixel(naturalFlatCoord);
+            eqRes->unmaskPixel(naturalFlatCoord+1);
+            eqRes->unmaskPixel(naturalFlatCoord+nx*2);
+            eqRes->unmaskPixel(naturalFlatCoord+1+nx*2);
         } else {
-            _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
-            //  _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel2D(QPair<int,int>(chipIndex.x(),chipIndex.y()));
+            eqRes->unmaskPixel(naturalFlatCoord);
+            //  eqRes->unmaskPixel2D(QPair<int,int>(chipIndex.x(),chipIndex.y()));
         }
     } else if ((_maskOperation == MASK_ALL_OVERFLOW) || (_maskOperation == MASK_ALL_ACTIVE)) {
 
         //! Find all pixels in overflow or active depending on what is selected
-        int nx = _mpx3gui->getDataset()->x();
-        int ny = _mpx3gui->getDataset()->y();
-        int nChipsX = _mpx3gui->getDataset()->getNChipsX();
-        int nChipsY = _mpx3gui->getDataset()->getNChipsY();
+        int ny = dataset->y();
+        int nChipsX = dataset->getNChipsX();
+        int nChipsY = dataset->getNChipsY();
         int activeThreshold = getActiveThreshold();
-        int overflowval = _mpx3gui->getDataset()->getPixelDepthBits();
+        int overflowval = dataset->getPixelDepthBits();
         overflowval = (1<<overflowval) - 1;
 
         QVector<QPoint> toMask;
         for ( int xi = 0 ; xi < nx*nChipsX ; xi++ ) {
             for ( int yi = 0 ; yi < ny*nChipsY ; yi++ ) {
                 if (_maskOperation == MASK_ALL_OVERFLOW) {
-                    if ( _mpx3gui->getDataset()->sample(xi, yi, activeThreshold) == overflowval ) {
+                    if ( dataset->sample(xi, yi, activeThreshold) == overflowval ) {
                         toMask.push_back( QPoint(xi, yi) );
                     }
                 } else if (_maskOperation == MASK_ALL_ACTIVE) {
-                    if ( _mpx3gui->getDataset()->sample(xi, yi, activeThreshold) > 0 ) {
+                    if ( dataset->sample(xi, yi, activeThreshold) > 0 ) {
                         toMask.push_back( QPoint(xi, yi) );
                     }
                 }
@@ -1665,9 +1668,9 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         QVector<QPoint>::const_iterator itrE = toMask.end();
         bool colourMode = _mpx3gui->getConfig()->getColourMode();
 
-        for ( ; itr != itrE ; itr++ ) {
-            int chipId = _mpx3gui->getDataset()->getContainingFrame( *itr );
-            QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates( *itr, chipId );
+        for ( ; itr != itrE ; ++itr ) {
+            int chipId = dataset->getContainingFrame( *itr );
+            naturalCoords = dataset->getNaturalCoordinates( *itr, chipId );
             if (colourMode) {
                 naturalFlatCoords[ chipId ].push_back( 4*naturalCoords.y()*nx + 2*naturalCoords.x() );
             } else {
@@ -1679,20 +1682,21 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         QMap<int, QVector<int>>::const_iterator itrM  = naturalFlatCoords.begin();
         QMap<int, QVector<int>>::const_iterator itrME = naturalFlatCoords.end();
 
-        for ( ; itrM != itrME ; itrM++ ) {
+        for ( ; itrM != itrME ; ++itrM ) {
 
             int chip = (itrM).key();
             int vsize = (*itrM).size();
             qDebug() << "[DEBUG]\tChip" << chip << "--> Mask" << vsize;
 
+            auto eqResChip = _mpx3gui->getEqualization()->GetEqualizationResults( chip );
             for ( int iv = 0 ; iv < vsize ; iv++ ) {
                 if ( colourMode ) {
-                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv) );
-                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv)+1 );
-                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv)+_mpx3gui->getX()*2);
-                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv)+1+_mpx3gui->getX()*2);
+                    eqResChip->maskPixel( (*itrM).value(iv) );
+                    eqResChip->maskPixel( (*itrM).value(iv)+1 );
+                    eqResChip->maskPixel( (*itrM).value(iv)+nx*2);
+                    eqResChip->maskPixel( (*itrM).value(iv)+1+nx*2);
                 } else {
-                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv) );
+                    eqResChip->maskPixel( (*itrM).value(iv) );
                 }
             }
 
@@ -2007,13 +2011,7 @@ void QCstmGLVisualization::on_testBtn_clicked()
 
 void QCstmGLVisualization::on_saveLineEdit_editingFinished()
 {
-    bool success = requestToSetSavePath(ui->saveLineEdit->text());
-    Q_UNUSED(success)
-    if (!ui->saveLineEdit->text().isEmpty()) {
-        _saveLineEdit_isNotEmpty = true;
-    } else {
-        _saveLineEdit_isNotEmpty = false;
-    }
+    requestToSetSavePath(ui->saveLineEdit->text());
 }
 
 void QCstmGLVisualization::on_saveLineEdit_textEdited()
@@ -2027,11 +2025,7 @@ void QCstmGLVisualization::on_saveLineEdit_textEdited()
         // Exists and is writable --> white
         if (dir_info.isWritable()) {
             ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 255, 255); selection-background-color: rgb(0, 80, 80); }");
-            if (!ui->saveLineEdit->text().isEmpty()) {
-                _saveLineEdit_isNotEmpty = true;
-            } else {
-                _saveLineEdit_isNotEmpty = false;
-            }
+            _saveLineEdit_isNotEmpty = !ui->saveLineEdit->text().isEmpty();
             return;
 
         // Exists and is not writable --> red
@@ -2053,11 +2047,7 @@ void QCstmGLVisualization::on_saveLineEdit_textEdited()
             qDebug().noquote() << "[INFO]\t" << msg;
 
             ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(150, 240, 150); selection-background-color: rgb(50, 150, 50); }");
-            if (!ui->saveLineEdit->text().isEmpty()) {
-                _saveLineEdit_isNotEmpty = true;
-            } else {
-                _saveLineEdit_isNotEmpty = false;
-            }
+            _saveLineEdit_isNotEmpty = !ui->saveLineEdit->text().isEmpty();
         // Does not exist and is not writable --> red
         } else {
             const QString msg = "Path does not exist and is not writable (yet): " + path;
@@ -2120,6 +2110,7 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
         emit sig_statusBarAppend(msg, "black");
         qDebug().noquote() << "[INFO]\t" << msg;
     }
+    _saveLineEdit_isNotEmpty = !ui->saveLineEdit->text().isEmpty();
 
     ui->saveLineEdit->setStyleSheet("QLineEdit { background: rgb(255, 255, 255); selection-background-color: rgb(0, 80, 80); }");
 
@@ -2195,6 +2186,7 @@ void QCstmGLVisualization::on_saveCheckBox_stateChanged()
 
         //! GUI update - save LineEdit set to path from dialog
         ui->saveLineEdit->setText(path);
+        _saveLineEdit_isNotEmpty = !ui->saveLineEdit->text().isEmpty();
 
         //! If user selected nothing, path comes back empty (or "/" ?)
         if (path.isEmpty()) {
@@ -2238,26 +2230,10 @@ void QCstmGLVisualization::on_saveLineEdit_textChanged(const QString &arg1)
     //! Note, I'm pretty sure that arg1 is the same as ui->saveLineEdit->text()
     Q_UNUSED(arg1);
 
-    if (autosaveFromServer) {
-        bool success = requestToSetSavePath(ui->saveLineEdit->text());
-        Q_UNUSED(success)
-        if (!ui->saveLineEdit->text().isEmpty()) {
-            _saveLineEdit_isNotEmpty = true;
-        } else {
-            _saveLineEdit_isNotEmpty = false;
-        }
-    }
+    if (autosaveFromServer) requestToSetSavePath(ui->saveLineEdit->text());
 }
 
 void QCstmGLVisualization::on_saveLineEdit_returnPressed()
 {
-    if(!autosaveFromServer){
-        bool success = requestToSetSavePath(ui->saveLineEdit->text());
-        Q_UNUSED(success)
-        if (!ui->saveLineEdit->text().isEmpty()) {
-            _saveLineEdit_isNotEmpty = true;
-        } else {
-            _saveLineEdit_isNotEmpty = false;
-        }
-    }
+    if (!autosaveFromServer) requestToSetSavePath(ui->saveLineEdit->text());
 }
