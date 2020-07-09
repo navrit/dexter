@@ -4,7 +4,7 @@
 # Created: 2019-01-24
 
 function usage() {
-  printf '%s\n'   "Last modified: 2019-09-18"
+  printf '%s\n'   "Last modified: 2020-07-09"
   printf '\n%s' "Usage: "${0##*/}": [-m dev]"
   printf '\n%s'   "Purpose: Prepare a linux machine for using or development of Dexter"
 
@@ -166,7 +166,7 @@ function install_phidgets() {
   local file_string_Phidgets=libphidget_2.1.8.20170607
   local log_file_Phidgets=libphidget.log
 
-  mkdir -p /tmp/$tmp_working_folder && cd "$_"
+  mkdir -p $tmp_working_folder && cd "$_"
   echo "[INFO] Working temporary directory = $(pwd)"
 
   if [ -s "$file_string_Phidgets" ]; then
@@ -198,7 +198,7 @@ function install_phidgets() {
 
   extracted_file_string=$(echo $file_string_Phidgets | tr _ -)
 
-  cd "/tmp/$tmp_working_folder/$extracted_file_string"
+  cd "$tmp_working_folder/$extracted_file_string"
   if [ $? -eq 0 ]; then
     echo "[INFO] Now in $(pwd)"
   else
@@ -238,7 +238,7 @@ function install_dependencies() {
 function get_Qt() {
   # Download Qt if it's not there already ----------------------------------------
 
-  cd /tmp/$tmp_working_folder
+  cd $tmp_working_folder
 
   if [ -s $Qt_file_string ]; then
     echo "[INFO] Qt already downloaded - $Qt_file_string exists and is not empty"
@@ -269,7 +269,7 @@ function extract_Qt() {
 
   # Extract Qt folder name and change directory to it
   Qt_static_build_folder=${Qt_file_string:0:-7}
-  cd /tmp/$tmp_working_folder/$Qt_static_build_folder
+  cd $tmp_working_folder/$Qt_static_build_folder
 }
 
 function verify_Qt() {
@@ -347,7 +347,7 @@ function configure_Qt() {
   echo "$(df -h .)"
   echo
 
-  cd /tmp/$tmp_working_folder/$Qt_static_build_folder
+  cd $tmp_working_folder/$Qt_static_build_folder
   # Could use different compilers: -platform linux-clang, linux-g++
   # Skipping pretty much everything I think it's possible to get away with
 
@@ -413,7 +413,7 @@ function print_end_messages_user() {
 
 # ------------------------------------------------------------------------------
 
-tmp_working_folder=dexter-dev-setup
+tmp_working_folder=/tmp/dexter-dev-setup
 Qt_static_build_folder=uninitialised_variable
 
 while [ "$1" != "" ]; do
