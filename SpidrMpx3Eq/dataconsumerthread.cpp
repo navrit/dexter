@@ -32,7 +32,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     // The Semaphores
     // _nFramesBuffer is the number of resources
     _semaphoreSize = _nFramesBuffer * _nChips;
-    freeFrames = new QSemaphore( int(_nFramesBuffer * _nChips) ); // nChips per frame
+    freeFrames = new QSemaphore( int(_nFramesBuffer * _nChips) - 1 ); // nChips per frame
     usedFrames = new QSemaphore;
 
     // When working in colour mode.
