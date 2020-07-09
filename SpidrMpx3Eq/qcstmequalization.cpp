@@ -1670,16 +1670,18 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         pix = XtoXY(i, __matrix_size_x);
         //qDebug() << _eqMap[chipIndex]->GetPixelAdj(i) << _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H);
 
-        bool val;
+        if ( pix.second == 0 ) {
+            spidrcontrol->configCtpr( chipIndex, pix.first, int(testbit) );
+        }
+
+        bool val = false;
         if (testbit && !maskedPixels.contains(i)) {
             val = true;
         } else {
             val = false;
         }
 
-        if ( pix.second == 0 ) {
-            spidrcontrol->configCtpr( chipIndex, pix.first, int(testbit) );
-        }
+        // val = spidrcontrol->getPixelTestBitMpx3rx(pix.first,pix.second); // TODO Maybe use this?
 
         //! Test pulses are turned off here if testbit=true isn't passed
         spidrcontrol->configPixelMpx3rx(
@@ -1688,7 +1690,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                     _eqMap[chipIndex]->GetPixelAdj(i),
                     _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
                     val );
-        if (val) testBitsOn++;
+        if (testbit && val) testBitsOn++;
     }
     if (testbit) {
         spidrcontrol->setCtpr( chipIndex );
@@ -1729,7 +1731,12 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
             }
         } else {
-            // we did a resetPixelConfig already, no need to unmask pixels
+            //! When the mask is empty go ahead and unmask all pixels
+
+            for ( int i = 0 ; i < __matrix_size ; i++ ) {
+                pix = XtoXY(i, __matrix_size_x);
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+            }
         }
     }
 

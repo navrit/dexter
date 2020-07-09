@@ -394,8 +394,8 @@ void ThlScan::FineTuning() {
                 assert(scanEqTargets.length() > 0 && scanEqTargets.length() <= __max_number_of_chips);
                 assert(scanSigmas.length() > 0 && scanSigmas.length() <= __max_number_of_chips);
 
-                qSort(scanEqTargets.begin(), scanEqTargets.end());
-                qSort(scanSigmas.begin(), scanSigmas.end());
+                std::sort(scanEqTargets.begin(), scanEqTargets.end());
+                std::sort(scanSigmas.begin(), scanSigmas.end());
 
                 _minScan =  scanEqTargets.first() - int(ceil(3.7*scanSigmas.last()));
                 _maxScan =  scanEqTargets.last()  + int(ceil(3.7*scanSigmas.last()));
@@ -1853,6 +1853,28 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
     //! Turn test pulse bit on for that chip
     spidrcontrol->setInternalTestPulse(devId, _testPulses);
 
+    qDebug() << "ThlScan::SetEqualizationMask \t" << "chip =" << devId << "spacing =" << spacing << "offsets (x,y) = "
+             << offset_x << ',' << offset_y << "TP = " << _testPulses;
+
+    // For the thl scan with pixel thladj optimised we need to keep track of the per chip different
+    // pixel config inside the spidrcontroller
+
+    if (_adjType == __adjust_to_equalisationMatrix) {
+      for ( int i = 0 ; i < __matrix_size ; i++ ) {
+        pair<int,int >pix = XtoXY(i, __matrix_size_x);
+        Mpx3EqualizationResults *eqr =  _equalisation->GetEqualizationResults(devId);
+        bool tb = spidrcontrol->getPixelTestBitMpx3rx(pix.first,pix.second);
+        spidrcontrol->configPixelMpx3rx(
+                    pix.first,
+                    pix.second,
+                    eqr->GetPixelAdj(i),
+                    eqr->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                    tb );
+      }
+    }
+
+    int testbit_counter = 0;
+
     // Indexes in the masked set need the offset of the chipId.
     // The reason is that it needs to match with the _pixelCountsMap id structure.
     int chipIdOffset = __matrix_size * devId;
@@ -1867,12 +1889,26 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
 
                 if( (j + offset_y) % spacing != 0 ) { // This one should be masked
                     spidrcontrol->setPixelMaskMpx3rx(i, j, true);
+                    if (_testPulses) {
+                        spidrcontrol->setPixelTestBitMpx3rx(i, j, false); // Turn off test bits when pixels are masked
+                        testbit_counter++;
+                        if (spidrcontrol->getPixelTestBitMpx3rx(i,j)) {  // Check if they are somehow on still
+                            qDebug() << "Test bit on this pixel should have been off... (x, y) = (" << i << ", " << j << ")";
+                        }
+                    }
                     _maskedSet.insert( XYtoX(i, j, __matrix_size_x ) + chipIdOffset );
                 } // leaving unmasked (j + offset_x) % spacing == 0
             }
         } else { // mask the entire column
             for (int j = 0 ; j < __matrix_size_y ; j++) {
                 spidrcontrol->setPixelMaskMpx3rx(i, j, true);
+                if (_testPulses) {
+                    spidrcontrol->setPixelTestBitMpx3rx(i, j, false); // Turn off test bits when pixels are masked
+                    testbit_counter++;
+                    if (spidrcontrol->getPixelTestBitMpx3rx(i,j)) {  // Check if they are somehow on still
+                        qDebug() << "Test bit on this pixel should have been off... (x, y) = (" << i << ", " << j << ")";
+                    }
+                }
                 _maskedSet.insert( XYtoX(i, j, __matrix_size_x ) + chipIdOffset );
             }
         }
@@ -1929,6 +1965,10 @@ void ThlScan::ClearMask(SpidrController * spidrcontrol, int devId, bool sendToCh
 
     //! Unmask everything
     spidrcontrol->setPixelMaskMpx3rx(ALL_PIXELS, ALL_PIXELS, false);
+
+    // TODO Why would you turn on all the test bits when clearing the mask?...
+
+    // if (_testPulses) spidrcontrol->setPixelTestBitMpx3rx(ALL_PIXELS, ALL_PIXELS, true);
 
     // And send the configuration if requested
     if ( sendToChip ) spidrcontrol->setPixelConfigMpx3rx( devId );
