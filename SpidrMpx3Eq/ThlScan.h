@@ -195,7 +195,7 @@ private:
     bool _stop;
 
     //! Units: milliseconds. The noise varies in the 100-10000 Hz regime
-    const static uint _timeOut = 1000;
+    const static uint _timeOut = 50;
 
 private slots:
     void UpdateChart(int devId, int setId, int thlValue);
