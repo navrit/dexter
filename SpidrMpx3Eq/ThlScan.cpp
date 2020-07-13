@@ -1863,9 +1863,6 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
     // The reason is that it needs to match with the _pixelCountsMap id structure.
     int chipIdOffset = __matrix_size * devId;
 
-    //! Get equalisation results because we have to submit these again
-    Mpx3EqualizationResults * eqResults = _mpx3gui->getEqualization()->getEqMap()[devId];
-
     for (int i = 0 ; i < __matrix_size_x ; i++) {
 
         // For instance if spacing = 4, there should be calls with offset_x=0,1,2,3
@@ -1876,26 +1873,12 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
 
                 if( (j + offset_y) % spacing != 0 ) { // This one should be masked
                     spidrcontrol->setPixelMaskMpx3rx(i, j, true);
-                    if (_testPulses) {
-                        spidrcontrol->configPixelMpx3rx(i, j, eqResults->GetPixelAdj(i), eqResults->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H), _testPulses);
-//                        spidrcontrol->setPixelTestBitMpx3rx(i, j, false); // Turn off test bits when pixels are masked
-//                        if (spidrcontrol->getPixelTestBitMpx3rx(i,j)) {  // Check if they are somehow on still
-//                            qDebug() << "Test bit on this pixel should have been off... (x, y) = (" << i << ", " << j << ")";
-//                        }
-                    }
                     _maskedSet.insert( XYtoX(i, j, __matrix_size_x ) + chipIdOffset );
                 } // leaving unmasked (j + offset_x) % spacing == 0
             }
         } else { // mask the entire column
             for (int j = 0 ; j < __matrix_size_y ; j++) {
                 spidrcontrol->setPixelMaskMpx3rx(i, j, true);
-                if (_testPulses) {
-                    spidrcontrol->configPixelMpx3rx(i, j, eqResults->GetPixelAdj(i), eqResults->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H), _testPulses);
-//                    spidrcontrol->setPixelTestBitMpx3rx(i, j, false); // Turn off test bits when pixels are masked
-//                    if (spidrcontrol->getPixelTestBitMpx3rx(i,j)) {  // Check if they are somehow on still
-//                        qDebug() << "Test bit on this pixel should have been off... (x, y) = (" << i << ", " << j << ")";
-//                    }
-                }
                 _maskedSet.insert( XYtoX(i, j, __matrix_size_x ) + chipIdOffset );
             }
         }
