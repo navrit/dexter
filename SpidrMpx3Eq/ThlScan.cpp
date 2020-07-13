@@ -1677,7 +1677,7 @@ int ThlScan::NumberOfNonReactingPixels() {
     map<int, int>::iterator iE = _pixelReactiveTHL.end();
 
     // Test for non reactive pixels
-    for ( ; i != iE ; i++ ) {
+    for ( ; i != iE ; ++i ) {
         if( (*i).second == __UNDEFINED ) nNonReactive++;
     }
 
@@ -1691,7 +1691,7 @@ vector<int> ThlScan::GetNonReactingPixels() {
     map<int, int>::iterator iE = _pixelReactiveTHL.end();
 
     // Test for non reactive pixels
-    for ( ; i != iE ; i++ ) {
+    for ( ; i != iE ; ++i ) {
         if( (*i).second == __UNDEFINED ) nonReactive.push_back( (*i).first );
     }
     return nonReactive;
@@ -1790,19 +1790,19 @@ void ThlScan::UpdateChartPixelsReady(int devId, int setId) {
     set<int>::iterator iE = _fineTuningPixelsEqualized.end();
 
     // initialize
-    for (i = _fineTuningPixelsEqualized.begin() ; i != iE ; i++ ) {
+    for ( ; i != iE ; ++i ) {
         thlCntr[  _pixelReactiveTHL[*i] ] = 0;
     }
 
     // build the histogram
-    for (i = _fineTuningPixelsEqualized.begin() ; i != iE ; i++ ) {
+    for (i = _fineTuningPixelsEqualized.begin() ; i != iE ; ++i ) {
         thlCntr[  _pixelReactiveTHL[*i] ]++;
     }
 
     // Draw
     map<int, int>::iterator im = thlCntr.begin();
     map<int, int>::iterator imE = thlCntr.end();
-    for ( ; im != imE ; im++ ) {
+    for ( ; im != imE ; ++im ) {
         _equalisation->GetBarChart( devId )->SetValueInSet( uint(setId), im->first, im->second );
     }
 }
@@ -1851,6 +1851,7 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
     ClearMask(spidrcontrol, devId, false);
 
     //! Turn test pulse bit on for that chip
+    //! TODO I'm pretty sure it's already on at this point already... This is likely redundant
     spidrcontrol->setInternalTestPulse(devId, _testPulses);
 
     qDebug() << "ThlScan::SetEqualizationMask \t" << "chip =" << devId << "spacing =" << spacing << "offsets (x,y) = "
@@ -1872,8 +1873,6 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
                     tb );
       }
     }
-
-    int testbit_counter = 0;
 
     // Indexes in the masked set need the offset of the chipId.
     // The reason is that it needs to match with the _pixelCountsMap id structure.
@@ -1934,7 +1933,7 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> rework
     // Clear previous mask.  Not sending the configuration yet !
     ClearMask(spidrcontrol, false);
 
-    int cntr = 0, pix = 0;
+    int cntr = 0, pix;
     // TODO: this is stupid and inefficient; because all masks are cleaned already
     // you can better just iterate over the reworkPixels directly
     for (int i = 0 ; i < __matrix_size_x ; i++) {
@@ -1965,10 +1964,6 @@ void ThlScan::ClearMask(SpidrController * spidrcontrol, int devId, bool sendToCh
 
     //! Unmask everything
     spidrcontrol->setPixelMaskMpx3rx(ALL_PIXELS, ALL_PIXELS, false);
-
-    // TODO Why would you turn on all the test bits when clearing the mask?...
-
-    // if (_testPulses) spidrcontrol->setPixelTestBitMpx3rx(ALL_PIXELS, ALL_PIXELS, true);
 
     // And send the configuration if requested
     if ( sendToChip ) spidrcontrol->setPixelConfigMpx3rx( devId );

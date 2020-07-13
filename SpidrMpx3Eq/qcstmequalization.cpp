@@ -1682,8 +1682,6 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             spidrcontrol->configCtpr( chipIndex, pix.first, int(testbit) );
         }
 
-        // val = spidrcontrol->getPixelTestBitMpx3rx(pix.first,pix.second); // TODO Maybe use this?
-
         //! Test pulses are turned off here if testbit=true isn't passed
         spidrcontrol->configPixelMpx3rx(
                     pix.first,
