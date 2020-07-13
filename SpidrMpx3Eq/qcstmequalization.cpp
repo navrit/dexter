@@ -1731,10 +1731,10 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         } else {
             //! When the mask is empty go ahead and unmask all pixels
 
-            for ( int i = 0 ; i < __matrix_size ; i++ ) {
-                pix = XtoXY(i, __matrix_size_x);
-                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
-            }
+//            for ( int i = 0 ; i < __matrix_size ; i++ ) {
+//                pix = XtoXY(i, __matrix_size_x);
+//                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+//            }
         }
     }
 
