@@ -1393,6 +1393,7 @@ void QCstmEqualization::ScanOnInterpolation() {
 
     // arbitrary step for DAC_Disc_Optimization
     setStep( 1, true );
+    qDebug() << "[INFO]\tStep size = 1";
 
     // Note that this suggests a descending scan.
     ThlScan * scan_last = nullptr;
@@ -1400,13 +1401,16 @@ void QCstmEqualization::ScanOnInterpolation() {
 
     ThlScan * tscan_opt_ext = new ThlScan(_mpx3gui, this);
 
-    if ( _steeringInfo[0]->GetEqualizationTarget() == __default_equalisationtarget ) {
+    if ( _steeringInfo[0]->GetEqualizationTarget() == __default_equalisationtarget  && !testPulseMode ) {
         tscan_opt_ext->SetMinScan( 30 );
         tscan_opt_ext->SetMaxScan( 0 );
         qDebug() << "[INFO]\tUsing fast scanning, hardcoded 30 to 0";
     } else {
-        tscan_opt_ext->SetMinScan( scan_last->GetDetectedHighScanBoundary() );
-        tscan_opt_ext->SetMaxScan( scan_last->GetDetectedLowScanBoundary() );
+        int high = scan_last->GetDetectedHighScanBoundary();
+        int low = scan_last->GetDetectedLowScanBoundary();
+        tscan_opt_ext->SetMinScan( high );
+        tscan_opt_ext->SetMaxScan( low );
+        qDebug() << "[INFO]\tUsing detected scan boundaries, in this case" << high << " to " << low << " - test pulses are on or the equalisation target is not the default (10)";
     }
 
     tscan_opt_ext->ConnectToHardware(spidrcontrol, spidrdaq);
