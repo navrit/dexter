@@ -301,7 +301,7 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
             }
             // A carriage return
             toDisplay += "<br />";  // GUI
-            cout << endl;  // Console
+            cout << '\n';  // Console
         }
 
     }
@@ -313,7 +313,11 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
 void QCstmConfigMonitoring::when_taking_data_gui()
 {
-    ui->groupBoxConfiguration->setEnabled( false );
+    if (_isDeveloperMode) {
+        ui->groupBoxConfiguration->setEnabled( true );
+    } else {
+        ui->groupBoxConfiguration->setEnabled( false );
+    }
 }
 
 void QCstmConfigMonitoring::when_idling_gui()

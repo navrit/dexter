@@ -175,9 +175,14 @@ void thresholdScan::setThresholdsOnAllChips(int val)
             if ( _thresholdsToScan[dacCode-1] ) {
                 const int DAC_value = val + _thresholdOffsets[dacCode-1];
                 SetDAC_propagateInGUI(int(chipID), dacCode, DAC_value);
-                //qDebug() << "[DEBUG]\tUsing Th" << dacCode-1 << "| threshold =" << DAC_value;
+                qDebug() << "[INFO]\tSet Th" << dacCode-1 << " =" << DAC_value;
             } else {
-                //qDebug() << "[DEBUG]\tSkipped threshold" << dacCode-1;
+                const int DAC_value = _mpx3gui->getConfig()->getDACValue(chipID, dacCode-1);
+                if (DAC_value == 0) {
+                    qDebug() << "[WARN]\tTh" << dacCode-1 << "= 0 !!!!!!!!!!!";
+                } else {
+                    qDebug() << "[INFO]\tLeaving Th" << dacCode-1 << " =" << DAC_value;
+                }
             }
         }
     }
@@ -233,7 +238,7 @@ void thresholdScan::startScan()
     //! Get threshold starting values from the table model
     for (uint i = 0; i < _thresholdsToScan.size(); ++i) {
         _thresholdsToScan[i] = getThresholdScanEnabled(i);
-        //qDebug().noquote() << QString("[DEBUG]\t_thresholdsToScan[%1] = %2").arg(i).arg(_thresholdsToScan[i]);
+        qDebug().noquote() << QString("[DEBUG]\t_thresholdsToScan[%1] = %2").arg(i).arg(_thresholdsToScan[i]);
     }
 
     if ( _startTH < _endTH ) {
@@ -252,13 +257,12 @@ void thresholdScan::startScan()
     //! Set starting values for thresholds specified
     for (uint i = 0; i < _thresholdOffsets.size(); ++i) {
         _thresholdOffsets[i] = getThresholdOffset(i);
-        //qDebug().noquote() << QString("[DEBUG]\t_thresholdStartingValues[%1] = %2").arg(i).arg(_thresholdStartingValues[i]);
 
         //! Tell the config about the starting values for the frames
         for (uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNActiveDevices()); ++chip) {
             _mpx3gui->getConfig()->setDACValue(chip, int(i), _thresholdOffsets[i]);
         }
-        //qDebug().noquote() << QString("[DEBUG]\tSet DAC index = %1 | threshold offset = %2").arg(int(i)).arg(_thresholdOffsets[i]);
+        qDebug().noquote() << QString("[DEBUG]\tSet DAC index = %1 | threshold offset = %2").arg(int(i)).arg(_thresholdOffsets[i]);
     }
 
     //! At least get something valid in the saving path
@@ -312,14 +316,9 @@ int thresholdScan::getThresholdOffset(uint threshold)
     if (threshold <= 7) {
         bool ok = false;
         auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(int(threshold), 0, QModelIndex())).toInt(&ok);
-        if (ok) {
-            return val;
-        } else {
-            return 0;
-        }
-    } else {
-        return 0;
+        if (ok) return val;
     }
+    return 0;
 }
 
 bool thresholdScan::getThresholdScanEnabled(uint threshold)
@@ -354,9 +353,8 @@ int thresholdScan::getStartTH()
     auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(10, 0, QModelIndex())).toInt(&ok);
     if (ok) {
         return val;
-    } else {
-        return 0;
     }
+    return 0;
 }
 
 void thresholdScan::setStartTH(int val)
@@ -370,11 +368,8 @@ int thresholdScan::getEndTH()
 {
     bool ok = false;
     auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(11, 0, QModelIndex())).toInt(&ok);
-    if (ok) {
-        return val;
-    } else {
-        return 0;
-    }
+    if (ok) return val;
+    return 0;
 }
 
 void thresholdScan::setEndTH(int val)
@@ -388,11 +383,8 @@ uint thresholdScan::getStepSize()
 {
     bool ok = false;
     auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(8, 0, QModelIndex())).toUInt(&ok);
-    if (ok) {
-        return val;
-    } else {
-        return 0;
-    }
+    if (ok) return val;
+    return 0;
 }
 
 void thresholdScan::setStepSize(uint val)
@@ -406,11 +398,8 @@ uint thresholdScan::getFramesPerStep()
 {
     bool ok = false;
     auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(9, 0, QModelIndex())).toUInt(&ok);
-    if (ok) {
-        return val;
-    } else {
-        return 0;
-    }
+    if (ok) return val;
+    return 0;
 }
 
 void thresholdScan::setFramesPerStep(uint val)
