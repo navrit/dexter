@@ -182,7 +182,7 @@ void QCstmEqualization::setNHits(int val){
 void QCstmEqualization::SetLimits(){
 
     _ui->nHitsSpinBox->setMinimum( 1 );
-    _ui->nHitsSpinBox->setMaximum( 1000 );
+    _ui->nHitsSpinBox->setMaximum( 4095 );
     _ui->nHitsSpinBox->setValue( 10 );
     _nHits = 10;
 
@@ -771,7 +771,14 @@ void QCstmEqualization::StartEqualization() {
     else { _srcAddr = 0; }
 
     const uint chipListSize = uint(_workChipsIndx.size()); //! How many chips to equalise
-    updateTestpulseVariables();
+
+    if (testPulseMode) {
+        updateTestpulseVariables();
+
+        //! Activate test pulses with the configuration from the GUI or the defaults
+        initialiseTestPulses(spidrcontrol);
+        qDebug() << "[INFO] [Equalisation]\tInitialised test pulses for the entire scan!!!!!";
+    }
 
     // Preliminary) Find out the equalization range
     // First) DAC_Disc Optimization
@@ -1112,7 +1119,7 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     }
 
     // This is a scan that I can truncate early ... I don't need to go all the way
-    tscan->DoScan(  _steeringInfo[0]->currentTHx , _setId++, _steeringInfo[0]->currentDAC_DISC, 1, false, false ); // THX and DAC_DISC_X same for all chips
+    tscan->DoScan(  _steeringInfo[0]->currentTHx , _setId++, _steeringInfo[0]->currentDAC_DISC, 1, false, testPulseMode ); // THX and DAC_DISC_X same for all chips
     tscan->SetAdjustmentType( ThlScan::__adjust_to_global );
     tscan->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
 
@@ -1156,7 +1163,7 @@ void QCstmEqualization::DAC_Disc_Optimization_150() {
         SetDAC_propagateInGUI(spidrcontrol, int(_workChipsIndx[i]), _steeringInfo[i]->currentDAC_DISC, _steeringInfo[i]->currentDAC_DISC_OptValue);
         spidrcontrol->setInternalTestPulse(int(_workChipsIndx[i]), false);
     }
-    tscan->DoScan( _steeringInfo[0]->currentTHx, _setId++,  _steeringInfo[0]->currentDAC_DISC, 1, false, false );
+    tscan->DoScan( _steeringInfo[0]->currentTHx, _setId++,  _steeringInfo[0]->currentDAC_DISC, 1, false, testPulseMode );
     tscan->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
 
     // Launch as thread.  Connect the slot which signals when it's done
@@ -1221,7 +1228,18 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
     double meanTHL_for_opt_IDAC_DISC = defaultNoiseEqualisationTarget + OPTIMAL_EQUALISATION_SIGMA_VALUE * res_100->sigma;
 
     // Using the relation DAC_Disc[L/H](THL) we can find the value of DAC_Disc
+    //
+    //
+    //
     GetSteeringInfo(devId)->currentDAC_DISC_OptValue = int(EvalLinear(GetSteeringInfo(devId)->currentEta_THx_DAC_Disc, GetSteeringInfo(devId)->currentCut_THx_DAC_Disc, meanTHL_for_opt_IDAC_DISC));
+    //
+    //
+    //
+    //
+
+//    qDebug() << "[WARN] [Equalisation]\tOVERRIDE SETTING OPTIMAL DAC_DISC to 53 MANUALLY !!!!!!!!!!!!!!!!!!!!!!!";
+//    qDebug() << "[WARN] [Equalisation]\tWould have been " << int(EvalLinear(GetSteeringInfo(devId)->currentEta_THx_DAC_Disc, GetSteeringInfo(devId)->currentCut_THx_DAC_Disc, meanTHL_for_opt_IDAC_DISC));
+//    GetSteeringInfo(devId)->currentDAC_DISC_OptValue = 53;
 
     // -----------------------
     // Same as (I have checked this) :
@@ -1673,27 +1691,32 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     spidrcontrol->resetPixelConfig();
 //    QSet<int> maskedPixels = _eqMap[chipIndex]->GetMaskedPixels();
 
+    //! Turn test pulse bit on for that chip
+    spidrcontrol->setInternalTestPulse(chip, testPulseMode);
+
     int testBitsOn = 0;
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
         pix = XtoXY(i, __matrix_size_x);
         //qDebug() << _eqMap[chipIndex]->GetPixelAdj(i) << _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H);
 
         if ( pix.second == 0 ) {
-            spidrcontrol->configCtpr( chipIndex, pix.first, int(testbit) );
+            spidrcontrol->configCtpr( chip, pix.first, int(testPulseMode) );
         }
 
         //! Test pulses are turned off here if testbit=true isn't passed
         spidrcontrol->configPixelMpx3rx(
                     pix.first,
                     pix.second,
-                    _eqMap[chipIndex]->GetPixelAdj(i),
-                    _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
-                    testbit );
-        if (testbit) testBitsOn++;
+                    _eqMap[chip]->GetPixelAdj(i),
+                    _eqMap[chip]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                    testPulseMode );
+        if (testPulseMode) testBitsOn++;
     }
-    if (testbit) {
-        spidrcontrol->setCtpr( chipIndex );
-        qDebug() << "[INFO]\tPixels with test bits ON :" << testBitsOn;
+    if (testPulseMode) {
+        spidrcontrol->setCtpr( chip );
+        qDebug() << "[INFO] [Equalisation]\tCTPR set on chip " << chip;
+    } else {
+        qDebug() << "[WARN] [Equalisation]\tTest pulse mode is OFF";
     }
 
     //! Note : this masking is only used outside of the equalisation procedure
@@ -1731,10 +1754,10 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         } else {
             //! When the mask is empty go ahead and unmask all pixels
 
-//            for ( int i = 0 ; i < __matrix_size ; i++ ) {
-//                pix = XtoXY(i, __matrix_size_x);
-//                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
-//            }
+            for ( int i = 0 ; i < __matrix_size ; i++ ) {
+                pix = XtoXY(i, __matrix_size_x);
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+            }
         }
     }
 
@@ -1781,12 +1804,12 @@ void QCstmEqualization::Configuration(int chip, int THx, bool reset) {
     //! Make it false when done?
     spidrcontrol->setEqThreshH( chip, true );
 
-    //    //! ------------------------------------------------------------------------
-    //    //! OMR bit
-    //    //! False : default
-    //    //! True  : if doing a test pulse based equalisation
-    //    spidrcontrol->setInternalTestPulse( devId, testPulseMode );
-    //    qDebug() << "[INFO] [Equalisation]\tSPIDR Internal Test pulses = " << testPulseMode;
+    //! ------------------------------------------------------------------------
+    //! OMR bit
+    //! False : default
+    //! True  : if doing a test pulse based equalisation
+    spidrcontrol->setInternalTestPulse( chip, testPulseMode );
+    qDebug() << "[INFO] [Equalisation]\tSPIDR Internal Test pulses = " << testPulseMode;
 
     //! ------------------------------------------------------------------------
     //! OMR bit
@@ -2231,13 +2254,8 @@ void QCstmEqualization::estimateEqualisationTarget()
 
 
     if (testPulseMode) {
-        //! Activate test pulses with the configuration from the GUI or the defaults
-
-        SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-        SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
-
-        initialiseTestPulses(spidrcontrol);
-        qDebug() << "[INFO]\tInitialised test pulse mode for equalisation threshold scanning";
+        SpidrController *spidrcontrol = _mpx3gui->GetSpidrController();
+        SpidrDaq *spidrdaq = _mpx3gui->GetSpidrDaq();
 
         QString legend = _steeringInfo[0]->currentDAC_DISC_String;
         legend += "_Opt_testPulses";
