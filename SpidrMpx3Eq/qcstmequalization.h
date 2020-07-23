@@ -228,7 +228,7 @@ public:
     double EvalLinear(double eta, double cut, double x);
 
     void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, int val_L, int val_H);
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false, bool testbit = false);
+    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false);
     void SetAllAdjustmentBits(SpidrController * spidrcontrol);
     void SetAllAdjustmentBits();
     void ClearAllAdjustmentBits(int devId = 0);
