@@ -1830,7 +1830,7 @@ set<int> ThlScan::GetReworkSubset(set<int> reworkSet, int spacing, int offset_x,
 }
 
 /**
- * @brief ThlScan::SetEqualizationMask. Create and apply the mask with a given spacing
+ * @brief ThlScan::SetEqualisationMask. Create and apply the mask with a given spacing
  * @param spidrcontrol
  * @param devId
  * @param spacing
@@ -1849,7 +1849,7 @@ bool ThlScan::SetEqualisationMask(SpidrController * spidrcontrol, int chip, int 
     spidrcontrol->setInternalTestPulse(chip, _testPulses);
 
     if ( _testPulses ){
-        qDebug() << "ThlScan::SetEqualizationMask \t" << "chip =" << chip << "spacing =" << spacing << "offsets (x,y) = "
+        qDebug() << "ThlScan::SetEqualisationMask \t" << "chip =" << chip << "spacing =" << spacing << "offsets (x,y) = "
                  << offset_x << ',' << offset_y << "TP = " << _testPulses;
     }
 
@@ -1888,7 +1888,7 @@ bool ThlScan::SetEqualisationMask(SpidrController * spidrcontrol, int chip, int 
 }
 
 /**
- * @brief ThlScan::SetEqualizationMask. Leave reworkPixels unmasked. Returns number of un-masked pixels.
+ * @brief ThlScan::SetEqualisationMask. Leave reworkPixels unmasked. Returns number of un-masked pixels.
  * @param spidrcontrol
  * @param reworkPixels
  * @return
