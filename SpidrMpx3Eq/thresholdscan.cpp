@@ -493,18 +493,18 @@ void thresholdScan::resumeTHScan()
 
         foreach (int thr, _thresholds) {
             //! Calculate the actual threshold used during scan, <0 and >511 are not possible to set anyway
-            int actualThr = _currentThr + _thresholdOffsets[thr];
-            if (actualThr < 0 ) {
-                actualThr = 0;
-            } else if (actualThr > 511) {
-                actualThr = 511;
-            }
+//            int actualThr = _currentThr + _thresholdOffsets[thr];
+//            if (actualThr < 0 ) {
+//                actualThr = 0;
+//            } else if (actualThr > 511) {
+//                actualThr = 511;
+//            }
 
             //! Save raw TIFF with the following format:
             //!    “scan_“ + start_run_datetime_second_precision + / + scan_iteration + “-” + “th” + threshold_number + “-” + threshold_value + “.” + file_format
             //!
             //!    [scan_20190722_160023] / [000-511] - th[0-7] - [000-511] . [tiff, pgm etc.]
-            _mpx3gui->getDataset()->toTIFF(_newPath, false, false, _runStartDateTimeWithMs, thr, _iteration, actualThr);
+            _mpx3gui->getDataset()->toTIFF(_newPath, false, false, _runStartDateTimeWithMs, thr, _iteration, _mpx3gui->getConfig()->getDACValue(0, thr));
         }
 
         update_timeGUI();
