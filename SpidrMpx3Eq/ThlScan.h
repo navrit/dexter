@@ -66,8 +66,8 @@ public:
     void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
     void RewindData(int full_sizex, int full_sizey);
     void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false, bool testPulses = false);
-    bool SetEqualisationMask(SpidrController * sc, int devId, int spacing, int offset_x, int offset_y, int * nmasked);
-    int SetEqualisationMask(SpidrController * sc, set<int> reworkPixels);
+    bool SetEqualisationMask(SpidrController * sc, int chip, int spacing, int offset_x, int offset_y, int * nmasked);
+//    int SetEqualisationMask(SpidrController * sc, set<int> reworkPixels);
     set<int> GetReworkSubset(set<int> reworkSet, int spacing, int offset_x, int offset_y);
 
     void ClearMask(SpidrController * spidrcontrol, int devId, bool ClearMask = true);

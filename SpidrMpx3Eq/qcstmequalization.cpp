@@ -2184,57 +2184,57 @@ bool QCstmEqualization::initialiseTestPulses(SpidrController * spidrcontrol)
     return true;
 }
 
-bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int * maskedPixels)
-{
-    pair<int, int> pix;
-    bool testbit;
-    int testBitsOn = 0;
+//bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int * maskedPixels)
+//{
+//    pair<int, int> pix;
+//    bool testbit;
+//    int testBitsOn = 0;
 
-    //! Turn test pulse bit on for that chip
-    spidrcontrol->setInternalTestPulse(chipID, true);
+//    //! Turn test pulse bit on for that chip
+//    spidrcontrol->setInternalTestPulse(chipID, true);
 
-    uint pixelSpacing = testPulseEqualisationDialog->getPixelSpacing();
+//    uint pixelSpacing = testPulseEqualisationDialog->getPixelSpacing();
 
-    for ( int i = 0; i < __matrix_size; i++ ) {
-        pix = _mpx3gui->XtoXY(i, __matrix_size_x);
+//    for ( int i = 0; i < __matrix_size; i++ ) {
+//        pix = _mpx3gui->XtoXY(i, __matrix_size_x);
 
-        //! Unmask all pixels that we are going to inject test pulses into.
-        //! --> mask all pixels that we aren't using
+//        //! Unmask all pixels that we are going to inject test pulses into.
+//        //! --> mask all pixels that we aren't using
 
-        if ( uint(pix.first + offset_x) % pixelSpacing == 0 && uint(pix.second + offset_y) % pixelSpacing == 0 ) {
-            testbit = true;
-            testBitsOn++;
-            spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
-            qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
-        } else {
-            testbit = false;
-            spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
-        }
+//        if ( uint(pix.first + offset_x) % pixelSpacing == 0 && uint(pix.second + offset_y) % pixelSpacing == 0 ) {
+//            testbit = true;
+//            testBitsOn++;
+//            spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+//            qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
+//        } else {
+//            testbit = false;
+//            spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+//        }
 
-        if ( pix.second == 0 ) {
-            spidrcontrol->configCtpr( chipID, pix.first, 1 );
-        }
+//        if ( pix.second == 0 ) {
+//            spidrcontrol->configCtpr( chipID, pix.first, 1 );
+//        }
 
-        spidrcontrol->configPixelMpx3rx(pix.first,
-                                        pix.second,
-                                        _eqMap[chipID]->GetPixelAdj(i),
-                                        _eqMap[chipID]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
-                                        testbit);
-    }
-    spidrcontrol->setCtpr( chipID );
+//        spidrcontrol->configPixelMpx3rx(pix.first,
+//                                        pix.second,
+//                                        _eqMap[chipID]->GetPixelAdj(i),
+//                                        _eqMap[chipID]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+//                                        testbit);
+//    }
+//    spidrcontrol->setCtpr( chipID );
 
-//    qDebug() << "[TEST PULSES] CTPRs set on chip" << chipID;
-    qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
+////    qDebug() << "[TEST PULSES] CTPRs set on chip" << chipID;
+//    qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
 
-    if ( ! spidrcontrol->setPixelConfigMpx3rx( chipID ) ) {
-        qDebug() << "[FAIL]\tCould not set pixel config... FIX ME";
-        return false;
-    }
+//    if ( ! spidrcontrol->setPixelConfigMpx3rx( chipID ) ) {
+//        qDebug() << "[FAIL]\tCould not set pixel config... FIX ME";
+//        return false;
+//    }
 
-    *maskedPixels = __matrix_size - testBitsOn;
+//    *maskedPixels = __matrix_size - testBitsOn;
 
-    return true;
-}
+//    return true;
+//}
 
 /**
  * @brief QCstmEqualization::resetForNewEqualisation so you can run multiple equalisations without closing the program
