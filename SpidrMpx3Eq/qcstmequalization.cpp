@@ -1687,7 +1687,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController *spidrcontrol, int 
     }
 
     spidrcontrol->resetPixelConfig();
-    spidrcontrol->setInternalTestPulse(chip, _testPulses);
+    spidrcontrol->setInternalTestPulse(chip, testPulseMode);
 
     pair<int, int> pix; // Adj bits
 
