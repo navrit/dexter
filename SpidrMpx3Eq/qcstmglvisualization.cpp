@@ -85,7 +85,9 @@ void QCstmGLVisualization::setThresholdsVector(int chipId, int threshold, int DA
     if (chipId >=0 && chipId < __max_number_of_chips && threshold >=0 && threshold < __max_number_of_thresholds) {
         _thresholdsVector[chipId][threshold] = DAC_value;
     } else {
-        qDebug() << "[ERROR]\tOut of bounds --> chip =" << chipId << "| threshold =" << threshold << "| DAC_value =" << DAC_value;
+        if (threshold >= 0 && threshold < __max_number_of_thresholds) {
+            qDebug() << "[ERROR]\tOut of bounds --> chip =" << chipId << "| threshold =" << threshold << "| DAC_value =" << DAC_value;
+        }
     }
 }
 
