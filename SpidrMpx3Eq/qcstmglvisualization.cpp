@@ -1708,8 +1708,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     if (_maskOperation == NULL_MASK) return;
 
-    //! TODO WTF there's NO way this is correct
-    _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), chip, true, false);
+    _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), chip, true);
 }
 
 void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
