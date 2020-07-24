@@ -772,17 +772,17 @@ void QCstmEqualization::StartEqualization() {
 
     const uint chipListSize = uint(_workChipsIndx.size()); //! How many chips to equalise
 
-    if (testPulseMode) {
-        updateTestpulseVariables();
-
-        //! Activate test pulses with the configuration from the GUI or the defaults
-        initialiseTestPulses(spidrcontrol);
-        qDebug() << "[INFO] [Equalisation]\tInitialised test pulses for the entire scan!!!!!";
-    }
-
     // Preliminary) Find out the equalization range
-    // First) DAC_Disc Optimization
+    // First) DAC_Disc Optimisation
     if ( EQ_NEXT_STEP( __INIT) ) {
+        if (testPulseMode) {
+            updateTestpulseVariables();
+
+            //! Activate test pulses with the configuration from the GUI or the defaults
+            initialiseTestPulses(spidrcontrol);
+            qDebug() << "[INFO] [Equalisation]\tInitialised test pulses for the entire scan!!!!!";
+        }
+
         //! We only want to update this the first time
         if (_steeringInfo[0]->currentDAC_DISC_String == "DAC_DISC_L") {
             _firstMinScanTHL = _minScanTHL; //! This is used exclusively to guide the THH scan for noisy chip/sensor combos
