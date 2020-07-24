@@ -1710,6 +1710,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         return;
     }
 
+    //! TODO WTF there's NO way this is correct
     _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID, true, false);
 }
 
