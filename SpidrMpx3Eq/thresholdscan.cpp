@@ -250,6 +250,14 @@ void thresholdScan::startScan()
         _isScanDescending = true;
     }
 
+    //! Store existing thresholds in the stupid vector so it doesn't 'forget' (reset to 0) the starting DAC values
+    for (int chip = 0; chip < __max_number_of_chips; ++chip) {
+        for (int DAC_index = 0; DAC_index < __max_number_of_thresholds; ++DAC_index) {
+            const int DAC_value = _mpx3gui->getConfig()->getDACValue(chip, DAC_index);
+            _mpx3gui->getVisualization()->setThresholdsVector(chip, DAC_index, DAC_value);
+        }
+    }
+
     //! Set DAC starting values
     if (_isScanDescending) {
         setThresholdsOnAllChips(_startTH);
@@ -257,15 +265,24 @@ void thresholdScan::startScan()
         setThresholdsOnAllChips(_endTH);
     }
 
+    _thresholdOffsets = {0};
     //! Set starting values for thresholds specified
     for (uint i = 0; i < _thresholdOffsets.size(); ++i) {
-        _thresholdOffsets[i] = getThresholdOffset(i);
+        if (_thresholdsToScan[i]) {
+            _thresholdOffsets[i] = getThresholdOffset(i);
 
-        //! Tell the config about the starting values for the frames
-        for (uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNActiveDevices()); ++chip) {
-            _mpx3gui->getConfig()->setDACValue(chip, int(i), _thresholdOffsets[i]);
+            if (_thresholdOffsets[i] > 0) {
+                qDebug() << "[DEBUG]\tAll chips, threshold offset = " << _thresholdOffsets[i];
+            }
+
+            //! Tell the config about the starting values for the frames
+            for (uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNActiveDevices()); ++chip) {
+                _mpx3gui->getConfig()->setDACValue(chip, int(i), _thresholdOffsets[i]);
+            }
+            qDebug().noquote() << QString("[DEBUG]\tSet thr offsets - DAC index = %1 | threshold offset = %2").arg(int(i)).arg(_thresholdOffsets[i]);
+        } else {
+            qDebug() << "[DEBUG]\tNot setting a threshold offset for unselected threshold" << i;
         }
-        qDebug().noquote() << QString("[DEBUG]\tSet DAC index = %1 | threshold offset = %2").arg(int(i)).arg(_thresholdOffsets[i]);
     }
 
     //! At least get something valid in the saving path
@@ -319,7 +336,7 @@ int thresholdScan::getThresholdOffset(uint threshold)
     if (threshold <= 7) {
         bool ok = false;
         auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(int(threshold), 0, QModelIndex())).toInt(&ok);
-        if (ok) return val;
+        if (ok && val >=0 && val < 511) return val;
     }
     return 0;
 }
