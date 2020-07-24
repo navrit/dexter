@@ -348,9 +348,9 @@ void ThlScan::FineTuning() {
                 // Set a mask
                 int nMasked = 0, pmasked = 0;
 
-                for ( unsigned long devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
-                    if ( ! SetEqualisationMask(spidrcontrol, int(_workChipsIndx[devId]), _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                        qDebug() << "[FAIL]\tFine tuning, could not set equalisation mask, chip =" << devId;
+                for ( unsigned long chip = 0; chip < _workChipsIndx.size(); chip++ ) {
+                    if ( ! SetEqualisationMask(spidrcontrol, int(_workChipsIndx[chip]), _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                        qDebug() << "[FAIL]\tFine tuning, could not set equalisation mask, chip =" << chip;
                         return;
                     }
                     nMasked += pmasked;
@@ -1843,10 +1843,6 @@ bool ThlScan::SetEqualisationMask(SpidrController * spidrcontrol, int chip, int 
     // Clear previous mask.  Not sending the configuration yet !
     ClearMask(spidrcontrol, chip, false);
 
-    //! Turn test pulse bit on for that chip
-    //! TODO I'm pretty sure it's already on at this point already... This is likely redundant
-    spidrcontrol->setInternalTestPulse(chip, _testPulses);
-
     if ( _testPulses ){
         qDebug() << "ThlScan::SetEqualisationMask \t" << "chip =" << chip << "spacing =" << spacing << "offsets (x,y) = "
                  << offset_x << ',' << offset_y << "TP = " << _testPulses;
@@ -1855,6 +1851,11 @@ bool ThlScan::SetEqualisationMask(SpidrController * spidrcontrol, int chip, int 
     // Indexes in the masked set need the offset of the chipId.
     // The reason is that it needs to match with the _pixelCountsMap id structure.
     int chipIdOffset = __matrix_size * chip;
+    int testBitsOn = 0;
+    int testBitsOff = 0;
+    auto eqMap = _mpx3gui->getEqualization()->getEqMap()[chip];
+
+    spidrcontrol->setInternalTestPulse(chip, _testPulses);
 
     for (int i = 0 ; i < __matrix_size_x ; i++) {
 
@@ -1864,18 +1865,61 @@ bool ThlScan::SetEqualisationMask(SpidrController * spidrcontrol, int chip, int 
 
             for (int j = 0 ; j < __matrix_size_y ; j++) {
 
-                if( (j + offset_y) % spacing != 0 ) { // This one should be masked
+                if( (j + offset_y) % spacing != 0 ) { // This one should be masked, test bits off
                     spidrcontrol->setPixelMaskMpx3rx(i, j, true);
+                    spidrcontrol->configPixelMpx3rx(
+                        i,
+                        j,
+                        eqMap->GetPixelAdj( _mpx3gui->XYtoX(i,j,__matrix_size_x)),
+                        eqMap->GetPixelAdj( _mpx3gui->XYtoX(i,j,__matrix_size_x), Mpx3EqualizationResults::__ADJ_H),
+                        false
+                    );
+                    testBitsOff++;
                     _maskedSet.insert( XYtoX(i, j, __matrix_size_x ) + chipIdOffset );
-                } // leaving unmasked (j + offset_x) % spacing == 0
+                } else {
+                    // leaving unmasked (j + offset_x) % spacing == 0
+
+                    // Turn CTPRs on only for the rows/columns that actually use them
+                    if ( j == 0 ) {
+                        spidrcontrol->configCtpr( chip, i, int(_testPulses) );
+                    }
+
+                    spidrcontrol->configPixelMpx3rx(
+                        i,
+                        j,
+                        eqMap->GetPixelAdj( _mpx3gui->XYtoX(i,j,__matrix_size_x)),
+                        eqMap->GetPixelAdj( _mpx3gui->XYtoX(i,j,__matrix_size_x), Mpx3EqualizationResults::__ADJ_H),
+                        _testPulses
+                    );
+                    testBitsOn += int(_testPulses);
+                }
             }
-        } else { // mask the entire column
+        } else { // mask the entire column, test bits off
             for (int j = 0 ; j < __matrix_size_y ; j++) {
                 spidrcontrol->setPixelMaskMpx3rx(i, j, true);
+                spidrcontrol->configPixelMpx3rx(
+                    i,
+                    j,
+                    eqMap->GetPixelAdj( _mpx3gui->XYtoX(i,j,__matrix_size_x)),
+                    eqMap->GetPixelAdj( _mpx3gui->XYtoX(i,j,__matrix_size_x), Mpx3EqualizationResults::__ADJ_H),
+                    false
+                    );
+                testBitsOff++;
+                spidrcontrol->configCtpr( chip, j, false );
                 _maskedSet.insert( XYtoX(i, j, __matrix_size_x ) + chipIdOffset );
             }
         }
     }
+
+    if (_testPulses) {
+        spidrcontrol->setCtpr( chip );
+        qDebug() << "[INFO] [Equalisation]\tCTPR set on chip " << chip;
+        qDebug() << "[INFO] [Equalisation]\tTest bits on =" << testBitsOn << " | test bits off =" << testBitsOff;
+    } else {
+        qDebug() << "[INFO] [Equalisation]\tTest pulse mode is OFF";
+    }
+
+
 
     if ( ! spidrcontrol->setPixelConfigMpx3rx( chip ) ) {
         return false;
