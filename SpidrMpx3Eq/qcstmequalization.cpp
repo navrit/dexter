@@ -2412,19 +2412,19 @@ void QCstmEqualization::LoadEqualisation(bool getPath, bool remotely, QString pa
     //! Initialise string with prefix
     QString msg = QString(tr("[INFO] [Equalisation]\tEqualisations loaded from: "));
 
-    for(int i = 0 ; i < nChips ; i++) {
+    for(int chip = 0 ; chip < nChips ; chip++) {
         QCoreApplication::processEvents();
 
         //! Check if the device is alive
-        if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {
+        if ( ! _mpx3gui->getConfig()->detectorResponds( chip ) ) {
             continue;
         }
 
         //! Build strings for adj and mask file paths
         QString adjfn = path + "adj_";
-        adjfn += QString::number(i, 10);
+        adjfn += QString::number(chip, 10);
         QString maskfn = path + "mask_";
-        maskfn += QString::number(i, 10);
+        maskfn += QString::number(chip, 10);
 
         //! Part 2.1: Send equalisation loaded from ... to mpx3gui status bar
         //! Append new equalisation paths
@@ -2433,11 +2433,11 @@ void QCstmEqualization::LoadEqualisation(bool getPath, bool remotely, QString pa
             msg += adjfn + QString(" ") + maskfn + QString(" ");
         }
 
-        if ( ! _eqMap[i]->ReadAdjBinaryFile( adjfn ) ) {
+        if ( ! _eqMap[chip]->ReadAdjBinaryFile( adjfn ) ) {
             QMessageBox::warning(this, tr("Loading equalisation"), tr("Failed. Can not open file: %1").arg(adjfn) );
             return;
         }
-        if ( ! _eqMap[i]->ReadMaskBinaryFile( maskfn ) ) {
+        if ( ! _eqMap[chip]->ReadMaskBinaryFile( maskfn ) ) {
             QMessageBox::warning(this, tr("Loading equalisation"), tr("Failed. Can not open file: %1").arg(adjfn) );
             return;
         }
@@ -2445,10 +2445,10 @@ void QCstmEqualization::LoadEqualisation(bool getPath, bool remotely, QString pa
         _equalisationLoaded = true;
 
         // And talk to the hardware loading also the mask
-        SetAllAdjustmentBits( _mpx3gui->GetSpidrController(), i, true );
+        SetAllAdjustmentBits( _mpx3gui->GetSpidrController(), chip, true );
 
         // Progression
-        pd.setValue( i+1 );
+        pd.setValue( chip+1 );
     }
 
     //! Part 2.2: Send equalisation loaded from ... to mpx3gui status bar
