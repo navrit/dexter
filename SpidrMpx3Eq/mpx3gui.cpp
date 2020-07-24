@@ -112,18 +112,18 @@ SpidrController * Mpx3GUI::GetSpidrController(){
 }
 
 void Mpx3GUI::LoadEqualization(){
-    _ui->equalizationWidget->LoadEqualization();
+    _ui->equalizationWidget->LoadEqualisation();
 }
 
 void Mpx3GUI::loadEqualisationFromPath(){
     bool getPath = true;
-    _ui->equalizationWidget->LoadEqualization(getPath,false);
+    _ui->equalizationWidget->LoadEqualisation(getPath,false);
 }
 
 void Mpx3GUI::loadEqualisationFromPathRemotely(QString path)
 {
     bool getPath = true;
-    _ui->equalizationWidget->LoadEqualization(getPath,true,path);
+    _ui->equalizationWidget->LoadEqualisation(getPath,true,path);
 }
 
 void Mpx3GUI::onEqualizationPathExported(QString path)
@@ -1027,7 +1027,7 @@ void Mpx3GUI::_loadEqualizationFromGeneralSettings()
 {
     QDir eqDir(_generalSettings->getEqualisationPath());
     if(eqDir.exists()){
-        getEqualization()->LoadEqualization(false, false, _generalSettings->getEqualisationPath());
+        getEqualization()->LoadEqualisation(false, false, _generalSettings->getEqualisationPath());
         qDebug() << "[INFO]\tEqualization loaded from" << _generalSettings->getEqualisationPath();
     }
 }

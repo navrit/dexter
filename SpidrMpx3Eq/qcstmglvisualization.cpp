@@ -1303,7 +1303,7 @@ void QCstmGLVisualization::setCSM(bool active)
 
 void QCstmGLVisualization::loadDefaultEqualisation()
 {
-    _mpx3gui->getEqualization()->LoadEqualization(false, true, "");
+    _mpx3gui->getEqualization()->LoadEqualisation(false, true, "");
 
     emit someCommandHasFinished_Successfully();
 }
@@ -1314,7 +1314,7 @@ void QCstmGLVisualization::loadEqualisation(QString path)
         path = path.append(QDir::separator());
     }
 
-    _mpx3gui->getEqualization()->LoadEqualization(false,false ,path);
+    _mpx3gui->getEqualization()->LoadEqualisation(false,false ,path);
 
     emit someCommandHasFinished_Successfully();
 }

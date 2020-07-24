@@ -28,7 +28,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToDoEqualizationRemotely(QString)),QCstmEqualization::getInstance(),SLOT(StartEqualizationSequentialSingleChipsRemotely(QString)));
     connect(this,SIGNAL(requestToLoadConfigRemotely(QString)),getGui(),SLOT(load_config_remotely(QString)));
     connect(this,SIGNAL(requestToSaveConfigRemotely(QString)),QCstmConfigMonitoring::getInstance(),SLOT(saveConfigFileRemotely(QString)));
-    connect(this,SIGNAL(requestToChangeGuiforThreshold(int)),QCstmDacs::getInstance(),SLOT(onDevNumChanged(int)));
+    connect(this,SIGNAL(requestToChangeGuiforThreshold(int)),QCstmDacs::getInstance(),SLOT(onChipNumChanged(int)));
     initializeCmdTable();
 }
 

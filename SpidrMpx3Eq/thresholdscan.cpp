@@ -175,14 +175,17 @@ void thresholdScan::setThresholdsOnAllChips(int val)
             if ( _thresholdsToScan[dacCode-1] ) {
                 const int DAC_value = val + _thresholdOffsets[dacCode-1];
                 SetDAC_propagateInGUI(int(chipID), dacCode, DAC_value);
-                qDebug() << "[INFO]\tSet Th" << dacCode-1 << " =" << DAC_value;
+
+//                if (chipID == 0 ) { // Print once, not 4 times...
+//                    qDebug() << "[DEBUG]\tSet Th" << dacCode-1 << " =" << DAC_value;
+//                }
             } else {
                 const int DAC_value = _mpx3gui->getConfig()->getDACValue(chipID, dacCode-1);
                 if (DAC_value == 0) {
                     qDebug() << "[WARN]\tTh" << dacCode-1 << "= 0 !!!!!!!!!!!";
-                } else {
-                    qDebug() << "[INFO]\tLeaving Th" << dacCode-1 << " =" << DAC_value;
-                }
+                } //else {
+//                    qDebug() << "[DEBUG]\tLeaving Th" << dacCode-1 << " =" << DAC_value;
+//                }
             }
         }
     }
@@ -464,14 +467,12 @@ void thresholdScan::resumeTHScan()
     //! Main loop through thresholds using all 8 counters (0-7)
 
     if ((_currentThr >= _startTH && _currentThr <= _endTH) || (_currentThr <= _startTH && _currentThr >= _endTH)) {
-        //qDebug().noquote() << QString("[DEBUG]\tLOOP %1 --> From %2 to %3").arg(_currentThr).arg(_startTH).arg(_endTH);
+//        qDebug().noquote() << QString("[DEBUG]\tLOOP %1 --> From %2 to %3").arg(_currentThr).arg(_startTH).arg(_endTH);
 
         //! Set threshold DACs on all chips
         setThresholdsOnAllChips(_currentThr);
 
         //! Save the data, with the offsets calculated into the filename
-
-        //qDebug() << "[DEBUG]\tth =" << th << " | _thresholdOffsets[th] =" << _thresholdOffsets[th];
 
         foreach (int thr, _thresholds) {
             //! Calculate the actual threshold used during scan, <0 and >511 are not possible to set anyway
@@ -634,7 +635,7 @@ QString thresholdScan::getPath(QString msg)
 
 void thresholdScan::SetDAC_propagateInGUI(int chip, int dac_code, int dac_val)
 {
-    //qDebug().noquote() << QString("[DEBUG]\tChip = %1 | DAC Code = %2 | DAC value = %3").arg(chip).arg(dac_code).arg(dac_val);
+//    qDebug().noquote() << QString("[DEBUG]\tChip = %1 | DAC Code = %2 | DAC value = %3").arg(chip).arg(dac_code).arg(dac_val);
 
     //! Actually set DAC
     //! If and after it is complete, continue with GUI code

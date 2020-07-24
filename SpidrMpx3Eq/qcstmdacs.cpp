@@ -204,7 +204,7 @@ void QCstmDacs::setDAC_index(SpidrController *spidrcontrol, int chip, int DAC_in
     GetCheckBoxList()[DAC_index]->setChecked(true);
 
     /* Update GUI from the internal threshold vector */
-    onDevNumChanged(chip);
+    onChipNumChanged(chip);
 }
 
 void QCstmDacs::setDAC_code(SpidrController *spidrcontrol, int chip, int DAC_code, int DAC_value)
@@ -617,7 +617,7 @@ void QCstmDacs::enablePossibleThresholds()
 /*! @brief  Update the DAC spinboxes in the GUI from the thresholds
  *          vector in visualisation.
  */
-void QCstmDacs::onDevNumChanged(int chip)
+void QCstmDacs::onChipNumChanged(int chip)
 {
     auto vis = _mpx3gui->getVisualization();
 

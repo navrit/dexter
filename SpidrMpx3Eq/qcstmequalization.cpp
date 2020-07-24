@@ -294,7 +294,7 @@ void QCstmEqualization::NewRunInitEqualization() {
         // Type: Noise Edge, etc ....
         _steeringInfo[std::size_t(i)]->equalizationType = _equalisationType;
 
-        // Global adj setting used for DAC_DISC_X optimization
+        // Global adj setting used for DAC_DISC_X Optimisation
         _steeringInfo[std::size_t(i)]->globalAdj = 0;
 
         // Which one to start with
@@ -311,9 +311,9 @@ void QCstmEqualization::NewRunInitEqualization() {
             _steeringInfo[std::size_t(i)]->currentDAC_DISC_String = "DAC_DISC_H";
         }
 
-        // optimization value for the corresponding DAC_DISC
+        // Optimisation value for the corresponding DAC_DISC
         _steeringInfo[std::size_t(i)]->currentDAC_DISC_OptValue = 0;
-        // Eta and Cut for the THL_DACDisc function (DAC_DISC Optimization)
+        // Eta and Cut for the THL_DACDisc function (DAC_DISC Optimisation)
         _steeringInfo[std::size_t(i)]->currentEta_THx_DAC_Disc = 0.;
         _steeringInfo[std::size_t(i)]->currentCut_THx_DAC_Disc = 0.;
         // Eta and Cut for the Adj_THL function (Adj extrapolation)
@@ -407,7 +407,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
         // Type: Noise Edge, etc ....
         _steeringInfo[std::size_t(i)]->equalizationType = _equalisationType;
 
-        // Global adj setting used for DAC_DISC_X optimization
+        // Global adj setting used for DAC_DISC_X Optimisation
         _steeringInfo[std::size_t(i)]->globalAdj = 0;
 
         // Which one to start with
@@ -424,9 +424,9 @@ bool QCstmEqualization::InitEqualization(int chipId) {
             _steeringInfo[std::size_t(i)]->currentDAC_DISC_String = "DAC_DISC_H";
         }
 
-        // optimization value for the corresponding DAC_DISC
+        // Optimisation value for the corresponding DAC_DISC
         _steeringInfo[std::size_t(i)]->currentDAC_DISC_OptValue = 0;
-        // Eta and Cut for the THL_DACDisc function (DAC_DISC Optimization)
+        // Eta and Cut for the THL_DACDisc function (DAC_DISC Optimisation)
         _steeringInfo[std::size_t(i)]->currentEta_THx_DAC_Disc = 0.;
         _steeringInfo[std::size_t(i)]->currentCut_THx_DAC_Disc = 0.;
         // Eta and Cut for the Adj_THL function (Adj extrapolation)
@@ -735,7 +735,7 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
     StartEqualizationSingleChip();
 }
 
-void QCstmEqualization::StartEqualizationSequentialSingleChipsRemotely(QString path)
+void QCstmEqualization::StartEqualizationSequentialSingleChipsRemotely(const QString &path)
 {
     _isRemotePath = true;
     _remotePath = path;
@@ -794,7 +794,7 @@ void QCstmEqualization::StartEqualization() {
         // ------ //
         QString titleInit = "1) ";
         titleInit += _steeringInfo[0]->currentDAC_DISC_String; // it will be the same for all chips
-        titleInit += " optimization ...";
+        titleInit += " optimisation ...";
         AppendToTextBrowser( titleInit );
 
         //! Print useful equalisation information to console, useful for analysis later
@@ -818,15 +818,15 @@ void QCstmEqualization::StartEqualization() {
         }
 
         temporarilyOverrideUserChosenSpacing();
-        DAC_Disc_Optimization_100(); // Prepare and launch the thread
+        DAC_Disc_Optimisation_100(); // Prepare and launch the thread
 
-    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100) ) {
+    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimisation_100) ) {
 
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
             // Extract results from immediately previous scan. Calc the stats now (this is quick)
             _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(int(_workChipsIndx[i])), _setId - 1);
             // Show the results
-            DAC_Disc_Optimization_DisplayResults( _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])) );
+            DAC_Disc_Optimisation_DisplayResults( _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])) );
             // New text value
             _steeringInfo[i]->currentDAC_DISC_OptValue = int(DAC_DISC_2_value); // for now make the opt value equal to the test value
             //! Default = 150 for noise (SLGM)
@@ -834,22 +834,22 @@ void QCstmEqualization::StartEqualization() {
         }
 
         // And go for next scan
-        DAC_Disc_Optimization_150( );
+        DAC_Disc_Optimisation_150( );
 
-    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_150 ) ) {
+    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimisation_150 ) ) {
 
         for ( ulong i = 0 ; i < chipListSize ; i++ ) {
             // Extract results from immediately previous scan. Calc the stats now (this is quick)
             _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
             // Show the results
-            DAC_Disc_Optimization_DisplayResults( _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])) );
+            DAC_Disc_Optimisation_DisplayResults( _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])) );
         }
 
         // And calculate the optimal DAC_Disc
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
             ScanResults * res_100 = _scans[int(_scanIndex - 2)]->GetScanResults( int(int(_workChipsIndx[i])) );
             ScanResults * res_150 = _scans[int(_scanIndex - 1)]->GetScanResults( int(_workChipsIndx[i]) );
-            DAC_Disc_Optimization(int(_workChipsIndx[i]), res_100, res_150);
+            DAC_Disc_Optimisation(int(_workChipsIndx[i]), res_100, res_150);
         }
 
         // ------ //
@@ -1063,7 +1063,7 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     return adj_matrix;
 }
 
-void QCstmEqualization::DAC_Disc_Optimization_DisplayResults(ScanResults * res) {
+void QCstmEqualization::DAC_Disc_Optimisation_DisplayResults(ScanResults * res) {
 
     DisplayStatsInTextBrowser(0, res->DAC_DISC_setting, res);
 }
@@ -1078,7 +1078,7 @@ std::string QCstmEqualization::BuildChartName(int val, const QString& leg) {
     return chartName.toStdString();
 }
 
-void QCstmEqualization::DAC_Disc_Optimization_100() {
+void QCstmEqualization::DAC_Disc_Optimisation_100() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
@@ -1086,8 +1086,8 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     QString legend = _steeringInfo[0]->currentDAC_DISC_String; // is the same for all chips
     legend += QString::number(_steeringInfo[0]->currentDAC_DISC_OptValue, 'd', 0);
 
-    // arbitrary step for DAC_Disc_Optimization
-//    ChangeStep( __DAC_Disc_Optimization_step, true );
+    // arbitrary step for DAC_Disc_Optimisation
+//    ChangeStep( __DAC_Disc_Optimisation_step, true );
     setMax( 0, true );
     setMin( __half_DAC_range-1, true );
 
@@ -1129,7 +1129,7 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     tscan->start();
 }
 
-void QCstmEqualization::DAC_Disc_Optimization_150() {
+void QCstmEqualization::DAC_Disc_Optimisation_150() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
@@ -1137,8 +1137,8 @@ void QCstmEqualization::DAC_Disc_Optimization_150() {
     QString legend = _steeringInfo[0]->currentDAC_DISC_String;
     legend += QString::number(_steeringInfo[0]->currentDAC_DISC_OptValue, 'd', 0);
 
-    // arbitrary step for DAC_Disc_Optimization
-//    ChangeStep( __DAC_Disc_Optimization_step, true );
+    // arbitrary step for DAC_Disc_Optimisation
+//    ChangeStep( __DAC_Disc_Optimisation_step, true );
     setMax( 0, true );
     setMin( __half_DAC_range-1, true );
 
@@ -1208,7 +1208,7 @@ int QCstmEqualization::FineTuning() {
     return 0;
 }
 
-void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100, ScanResults * res_150) {
+void QCstmEqualization::DAC_Disc_Optimisation (int devId, ScanResults * res_100, ScanResults * res_150) {
 
     ////////////////////////////////////////////////////////////////////////////////////
     // 3) With the results of step 1 and 2 I can obtain the dependency DAC_Disc[L/H](THL)
@@ -1326,7 +1326,7 @@ void QCstmEqualization::SaveEqualization(const QString& path, bool toTempDir, bo
     }
 
     //! Save adj and mask path+filename strings and save them
-    for (ulong i = 0 ; i < 4; i++) {
+    for (ulong i = 0 ; i < __max_number_of_chips; i++) {
         if (GetBarChart(int(i)) != nullptr) {
             // Binary file - adjustment bits
             _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile(QString( savePath + "adj_" + QString::number(_workChipsIndx[i])));
@@ -1365,8 +1365,8 @@ void QCstmEqualization::PrepareInterpolation_0x0() {
     legend += "_Opt_adj";
     legend += QString::number(_steeringInfo[0]->globalAdj, 'd', 0);
 
-    // arbitrary step for DAC_Disc_Optimization
-//    ChangeStep( __DAC_Disc_Optimization_step, true );
+    // arbitrary step for DAC_Disc_Optimisation
+//    ChangeStep( __DAC_Disc_Optimisation_step, true );
 
     // -------------------------------------------------------------------------
     // 5)  See where the pixels fall now for adj0 and keep the pixel information
@@ -1409,15 +1409,15 @@ void QCstmEqualization::ScanOnInterpolation() {
     QString legend = _steeringInfo[0]->currentDAC_DISC_String;
     legend += "_Opt_adjX";
 
-    // arbitrary step for DAC_Disc_Optimization
+    // arbitrary step for DAC_Disc_Optimisation
     setStep( 1, true );
     qDebug() << "[INFO]\tStep size = 1";
 
     // Note that this suggests a descending scan.
-    ThlScan * scan_last = nullptr;
-    scan_last = _scans[int(_scanIndex - 1)];
+//    ThlScan * scan_last = nullptr;
+//    scan_last = _scans[int(_scanIndex - 1)];
 
-    ThlScan * tscan_opt_ext = new ThlScan(_mpx3gui, this);
+    ThlScan *tscan_opt_ext = new ThlScan(_mpx3gui, this);
 
     if ( _steeringInfo[0]->GetEqualizationTarget() == __default_equalisationtarget ) {
         tscan_opt_ext->SetMinScan( 30 );
@@ -1463,8 +1463,8 @@ void QCstmEqualization::PrepareInterpolation_0x5() {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-    // arbitrary step for DAC_Disc_Optimization
-//    ChangeStep( __DAC_Disc_Optimization_step, true );
+    // arbitrary step for DAC_Disc_Optimisation
+//    ChangeStep( __DAC_Disc_Optimisation_step, true );
 
     // -------------------------------------------------------------------------
     // 5)  See where the pixels fall now for adj5 and keep the pixel information
@@ -1891,7 +1891,7 @@ Mpx3EqualizationResults * QCstmEqualization::GetEqualizationResults(int chipInde
 /**
  * @brief QCstmEqualization::InitializeEqualizationStructure, on a normal run, when the user load the equalization after connecting
  */
-void QCstmEqualization::InitializeEqualizationStructure(){
+void QCstmEqualization::InitialiseEqualizationStructure(){
 
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 
@@ -1909,7 +1909,7 @@ void QCstmEqualization::InitializeEqualizationStructure(){
 
 }
 
-void QCstmEqualization::InitializeBarChartsAdjustments(){
+void QCstmEqualization::InitialiseBarChartsAdjustments(){
 
     // The one built in the constructor will be erased here
     _ui->horizontalLayoutEqHistos->removeWidget( _chart[0] );
@@ -2382,7 +2382,7 @@ void QCstmEqualization::safeCopy(QString copyFrom, QString copyTo, QString file)
     }
 }
 
-void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString path) {
+void QCstmEqualization::LoadEqualisation(bool getPath, bool remotely, QString path) {
 
     QCoreApplication::processEvents();
 
@@ -2440,10 +2440,10 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
     _ui->equalizationSelectTHLTHHCombo->setEnabled( true );
 
     //! Initialise the data structures necessary to hold the equalization for all the chips
-    InitializeEqualizationStructure();
+    InitialiseEqualizationStructure();
 
     //! Get the BarCharts in place
-    InitializeBarChartsAdjustments();
+    InitialiseBarChartsAdjustments();
 
     //! Part 1: Send equalisation loaded from ... to mpx3gui status bar
     //! Initialise string with prefix
