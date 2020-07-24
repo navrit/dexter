@@ -1675,10 +1675,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     spidrcontrol->setPixelConfigMpx3rx( chip );
 }
 
-void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chip, bool applymask) {
-    // Adj bits
-    pair<int, int> pix;
-
+void QCstmEqualization::SetAllAdjustmentBits(SpidrController *spidrcontrol, int chip, bool applymask) {
     if( !spidrcontrol || spidrcontrol == nullptr ) {
         QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
         return;
@@ -1691,12 +1688,8 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     }
 
     spidrcontrol->resetPixelConfig();
-//    QSet<int> maskedPixels = _eqMap[chip]->GetMaskedPixels();
 
-    //! Note : this masking is only used outside of the equalisation procedure
-    //!         Eg. loading equalisation files or masking pixels from the visualisation
-    //! It isn't used in the equalisation procedure itself so it's totally independent
-    //!   to the test pulse code
+    pair<int, int> pix; // Adj bits
 
     if ( applymask ) {
 

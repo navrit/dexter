@@ -1567,7 +1567,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
     if (_mpx3gui->getConfig()->getColourMode()) {
         naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x();
     }
-    int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
+    int chip = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
 
 
     if (_maskingRequestFromServer) {
@@ -1606,7 +1606,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     auto dataset = _mpx3gui->getDataset();
     int nx = dataset->x();
-    auto eqRes = _mpx3gui->getEqualization()->GetEqualizationResults(deviceID);
+    auto eqRes = _mpx3gui->getEqualization()->GetEqualizationResults(chip);
 
     if (_maskOperation == MASK) {
         if ( _mpx3gui->getConfig()->getColourMode() ) {
@@ -1711,7 +1711,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
     }
 
     //! TODO WTF there's NO way this is correct
-    _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID, true, false);
+    _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), chip, true, false);
 }
 
 void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)

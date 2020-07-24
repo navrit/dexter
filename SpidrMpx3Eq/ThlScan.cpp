@@ -298,9 +298,8 @@ void ThlScan::FineTuning() {
 
     int processedLoops = 0;
     bool finishScan = false;
-    bool doReadFrames = false;
+    bool doReadFrames;
     int progressMax = _numberOfLoops;
-    // int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex ); // Note: The data buffer id doesn't necessarily corresponds to _deviceIndex
 
     //_stepScan = 1;
 
@@ -846,13 +845,13 @@ void ThlScan::EqualizationScan() {
     // Sometimes a reduced loop is selected
     int processedLoops = 0;
     bool finishScan = false;
-    bool finishTHLLoop = false;
+    bool finishTHLLoop;
     // For a truncated scan
     int expectedInOneThlLoop = int( _workChipsIndx.size()*__matrix_size ) / ( _spacing*_spacing );
 
-    bool accelerationApplied = false;
+    bool accelerationApplied;
     //int accelerationFlagCntr = 0;
-    int nMasked = 0, pmasked = 0;
+    int nMasked, pmasked;
 
     int progressMax = _numberOfLoops;
     if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
