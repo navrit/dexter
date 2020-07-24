@@ -1649,17 +1649,16 @@ void QCstmEqualization::SetAllAdjustmentBits() {
 void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 
-    for ( int i = 0 ; i < nChips ; i++ ) {
-        // Check if the device is alive
-        if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {
+    for ( int chip = 0 ; chip < nChips ; chip++ ) {
+        if ( ! _mpx3gui->getConfig()->detectorResponds( chip ) ) {
             continue;
         }
 
-        SetAllAdjustmentBits(spidrcontrol, i);
+        SetAllAdjustmentBits(spidrcontrol, chip, false);
     }
 }
 
-void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chip, int val_L, int val_H) {
+void QCstmEqualization::SetAllAdjustmentBits(SpidrController *spidrcontrol, int chip, int val_L, int val_H) {
 
     if( !spidrcontrol ) {
         QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
@@ -1682,7 +1681,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController *spidrcontrol, int 
     }
 
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
-    if ( chip < 0 || chip > nChips - 1) {
+    if ( 0 > chip || chip >= nChips ) {
         qDebug() << "[ERROR] [Equalisation]\twrong chip index !";
         return;
     }

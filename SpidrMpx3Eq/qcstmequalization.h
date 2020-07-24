@@ -227,11 +227,11 @@ public:
     bool pixelInScheduledChips(int pixels);
     double EvalLinear(double eta, double cut, double x);
 
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, int val_L, int val_H);
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false);
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol);
+    void SetAllAdjustmentBits(SpidrController *spidrcontrol, int deviceId, int val_L, int val_H);
+    void SetAllAdjustmentBits(SpidrController *spidrcontrol, int deviceId, bool applymask);
+    void SetAllAdjustmentBits(SpidrController *spidrcontrol);
     void SetAllAdjustmentBits();
-    void ClearAllAdjustmentBits(int devId = 0);
+    void ClearAllAdjustmentBits(int chip = 0);
 
     Mpx3EqualizationResults * GetEqualizationResults(int chipIndex);
     inline pair<int, int> XtoXY(int X, int dimX);
@@ -245,8 +245,6 @@ public:
     bool estimate_V_TP_REF_AB(uint electrons, bool makeDialog);      //! This should fail if requested charge cannot be injected.
     uint setDACToVoltage(int chipID, int dacCode, double V);
     bool initialiseTestPulses(SpidrController * spidrcontrol);
-//    bool activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int *maskedPixels);
-
 
     //! GUI functions
     void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);

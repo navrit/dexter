@@ -1686,11 +1686,11 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
         for ( ; itrM != itrME ; ++itrM ) {
 
-            int chip = (itrM).key();
+            int chip1 = (itrM).key();
             int vsize = (*itrM).size();
-            qDebug() << "[DEBUG]\tChip" << chip << "--> Mask" << vsize;
+            qDebug() << "[DEBUG]\tChip" << chip1 << "--> Mask" << vsize;
 
-            auto eqResChip = _mpx3gui->getEqualization()->GetEqualizationResults( chip );
+            auto eqResChip = _mpx3gui->getEqualization()->GetEqualizationResults( chip1 );
             for ( int iv = 0 ; iv < vsize ; iv++ ) {
                 if ( colourMode ) {
                     eqResChip->maskPixel( (*itrM).value(iv) );
@@ -1706,9 +1706,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     }
 
-    if (_maskOperation == NULL_MASK) {
-        return;
-    }
+    if (_maskOperation == NULL_MASK) return;
 
     //! TODO WTF there's NO way this is correct
     _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), chip, true, false);
@@ -1716,7 +1714,6 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
 void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 {
-
     // Before toogle save the current range to percentile
     // If unselecting save the info
     if ( ! checked ) {
@@ -1726,14 +1723,10 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
     }
 
     if ( checked ) {
-
         // When toggling here recompute the min and max
         // if the range is still the initial (0,1)
-        //if ( _manualRange == QCPRange( 0,0 ) ) {
-        // current threshold
         int activeTHL = getActiveThreshold();
         if ( activeTHL >= 0 ) {
-
             // Throw a recomendation here to the user.  If manual has never been set, then use
             //  the values from percentile.
             if ( ! _manualRangePicked ) {
@@ -1746,39 +1739,24 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
         } else {
             _manualRange = QCPRange( 0, 0 );
         }
-        //}
 
         setRangeSpinBoxesManual();
         ui->histPlot->changeRange( _manualRange );
-        //ui->histPlot->changeRange(QCPRange(ui->lowerManualSpin->value(), ui->upperManualSpin->value()));
-        //i+
         ui->histPlot->scaleToInterest();
     }
-
 }
 
 void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 {
-
     if ( checked ) {
-
         int activeTHL = getActiveThreshold();
-
         if ( activeTHL >= 0 ) {
 
             // When toggling here recompute the min and max
             int * data = _mpx3gui->getDataset()->getLayer( activeTHL );
-//            if (data == nullptr) {
-//                qDebug() << "WTF IS HAPPENING??"; //! TODO FIX THIS SHIT RIGHT NOW
-//                return;
-//            }
             int size = _mpx3gui->getDataset()->getPixelsPerLayer();
             int min = INT_MAX, max = INT_MIN;
             for(int i = 0; i < size; i++) {
-//                if (data[i] == 0x0) {
-//                    min = 0;
-//                    max = 1;
-//                }
                 if(data[i] < min)
                     min = data[i];
                 if(data[i] > max)
@@ -1794,31 +1772,22 @@ void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
         setRangeSpinBoxesManual();
         ui->histPlot->set_scale_full(getActiveThreshold());
     }
-
     ui->histPlot->scaleToInterest();
-
 }
 
 void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
 {
-
     // If unselecting save the info
     if ( !checked ) _percentileRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
 
     if ( checked ) {
-
         setRangeSpinBoxesPercentile();
         ui->histPlot->changeRange( _percentileRange );
-
-        //ui->histPlot->set_scale_percentile(getActiveThreshold(),
-        //                                   ui->lowerPercentileSpin->value(),
-        //                                   ui->upperPercentileSpin->value());
         _percentileRangeNatural = ui->histPlot->set_scale_percentile(getActiveThreshold(),
                                                                      ui->lowerSpin->value(),
                                                                      ui->upperSpin->value());
         ui->histPlot->scaleToInterest();
     }
-
 }
 
 void QCstmGLVisualization::on_outOfBoundsCheckbox_toggled(bool checked)
