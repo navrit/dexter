@@ -1691,35 +1691,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     }
 
     spidrcontrol->resetPixelConfig();
-//    QSet<int> maskedPixels = _eqMap[chipIndex]->GetMaskedPixels();
-
-    //! Turn test pulse bit on for that chip
-    spidrcontrol->setInternalTestPulse(chip, testPulseMode);
-
-    int testBitsOn = 0;
-    for ( int i = 0 ; i < __matrix_size ; i++ ) {
-        pix = XtoXY(i, __matrix_size_x);
-        //qDebug() << _eqMap[chipIndex]->GetPixelAdj(i) << _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H);
-
-        if ( pix.second == 0 ) {
-            spidrcontrol->configCtpr( chip, pix.first, int(testPulseMode) );
-        }
-
-        //! Test pulses are turned off here if testbit=true isn't passed
-        spidrcontrol->configPixelMpx3rx(
-                    pix.first,
-                    pix.second,
-                    _eqMap[chip]->GetPixelAdj(i),
-                    _eqMap[chip]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
-                    testPulseMode );
-        if (testPulseMode) testBitsOn++;
-    }
-    if (testPulseMode) {
-        spidrcontrol->setCtpr( chip );
-        qDebug() << "[INFO] [Equalisation]\tCTPR set on chip " << chip;
-    } else {
-        qDebug() << "[WARN] [Equalisation]\tTest pulse mode is OFF";
-    }
+//    QSet<int> maskedPixels = _eqMap[chip]->GetMaskedPixels();
 
     //! Note : this masking is only used outside of the equalisation procedure
     //!         Eg. loading equalisation files or masking pixels from the visualisation
@@ -1760,6 +1732,45 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                 pix = XtoXY(i, __matrix_size_x);
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
             }
+        }
+    } else {
+        //! Apply my custom mask - like in testpulseequalisation::activate()
+
+        //! I want the pixel spacing from the test pulse dialog applied if using test pulses?
+//        const int pixelSpacing = testPulseMode ? testPulseEqualisationDialog->getPixelSpacing() : GetSpacing();
+        const int pixelSpacing = GetSpacing(); // Use the pixel spacing from the main eq. view
+        int testBitsOn = 0;
+
+        spidrcontrol->setInternalTestPulse(chip, testPulseMode);
+
+        for ( int i = 0 ; i < __matrix_size ; i++ ) {
+            pix = XtoXY(i, __matrix_size_x);
+            //qDebug() << _eqMap[chipIndex]->GetPixelAdj(i) << _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H);
+
+            if ( pix.first % pixelSpacing == 0 && pix.second % pixelSpacing == 0 ) {
+                testBitsOn++;
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+            } else {
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+            }
+
+            if ( pix.second == 0 ) {
+                spidrcontrol->configCtpr( chip, pix.first, int(testPulseMode) );
+            }
+
+            //! Test pulses are turned off here if testbit=true isn't passed
+            spidrcontrol->configPixelMpx3rx(
+                pix.first,
+                pix.second,
+                _eqMap[chip]->GetPixelAdj(i),
+                _eqMap[chip]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                testPulseMode );
+        }
+        if (testPulseMode) {
+            spidrcontrol->setCtpr( chip );
+            qDebug() << "[INFO] [Equalisation]\tCTPR set on chip " << chip;
+        } else {
+            qDebug() << "[INFO] [Equalisation]\tTest pulse mode is OFF";
         }
     }
 
