@@ -1687,6 +1687,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController *spidrcontrol, int 
     }
 
     spidrcontrol->resetPixelConfig();
+    spidrcontrol->setInternalTestPulse(chip, _testPulses);
 
     pair<int, int> pix; // Adj bits
 
@@ -1706,7 +1707,6 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController *spidrcontrol, int 
 
     //! Note: applyMask is ONLY true when used outside of the equalisation procedure
     //!    --> When loading equalisation files or masking pixels from the visualisation
-
     if (applymask) {
 
         if ( _eqMap[chip]->GetNMaskedPixels() > 0 ) {
@@ -1722,9 +1722,10 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController *spidrcontrol, int 
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
             }
         }
+
+        spidrcontrol->setPixelConfigMpx3rx( chip );
     }
 
-    spidrcontrol->setPixelConfigMpx3rx( chip );
     _mpx3gui->getVisualization()->onPixelsMasked(chip, GetEqualizationResults(chip)->GetMaskedPixels());
 }
 
