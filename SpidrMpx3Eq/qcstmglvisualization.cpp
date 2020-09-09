@@ -2037,7 +2037,7 @@ void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
     /* So that the equalisation won't save the mask file to the wrong folder during equalisation */
     if ( _equalisationPath != "") {
 
-        qDebug() << "[INFO]\tPixels masked, making a file in " << _equalisationPath ;
+        qDebug() << "[INFO]\tPixels loaded/masked, making a file in " << _equalisationPath ;
 
         QFile file(_equalisationPath + QString("mask_") + QString::number(devID));
 
