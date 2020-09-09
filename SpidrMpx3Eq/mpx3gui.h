@@ -3,38 +3,37 @@
  * Nikhef, 2014.
  */
 
-
 #ifndef MPX3GUI_H
 #define MPX3GUI_H
 
-#include <stdio.h>
 #include <iostream>
+#include <stdio.h>
 #include <vector>
 
 #include <QCoreApplication>
-#include <QTimer>
 #include <QMainWindow>
-#include <QVector>
 #include <QScrollBar>
 #include <QShortcut>
+#include <QTimer>
+#include <QVector>
 
-#include <qcustomplot.h>
 #include "dataset.h"
 #include "gradient.h"
 #include "histogram.h"
-#include "mpx3eq_common.h"
 #include "mpx3config.h"
+#include "mpx3eq_common.h"
+#include <qcustomplot.h>
 
-#include "qcstmsteppermotor.h"
-#include "qcstmct.h"
-#include "thresholdscan.h"
-#include "datacontrollerthread.h"
-#include "zmqcontroller.h"
-#include "tcpserver.h"
-#include "commandhandlerwrapper.h"
-#include "GeneralSettings.h"
 #include "EnergyCalibrator.h"
 #include "EnergyConfiguration.h"
+#include "GeneralSettings.h"
+#include "commandhandlerwrapper.h"
+#include "datacontrollerthread.h"
+#include "qcstmct.h"
+#include "qcstmsteppermotor.h"
+#include "tcpserver.h"
+#include "thresholdscan.h"
+#include "zmqcontroller.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -67,7 +66,6 @@ const static int __ct_page_Id = 7;
 const static int __stepperMotor_page_Id = 8;
 const static int __thresholdScan_page_Id = 9;
 
-
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"
 #define SPATIAL_TIFF_FILES "Spatial corrected TIFF (*_spatialCorrected.tiff)"
@@ -80,33 +78,32 @@ const static int __thresholdScan_page_Id = 9;
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "Dexter";
-const static QString _softwareVersion = QString("v2.2.4 TPEq debugging 2 NB - " + QString(GIT_CURRENT_SHA1));
+const static QString _softwareVersion = QString("v2.2.5 Motor tweaks NB - "
+                                                + QString(GIT_CURRENT_SHA1));
 
-const static int tcpCommandPort = 6351;            //! Diamond - Merlin interface
-const static int tcpDataPort = 6352;               //! Diamond - Merlin interface
+const static int tcpCommandPort = 6351; //! Diamond - Merlin interface
+const static int tcpDataPort = 6352;    //! Diamond - Merlin interface
 
 namespace Ui {
-    class Mpx3GUI;
+class Mpx3GUI;
 }
 
 class Mpx3GUI : public QMainWindow {
-
     Q_OBJECT
 
 public:
-
     explicit Mpx3GUI(QWidget *parent = nullptr);
     ~Mpx3GUI();
     Ui::Mpx3GUI *GetUI() { return _ui; }
     static Mpx3GUI *getInstance();
 
     Mpx3Config *getConfig();
-    Dataset *getDataset() {return workingSet;}
-    DataControllerThread *getDataControllerThread() {return dataControllerThread;}
-    zmqController *getZmqController() {return m_zmqController;}
+    Dataset *getDataset() { return workingSet; }
+    DataControllerThread *getDataControllerThread() { return dataControllerThread; }
+    zmqController *getZmqController() { return m_zmqController; }
 
     SpidrController *GetSpidrController();
-    SpidrDaq *GetSpidrDaq(){ return _spidrdaq; }
+    SpidrDaq *GetSpidrDaq() { return _spidrdaq; }
     QCstmEqualization *getEqualization();
     QCstmGLVisualization *getVisualization();
     QCstmDacs *getDACs();
@@ -117,14 +114,14 @@ public:
     hdmiConfig *getHdmiConfig();
     EnergyConfiguration *getEnergyConfiguration();
 
-    GeneralSettings *getGeneralSettings() {return _generalSettings;}
-    EnergyCalibrator *getEnergyCalibrator() {return _energyCalibrator;}
+    GeneralSettings *getGeneralSettings() { return _generalSettings; }
+    EnergyCalibrator *getEnergyCalibrator() { return _energyCalibrator; }
     void updateEnergyCalibratorParameters();
 
     int getStepperMotorPageID();
-    bool isArmedOk() {return _armedOk;}
+    bool isArmedOk() { return _armedOk; }
     void startupActions();
-    void closeRemotely() {on_actionDisconnect_triggered(false);}
+    void closeRemotely() { on_actionDisconnect_triggered(false); }
 
     void setWindowWidgetsStatus(win_status s = win_status::startup);
 
@@ -138,21 +135,22 @@ public:
 
     QPoint getSize();
     void getSize(int *x, int *y);
-    int getIntegrate() {return integrate;}
+    int getIntegrate() { return integrate; }
     int getX();
     int getY();
     int getPixelAt(int x, int y, int layer);
     int getFrameCount();
 
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-    pair<int, int> XtoXY(int X, int dimX) { return make_pair(X % dimX, X/dimX); }
+    pair<int, int> XtoXY(int X, int dimX) { return make_pair(X % dimX, X / dimX); }
 
     QString getLoadButtonFilename();
 
     bool establish_connection();
     bool equalizationLoaded();
 
-    const QString settingsFile = QApplication::applicationDirPath() + QDir::separator() + "last_configuration.ini";
+    const QString settingsFile = QApplication::applicationDirPath() + QDir::separator()
+                                 + "last_configuration.ini";
 
     //! SPIDR information strings for About dialog
     QString m_SPIDRControllerVersion = "";
@@ -162,11 +160,10 @@ public:
 
     QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd");
 
-
     void loadLastConfiguration();
-    QString getConfigPath(){ return _configPath;}
+    QString getConfigPath() { return _configPath; }
     void stopTriggerTimers();
-    CommandHandlerWrapper* getCommandHandlerWrapper();
+    CommandHandlerWrapper *getCommandHandlerWrapper();
 
 signals:
     void dataChanged();
@@ -177,12 +174,14 @@ signals:
     void active_frame_changed(int);
     void availible_gradients_changed(QStringList _gradients);
     void gradient_added(QString gradient);
-    void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
+    void ConnectionStatusChanged(
+        bool); // TODO: emit false when connection is lost for whatever reason.
     void summing_set(bool);
     void reload_layer(int layer);
     void reload_all_layers();
     void sizeChanged(int, int);
-    void open_data_failed(); //! Ignore this error: QMetaObject::connectSlotsByName: No matching signal for on_open_data_failed()
+    void open_data_failed(); //! Ignore this error: QMetaObject::connectSlotsByName: No
+                             //! matching signal for on_open_data_failed()
     void returnFilename(QString);
 
     //! Status bar signal functions
@@ -228,11 +227,20 @@ private:
     bool _loadingBeforeConnecting = true;
     EnergyCalibrator *_energyCalibrator = nullptr;
     // ML605 layout
-    //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
-    //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
+    // vector<int> _MPX3RX_ORIENTATION = vector< int >
+    // {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR,
+    // Dataset::orientationBtTLtR, Dataset::orientationTtBRtL}; vector<QPoint>
+    // _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0),
+    // QPoint(0, 0)};
     // compactSPIDR layout
-    std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationLtRTtB, Dataset::orientationLtRTtB, Dataset::orientationRtLBtT, Dataset::orientationRtLBtT};
-    std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
+    std::vector<int> _MPX3RX_ORIENTATION = std::vector<int>{Dataset::orientationLtRTtB,
+                                                            Dataset::orientationLtRTtB,
+                                                            Dataset::orientationRtLBtT,
+                                                            Dataset::orientationRtLBtT};
+    std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint>{QPoint(0, 1),
+                                                             QPoint(1, 1),
+                                                             QPoint(1, 0),
+                                                             QPoint(0, 0)};
 
     //! Kia - TCP Server - Diamond interface
     TcpServer *tcpServer = nullptr;
@@ -240,16 +248,19 @@ private:
     CommandHandlerWrapper *commandHandlerWrapper = nullptr;
 
     int integrate = 0; //! Summing/integral or 'normal' mode
-    Ui::Mpx3GUI * _ui = nullptr;
-    QVector<QShortcut *> _shortcutsSwitchPages; //! Note: do not initialise this, it is populated on startup
+    Ui::Mpx3GUI *_ui = nullptr;
+    QVector<QShortcut *> _shortcutsSwitchPages; //! Note: do not initialise this,
+                                                //! it is populated on startup
 
-    Mpx3Config * config = nullptr;
-    Dataset * workingSet = nullptr;
+    Mpx3Config *config = nullptr;
+    Dataset *workingSet = nullptr;
 
-    SpidrDaq * _spidrdaq = nullptr;
-    bool _armedOk = true; //! It won't let the application go into the event loop if set to false
+    SpidrDaq *_spidrdaq = nullptr;
+    bool _armedOk = true; //! It won't let the application go into the event loop
+                          //! if set to false
 
-    QVector<Gradient*>  _gradients; //! Initialising this as {nullptr} is apparently bad for some signal connection
+    QVector<Gradient *> _gradients; //! Initialising this as {nullptr} is
+                                    //! apparently bad for some signal connection
     void updateHistogram(int layer);
 
     QLabel _statusBarMessageLabel;
@@ -285,8 +296,8 @@ private:
     GeneralSettings *_generalSettings;
     void _loadEqualizationFromGeneralSettings();
     bool _loadConfigsFromGeneralSettings();
-    QTimer *_shutterOpenTimer; //used for periods longer than 100 seconds
-    QTimer *_shutterCloseTimer; //used for periods longer than 100 seconds
+    QTimer *_shutterOpenTimer;  // used for periods longer than 100 seconds
+    QTimer *_shutterCloseTimer; // used for periods longer than 100 seconds
     bool _timerStop = false;
 
     QString _lastTriedIPAddress = "";
