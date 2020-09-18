@@ -24,9 +24,9 @@ cd Release
 
 ### Relevant developers ###
 
-* Lead - Bram Bouwens
-* Support - Kiavash Matin
-* Support - Navrit Bal
+* Lead - Navrit Bal
+* Non-active - Bram Bouwens
+* Non-active - Kiavash Matin
 
 -------------------------------------------------------------
 
