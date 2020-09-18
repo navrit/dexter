@@ -1014,7 +1014,8 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs) {
     }
 
     QJsonDocument doc = buildConfigJSON(includeDacs);
-
+    qDebug() << "[INFO]\tDumping JSON to the terminal\n"
+             << QString(doc.toJson(QJsonDocument::JsonFormat::Indented));
     loadFile.write(doc.toJson());
 
     return true;

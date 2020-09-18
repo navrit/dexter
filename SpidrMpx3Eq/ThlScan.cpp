@@ -352,16 +352,17 @@ void ThlScan::FineTuning() {
                 int nMasked = 0, pmasked = 0;
 
                 for ( unsigned long chip = 0; chip < _workChipsIndx.size(); chip++ ) {
-                    bool isCurrentChip = bool(chip == uint(_mpx3gui->getEqualization()->GetDeviceIndex()));
-                    sc->setInternalTestPulse(chip, isCurrentChip);
-                    qDebug() << "[INFO] [Equalisation]\t[DEBUG] Set internal test pulses. Chip" << chip << "=" << isCurrentChip;
+                    bool isCurrentChip = bool(
+                        chip == uint(_mpx3gui->getEqualization()->GetDeviceIndex()));
+                    //                    sc->setInternalTestPulse(chip, isCurrentChip);
+                    //                    qDebug() << "[INFO] [Equalisation]\t[DEBUG] Set internal test pulses. Chip" << chip << "=" << isCurrentChip;
 
                     if ( ! SetEqualisationMask(sc, int(_workChipsIndx[chip]), _spacing, maskOffsetItr_x, maskOffsetItr_y, isCurrentChip, &pmasked) ) {
                         qDebug() << "[FAIL] [Equalisation]\tFine tuning - could not set equalisation mask, chip =" << chip;
                         return;
-                    } else {
-                        qDebug() << "[INFO] [Equalisation]\t[DEBUG] FineTuning - Eq mask set. TP ";
-                    }
+                    } //else {
+                    //                        qDebug() << "[INFO] [Equalisation]\t[DEBUG] FineTuning - Eq mask set. TP ";
+                    //                    }
 
                     nMasked += pmasked;
                 }
@@ -885,8 +886,8 @@ void ThlScan::EqualizationScan() {
 
             for ( uint chip = 0 ; chip < _workChipsIndx.size(); ++chip ) {
                 bool isCurrentChip = bool(chip == uint(_mpx3gui->getEqualization()->GetDeviceIndex()));
-                sc->setInternalTestPulse(chip, isCurrentChip);
-                qDebug() << "[INFO] [Equalisation]\tSet internal test pulses. Chip" << chip << "=" << isCurrentChip;
+                //                sc->setInternalTestPulse(chip, isCurrentChip);
+                //                qDebug() << "[INFO] [Equalisation]\tSet internal test pulses. Chip" << chip << "=" << isCurrentChip;
 
                 if ( ! SetEqualisationMask(sc, int(_workChipsIndx[chip]), _spacing, maskOffsetItr_x, maskOffsetItr_y, isCurrentChip, &pmasked) ) {
                     qDebug() << "[FAIL] [Equalisation]\tNot fine tuning - could not set equalisation mask, chip =" << chip;
@@ -895,7 +896,7 @@ void ThlScan::EqualizationScan() {
 
                 nMasked += pmasked;
             }
-            qDebug() << "[INFO] [Equalisation]\toffset_x:" << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  "| N pixels unmasked = " << int(_workChipsIndx.size()*__matrix_size) - nMasked;
+            //            qDebug() << "[INFO] [Equalisation]\toffset_x:" << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  "| N pixels unmasked = " << int(_workChipsIndx.size()*__matrix_size) - nMasked;
 
             // Start the Scan for one mask
             _pixelReactiveInScan = 0;

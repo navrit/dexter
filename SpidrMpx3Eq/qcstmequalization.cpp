@@ -900,31 +900,30 @@ void QCstmEqualization::StartEqualization() {
         ScanOnInterpolation();
 
     } else if ( EQ_NEXT_STEP( __ScanOnInterpolation) ) {
+        //        qDebug() << "[INFO]\tSkipped the extra test pulse scan due to having test pulses on all the time when doing a test pulse equalisation";
+        //        ScanThreadFinished();
 
-        qDebug() << "[INFO]\tSkipped the extra test pulse scan due to having test pulses on all the time when doing a test pulse equalisation";
-        ScanThreadFinished();
+        //        for ( uint i = 0 ; i < chipListSize ; i++ ) {
+        //            _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
+        //            DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
+        //        }
 
-//        for ( uint i = 0 ; i < chipListSize ; i++ ) {
-//            _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
-//            DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
-//        }
+        //        printNonReactiveWarning(chipListSize);
+        //        estimateEqualisationTarget();
 
-//        printNonReactiveWarning(chipListSize);
-//        estimateEqualisationTarget();
+        //    } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
 
-    } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
+        //        if (testPulseMode) {
 
-        if (testPulseMode) {
+        //            printNonReactiveWarning(chipListSize);
 
-            printNonReactiveWarning(chipListSize);
-
-            for ( uint i = 0 ; i < chipListSize ; i++ ) {
-                _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
-                DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
-            }
-        } else {
-            qDebug() << "[INFO] [Equalisation]\tSkipping test pulse scans";
-        }
+        //            for ( uint i = 0 ; i < chipListSize ; i++ ) {
+        //                _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
+        //                DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
+        //            }
+        //        } else {
+        //            qDebug() << "[INFO] [Equalisation]\tSkipping test pulse scans";
+        //        }
 
         // If fast equalization, skip fine tuning, same for all chips
         if ( _steeringInfo[0]->equalizationType == __NoiseCentroidFAST ||
@@ -1101,7 +1100,7 @@ void QCstmEqualization::DAC_Disc_Optimisation_100() {
     // Append the data set which will be used for this scan
     BarChartProperties cprop;
     cprop.xAxisLabel = "THL";
-    cprop.yAxisLabel = "entries";
+    cprop.yAxisLabel = "Entries";
     cprop.min_x = 0;
     cprop.max_x = 511;
     cprop.nBins = 512;
@@ -1324,6 +1323,17 @@ void QCstmEqualization::SaveEqualization(const QString& path, bool toTempDir, bo
         qDebug() << "[INFO] [Equalisation]\tJSON configuration file saved:" << filenameEqualisation;
     } else {
         qDebug() << "[ERROR] [Equalisation]\tJSON configuration file NOT saved:" << filenameEqualisation;
+    }
+
+    const QString backupConfigFilePath = savePath + "config_backup.json";
+
+    //! Save a backup config.json file in case I overwrite it...
+    if (_mpx3gui->getConfig()->toJsonFile(backupConfigFilePath, true)) {
+        qDebug() << "[INFO] [Equalisation]\tBackup JSON configuration file saved:"
+                 << backupConfigFilePath;
+    } else {
+        qDebug() << "[ERROR] [Equalisation]\tBackup JSON configuration file NOT saved:"
+                 << backupConfigFilePath;
     }
 
     //! Save adj and mask path+filename strings and save them
@@ -1918,7 +1928,7 @@ void QCstmEqualization::InitialiseBarChartsAdjustments(){
 
                 cprop.name = title.toStdString();
                 cprop.xAxisLabel = "adj";
-                cprop.yAxisLabel = "entries";
+                cprop.yAxisLabel = "Entries";
                 cprop.min_x = 0;
                 cprop.max_x = 31;
                 cprop.nBins = 32;
@@ -1936,7 +1946,7 @@ void QCstmEqualization::InitialiseBarChartsAdjustments(){
 
                 cprop.name = title.toStdString();
                 cprop.xAxisLabel = "adj";
-                cprop.yAxisLabel = "entries";
+                cprop.yAxisLabel = "Entries";
                 cprop.min_x = 0;
                 cprop.max_x = 31;
                 cprop.nBins = 32;
