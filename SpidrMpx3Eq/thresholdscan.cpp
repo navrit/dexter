@@ -172,13 +172,13 @@ void thresholdScan::setThresholdsOnAllChips(int val)
 
     for (uint chipID = 0; chipID < activeDevices; chipID++) {
         for (int dacCode = MPX3RX_DAC_THRESH_0; dacCode <= MPX3RX_DAC_THRESH_7; dacCode++ ) {
-            if ( _thresholdsToScan[dacCode-1] ) {
-                const int DAC_value = val + _thresholdOffsets[dacCode-1];
+            if ( _thresholdsToScan[ulong(dacCode-1)] ) {
+                const int DAC_value = val + _thresholdOffsets[ulong(dacCode-1)];
                 SetDAC_propagateInGUI(int(chipID), dacCode, DAC_value);
 
-//                if (chipID == 0 ) { // Print once, not 4 times...
-//                    qDebug() << "[DEBUG]\tSet Th" << dacCode-1 << " =" << DAC_value;
-//                }
+                if (chipID == 0 ) { // Print once, not 4 times...
+                    qDebug() << "[DEBUG]\tSet Th" << dacCode-1 << " =" << DAC_value;
+                }
             } else {
                 const int DAC_value = _mpx3gui->getConfig()->getDACValue(chipID, dacCode-1);
                 if (DAC_value == 0) {
@@ -265,23 +265,21 @@ void thresholdScan::startScan()
         setThresholdsOnAllChips(_endTH);
     }
 
-    _thresholdOffsets = {0};
     //! Set starting values for thresholds specified
-    for (uint i = 0; i < _thresholdOffsets.size(); ++i) {
+    for (uint i = 0; i < __max_number_of_thresholds; ++i) {
         if (_thresholdsToScan[i]) {
             _thresholdOffsets[i] = getThresholdOffset(i);
 
-            if (_thresholdOffsets[i] > 0) {
-                qDebug() << "[DEBUG]\tAll chips, threshold offset = " << _thresholdOffsets[i];
-            }
+            qDebug() << "[DEBUG]\tAll chips, threshold offset = " << _thresholdOffsets[i];
 
             //! Tell the config about the starting values for the frames
             for (uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNActiveDevices()); ++chip) {
-                _mpx3gui->getConfig()->setDACValue(chip, int(i), _thresholdOffsets[i]);
+                int valueToSet = _mpx3gui->getConfig()->getDACValue(chip, 0) + _thresholdOffsets[0] + _thresholdOffsets[i];
+                _mpx3gui->getConfig()->setDACValue(chip, int(i), valueToSet);
+                qDebug().noquote() << QString("[DEBUG]\tSet thr offsets - DAC index = %1 | value = %2").arg(int(i)).arg(valueToSet);
             }
-            qDebug().noquote() << QString("[DEBUG]\tSet thr offsets - DAC index = %1 | threshold offset = %2").arg(int(i)).arg(_thresholdOffsets[i]);
         } else {
-            qDebug() << "[DEBUG]\tNot setting a threshold offset for unselected threshold" << i;
+            qDebug() << "[DEBUG]\tNot setting a threshold offset for unselected/unavailable threshold" << i;
         }
     }
 
@@ -336,9 +334,11 @@ int thresholdScan::getThresholdOffset(uint threshold)
     if (threshold <= 7) {
         bool ok = false;
         auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(int(threshold), 0, QModelIndex())).toInt(&ok);
+        qDebug() << "[DEBUG]\tgetThresholdOffset thr =" << threshold << "thr offset =" << val;
         if (ok && val >=0 && val < 511) return val;
     }
-    return 0;
+    qDebug() << "[WARN]\tWTF, threshold > 7 requested!!!! FIXME... requested threshold =" << threshold;
+    return -512;
 }
 
 bool thresholdScan::getThresholdScanEnabled(uint threshold)
@@ -504,6 +504,7 @@ void thresholdScan::resumeTHScan()
             //!    “scan_“ + start_run_datetime_second_precision + / + scan_iteration + “-” + “th” + threshold_number + “-” + threshold_value + “.” + file_format
             //!
             //!    [scan_20190722_160023] / [000-511] - th[0-7] - [000-511] . [tiff, pgm etc.]
+            qDebug() << "[DEBUG]\tTH scan threshold values, thr=" << thr << " val=" << _mpx3gui->getConfig()->getDACValue(0, thr);
             _mpx3gui->getDataset()->toTIFF(_newPath, false, false, _runStartDateTimeWithMs, thr, _iteration, _mpx3gui->getConfig()->getDACValue(0, thr));
         }
 
