@@ -41,7 +41,6 @@ bool testPulseEqualisation::activate(int startPixelOffset)
 
         spidrcontrol = _mpx3gui->GetSpidrController();
         _equalisation = _mpx3gui->getEqualization();
-
         activeChips = _mpx3gui->getConfig()->getActiveDevices();
 
         QMap<int, Mpx3EqualizationResults *>  eqMap_L = _equalisation->getEqMap();
@@ -93,8 +92,8 @@ bool testPulseEqualisation::activate(int startPixelOffset)
             }
             spidrcontrol->setCtpr( chipID );
 
-            qDebug() << "[TEST PULSES] CTPRs set on chip" << chipID;
-            qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
+//            qDebug() << "[TEST PULSES]\tCTPRs set on chip" << chipID;
+            qDebug() << "[TEST PULSES]\tNumber of pixels testBit ON :"<< testBitsOn;
 
             spidrcontrol->setPixelConfigMpx3rx( chipID );
         }

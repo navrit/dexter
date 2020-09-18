@@ -58,7 +58,7 @@ private:
     Mpx3GUI *_mpx3gui = nullptr;
     Ui::testPulseEqualisation *ui = nullptr;
     SpidrController *spidrcontrol = nullptr;
-    QCstmEqualization * _equalisation = nullptr;
+    QCstmEqualization *_equalisation = nullptr;
 
     const double maximumInjectionVoltage = 0.975; //! over linear range
     const int maximumInjectionElectrons = 30431; //! over linear range, assuming 5fF exactly and maximum voltage injection (over linear range)
@@ -72,13 +72,13 @@ private:
 
     struct testPulseConfig {
         uint injectionChargeInElectrons = 2222;     //! Electrons by default
-        uint testPulseLength = 400;                 //! DAC units, so 40 x 25 ns = 10 microseconds
+        uint testPulseLength = 400;                 //! DAC units, so n x 25 ns = m microseconds
                                                     //!    Length of the test pulses in 25 ns units
-        uint testPulsePeriod = 1000;                //! DAC units, so 40000 x 25ns = 1ms.
+        uint testPulsePeriod = 100;                //! DAC units, so n x 25 ns = m ms.
                                                     //!    Period between TP Switch pulses in 25 ns units
-        uint pixelSpacing = 4;                      //! Pixel spacing, where 1 is the minimum --> no gaps
+        uint pixelSpacing = 5;                      //! Pixel spacing, where 1 is the minimum --> no gaps
 
-                                                    //! These defaults give 200 test pulses per pixel
+                                                    //! These defaults give 2992 test pulses per pixel for 30 ms frames
 
         uint equalisationTarget = 10;
         uint DAC_DISC_1 = 100;
@@ -107,7 +107,6 @@ private:
     bool estimate_V_TP_REF_AB(uint electrons);      //! This should fail if requested charge cannot be injected.
     uint setDACToVoltage(uint chipID, int dacCode, double V);
     void SetDAC_propagateInGUI(uint devId, int dac_code, int dac_val );
-
 };
 
 #endif // TESTPULSEEQUALISATION_H

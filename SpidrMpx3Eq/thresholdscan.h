@@ -77,7 +77,7 @@ private:
     bool _isScanDescending = true;
 
     std::vector<bool> _thresholdsToScan = { true, false, false, false, false, false, false, false };
-    std::vector<int> _thresholdOffsets = { 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<int> _thresholdOffsets = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
     const int _tableRows = 12;
     const int _tableCols = 3;

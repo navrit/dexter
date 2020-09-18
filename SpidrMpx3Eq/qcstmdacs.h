@@ -141,7 +141,7 @@ private:
     /* END - GUI related */
 
 private slots:
-    void onDevNumChanged(int);
+    void onChipNumChanged(int);
     void on_allDACSimultaneousCheckBox_toggled(bool checked);
 
     void setTextWithIdx(QString,int);

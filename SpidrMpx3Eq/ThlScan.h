@@ -56,7 +56,7 @@ public:
         __adjust_to_equalisationMatrix
     } adj_type;
 
-    void SetAdjustmentType(adj_type t){ _adjType = t; }
+    void setAdjustmentType(adj_type t){ _adjType = t; }
 
     typedef enum {
         __BASIC_SCAN = 0,
@@ -65,9 +65,9 @@ public:
 
     void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
     void RewindData(int full_sizex, int full_sizey);
-    void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false, bool testPulses = false);
-    bool SetEqualizationMask(SpidrController * sc, int devId, int spacing, int offset_x, int offset_y, int * nmasked);
-    int SetEqualizationMask(SpidrController * sc, set<int> reworkPixels);
+    void setScanParameters(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false, bool testPulses = false);
+    bool SetEqualisationMask(SpidrController * sc, int chip, int spacing, int offset_x, int offset_y, bool testPulses, int * nmasked);
+//    int SetEqualisationMask(SpidrController * sc, set<int> reworkPixels);
     set<int> GetReworkSubset(set<int> reworkSet, int spacing, int offset_x, int offset_y);
 
     void ClearMask(SpidrController * spidrcontrol, int devId, bool ClearMask = true);
@@ -115,7 +115,7 @@ public:
     void SetSetId(int si) { _setId = si; }
     int GetSetId() { return _setId; }
 
-    void SetWorkChipIndexes(vector<uint> v, vector<equalizationSteeringInfo *> st);
+    void setWorkChipIndexes(vector<uint> v, vector<equalizationSteeringInfo *> st);
     vector<uint> GetWorkChipIndexes() { return _workChipsIndx; }
 
     void InitializeScanResults(vector<equalizationSteeringInfo *> st);
@@ -195,7 +195,7 @@ private:
     bool _stop;
 
     //! Units: milliseconds. The noise varies in the 100-10000 Hz regime
-    const static uint _timeOut = 1000;
+    const static uint _timeOut = 50;
 
 private slots:
     void UpdateChart(int devId, int setId, int thlValue);

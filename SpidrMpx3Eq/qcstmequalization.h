@@ -29,7 +29,7 @@ using namespace std;
 #include "ServerStatus.h"
 
 #define __default_step_scan		1
-#define __DAC_Disc_Optimization_step    2
+#define __DAC_Disc_Optimisation_step    2
 #define __above_noise_threshold 256      //! This is for an equalised chip, should be valid for all gain modes
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
@@ -92,7 +92,7 @@ public:
     QSet<QPair<int,int>> GetMaskedPixels2D() {
         return maskedPixels2D;
     }
-    int * GetAdjustmentMatrix(lowHighSel sel = __ADJ_L);
+    int *GetAdjustmentMatrix(lowHighSel sel = __ADJ_L);
     void ExtrapolateAdjToTarget(int target, double eta_Adj_THL, lowHighSel sel = __ADJ_L);
     bool WriteAdjBinaryFile(QString fn);
     bool ReadAdjBinaryFile(QString fn);
@@ -152,7 +152,7 @@ public:
     int currentDAC_DISC;
     QString currentDAC_DISC_String;
     int currentDAC_DISC_OptValue;	//! optimised value
-    double currentEta_THx_DAC_Disc; //! Eta and Cut for the THx Vs DAC_DISC_x function (DAC_DISC Optimization)
+    double currentEta_THx_DAC_Disc; //! Eta and Cut for the THx Vs DAC_DISC_x function (DAC_DISC Optimisation)
     double currentCut_THx_DAC_Disc;
     double currentEta_Adj_THx; //! Eta and Cut for the Adj Vs. THx function (Adj extrapolation)
     double currentCut_Adj_THx;
@@ -180,8 +180,8 @@ public:
 
     typedef enum {
         __INIT = 0,
-        __DAC_Disc_Optimization_100,
-        __DAC_Disc_Optimization_150,
+        __DAC_Disc_Optimisation_100,
+        __DAC_Disc_Optimisation_150,
         __PrepareInterpolation_0x0,
         __PrepareInterpolation_0x5,
         __ScanOnInterpolation,
@@ -197,9 +197,9 @@ public:
     bool InitEqualization(int chipId);      //! chipId = -1  will equalize all available chips at once
     void NewRunInitEqualization();          //! partial initialisation
     void Configuration(int devId, int THx, bool reset);
-    void DAC_Disc_Optimization_100();
-    void DAC_Disc_Optimization_150();
-    void DAC_Disc_Optimization(int devId, ScanResults * res_100, ScanResults * res_150);
+    void DAC_Disc_Optimisation_100();
+    void DAC_Disc_Optimisation_150();
+    void DAC_Disc_Optimisation(int devId, ScanResults * res_100, ScanResults * res_150);
     void PrepareInterpolation_0x0();
     void PrepareInterpolation_0x5();
     void ScanOnInterpolation();
@@ -208,14 +208,14 @@ public:
 
 
     //! Core helper functions
-    void LoadEqualization(bool getPath = false, bool remotely = false, QString path ="");
+    void LoadEqualisation(bool getPath = false, bool remotely = false, QString path ="");
     void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val);
     void KeepOtherChipsQuiet();
     void FullEqRewind();
     void GetSlopeAndCut_IDAC_DISC_THL(ScanResults *, ScanResults *, double &, double &);
     void GetSlopeAndCut_Adj_THL(ScanResults *, ScanResults *, double &, double &);
     void resetThresholds();
-    void InitializeEqualizationStructure();
+    void InitialiseEqualizationStructure();
     void SetupSignalsAndSlots();
     void SetLimits();
     void stopEqualizationRemotely();
@@ -227,11 +227,11 @@ public:
     bool pixelInScheduledChips(int pixels);
     double EvalLinear(double eta, double cut, double x);
 
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, int val_L, int val_H);
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false, bool testbit = false);
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol);
+    void SetAllAdjustmentBits(SpidrController *spidrcontrol, int deviceId, int val_L, int val_H);
+    void SetAllAdjustmentBits(SpidrController *spidrcontrol, int deviceId, bool applymask);
+    void SetAllAdjustmentBits(SpidrController *spidrcontrol);
     void SetAllAdjustmentBits();
-    void ClearAllAdjustmentBits(int devId = 0);
+    void ClearAllAdjustmentBits(int chip = 0);
 
     Mpx3EqualizationResults * GetEqualizationResults(int chipIndex);
     inline pair<int, int> XtoXY(int X, int dimX);
@@ -245,17 +245,15 @@ public:
     bool estimate_V_TP_REF_AB(uint electrons, bool makeDialog);      //! This should fail if requested charge cannot be injected.
     uint setDACToVoltage(int chipID, int dacCode, double V);
     bool initialiseTestPulses(SpidrController * spidrcontrol);
-    bool activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int *maskedPixels);
-
 
     //! GUI functions
     void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);
-    void DAC_Disc_Optimization_DisplayResults(ScanResults * res);
+    void DAC_Disc_Optimisation_DisplayResults(ScanResults * res);
     void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults * res);
     void AppendToTextBrowser(QString s);
     void ClearTextBrowser();
     void InitializeBarChartsEqualization();
-    void InitializeBarChartsAdjustments();
+    void InitialiseBarChartsAdjustments();
     void DistributeAdjHistogramsInGridLayout();
     void UpdateHeatMap(int * _data, int sizex, int sizey);
     std::string BuildChartName(int val, const QString &leg);
@@ -401,7 +399,7 @@ private slots:
 
     //! Addresses the weird behaviour when equalising all chips simultaneously
     void StartEqualizationSequentialSingleChips();
-    void StartEqualizationSequentialSingleChipsRemotely(QString path);
+    void StartEqualizationSequentialSingleChipsRemotely(const QString &path);
     void setNTriggers(int);
     void setDeviceIndex(int, bool uisetting = false);
     void setSpacing(int);

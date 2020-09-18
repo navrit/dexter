@@ -175,9 +175,17 @@ void thresholdScan::setThresholdsOnAllChips(int val)
             if ( _thresholdsToScan[dacCode-1] ) {
                 const int DAC_value = val + _thresholdOffsets[dacCode-1];
                 SetDAC_propagateInGUI(int(chipID), dacCode, DAC_value);
-                //qDebug() << "[DEBUG]\tUsing Th" << dacCode-1 << "| threshold =" << DAC_value;
+
+//                if (chipID == 0 ) { // Print once, not 4 times...
+//                    qDebug() << "[DEBUG]\tSet Th" << dacCode-1 << " =" << DAC_value;
+//                }
             } else {
-                //qDebug() << "[DEBUG]\tSkipped threshold" << dacCode-1;
+                const int DAC_value = _mpx3gui->getConfig()->getDACValue(chipID, dacCode-1);
+                if (DAC_value == 0) {
+                    qDebug() << "[WARN]\tTh" << dacCode-1 << "= 0 !!!!!!!!!!!";
+                } //else {
+//                    qDebug() << "[DEBUG]\tLeaving Th" << dacCode-1 << " =" << DAC_value;
+//                }
             }
         }
     }
@@ -233,13 +241,21 @@ void thresholdScan::startScan()
     //! Get threshold starting values from the table model
     for (uint i = 0; i < _thresholdsToScan.size(); ++i) {
         _thresholdsToScan[i] = getThresholdScanEnabled(i);
-        //qDebug().noquote() << QString("[DEBUG]\t_thresholdsToScan[%1] = %2").arg(i).arg(_thresholdsToScan[i]);
+        qDebug().noquote() << QString("[DEBUG]\t_thresholdsToScan[%1] = %2").arg(i).arg(_thresholdsToScan[i]);
     }
 
     if ( _startTH < _endTH ) {
         _isScanDescending = false;
     } else {
         _isScanDescending = true;
+    }
+
+    //! Store existing thresholds in the stupid vector so it doesn't 'forget' (reset to 0) the starting DAC values
+    for (int chip = 0; chip < __max_number_of_chips; ++chip) {
+        for (int DAC_index = 0; DAC_index < __max_number_of_thresholds; ++DAC_index) {
+            const int DAC_value = _mpx3gui->getConfig()->getDACValue(chip, DAC_index);
+            _mpx3gui->getVisualization()->setThresholdsVector(chip, DAC_index, DAC_value);
+        }
     }
 
     //! Set DAC starting values
@@ -249,16 +265,24 @@ void thresholdScan::startScan()
         setThresholdsOnAllChips(_endTH);
     }
 
+    _thresholdOffsets = {0};
     //! Set starting values for thresholds specified
     for (uint i = 0; i < _thresholdOffsets.size(); ++i) {
-        _thresholdOffsets[i] = getThresholdOffset(i);
-        //qDebug().noquote() << QString("[DEBUG]\t_thresholdStartingValues[%1] = %2").arg(i).arg(_thresholdStartingValues[i]);
+        if (_thresholdsToScan[i]) {
+            _thresholdOffsets[i] = getThresholdOffset(i);
 
-        //! Tell the config about the starting values for the frames
-        for (uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNActiveDevices()); ++chip) {
-            _mpx3gui->getConfig()->setDACValue(chip, int(i), _thresholdOffsets[i]);
+            if (_thresholdOffsets[i] > 0) {
+                qDebug() << "[DEBUG]\tAll chips, threshold offset = " << _thresholdOffsets[i];
+            }
+
+            //! Tell the config about the starting values for the frames
+            for (uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNActiveDevices()); ++chip) {
+                _mpx3gui->getConfig()->setDACValue(chip, int(i), _thresholdOffsets[i]);
+            }
+            qDebug().noquote() << QString("[DEBUG]\tSet thr offsets - DAC index = %1 | threshold offset = %2").arg(int(i)).arg(_thresholdOffsets[i]);
+        } else {
+            qDebug() << "[DEBUG]\tNot setting a threshold offset for unselected threshold" << i;
         }
-        //qDebug().noquote() << QString("[DEBUG]\tSet DAC index = %1 | threshold offset = %2").arg(int(i)).arg(_thresholdOffsets[i]);
     }
 
     //! At least get something valid in the saving path
@@ -312,14 +336,9 @@ int thresholdScan::getThresholdOffset(uint threshold)
     if (threshold <= 7) {
         bool ok = false;
         auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(int(threshold), 0, QModelIndex())).toInt(&ok);
-        if (ok) {
-            return val;
-        } else {
-            return 0;
-        }
-    } else {
-        return 0;
+        if (ok && val >=0 && val < 511) return val;
     }
+    return 0;
 }
 
 bool thresholdScan::getThresholdScanEnabled(uint threshold)
@@ -354,9 +373,8 @@ int thresholdScan::getStartTH()
     auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(10, 0, QModelIndex())).toInt(&ok);
     if (ok) {
         return val;
-    } else {
-        return 0;
     }
+    return 0;
 }
 
 void thresholdScan::setStartTH(int val)
@@ -370,11 +388,8 @@ int thresholdScan::getEndTH()
 {
     bool ok = false;
     auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(11, 0, QModelIndex())).toInt(&ok);
-    if (ok) {
-        return val;
-    } else {
-        return 0;
-    }
+    if (ok) return val;
+    return 0;
 }
 
 void thresholdScan::setEndTH(int val)
@@ -388,11 +403,8 @@ uint thresholdScan::getStepSize()
 {
     bool ok = false;
     auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(8, 0, QModelIndex())).toUInt(&ok);
-    if (ok) {
-        return val;
-    } else {
-        return 0;
-    }
+    if (ok) return val;
+    return 0;
 }
 
 void thresholdScan::setStepSize(uint val)
@@ -406,11 +418,8 @@ uint thresholdScan::getFramesPerStep()
 {
     bool ok = false;
     auto val = ui->tableView_modelBased->model()->data(_standardItemModel->index(9, 0, QModelIndex())).toUInt(&ok);
-    if (ok) {
-        return val;
-    } else {
-        return 0;
-    }
+    if (ok) return val;
+    return 0;
 }
 
 void thresholdScan::setFramesPerStep(uint val)
@@ -475,29 +484,27 @@ void thresholdScan::resumeTHScan()
     //! Main loop through thresholds using all 8 counters (0-7)
 
     if ((_currentThr >= _startTH && _currentThr <= _endTH) || (_currentThr <= _startTH && _currentThr >= _endTH)) {
-        //qDebug().noquote() << QString("[DEBUG]\tLOOP %1 --> From %2 to %3").arg(_currentThr).arg(_startTH).arg(_endTH);
+//        qDebug().noquote() << QString("[DEBUG]\tLOOP %1 --> From %2 to %3").arg(_currentThr).arg(_startTH).arg(_endTH);
 
         //! Set threshold DACs on all chips
         setThresholdsOnAllChips(_currentThr);
 
         //! Save the data, with the offsets calculated into the filename
 
-        //qDebug() << "[DEBUG]\tth =" << th << " | _thresholdOffsets[th] =" << _thresholdOffsets[th];
-
         foreach (int thr, _thresholds) {
             //! Calculate the actual threshold used during scan, <0 and >511 are not possible to set anyway
-            int actualThr = _currentThr + _thresholdOffsets[thr];
-            if (actualThr < 0 ) {
-                actualThr = 0;
-            } else if (actualThr > 511) {
-                actualThr = 511;
-            }
+//            int actualThr = _currentThr + _thresholdOffsets[thr];
+//            if (actualThr < 0 ) {
+//                actualThr = 0;
+//            } else if (actualThr > 511) {
+//                actualThr = 511;
+//            }
 
             //! Save raw TIFF with the following format:
             //!    “scan_“ + start_run_datetime_second_precision + / + scan_iteration + “-” + “th” + threshold_number + “-” + threshold_value + “.” + file_format
             //!
             //!    [scan_20190722_160023] / [000-511] - th[0-7] - [000-511] . [tiff, pgm etc.]
-            _mpx3gui->getDataset()->toTIFF(_newPath, false, false, _runStartDateTimeWithMs, thr, _iteration, actualThr);
+            _mpx3gui->getDataset()->toTIFF(_newPath, false, false, _runStartDateTimeWithMs, thr, _iteration, _mpx3gui->getConfig()->getDACValue(0, thr));
         }
 
         update_timeGUI();
@@ -645,7 +652,7 @@ QString thresholdScan::getPath(QString msg)
 
 void thresholdScan::SetDAC_propagateInGUI(int chip, int dac_code, int dac_val)
 {
-    //qDebug().noquote() << QString("[DEBUG]\tChip = %1 | DAC Code = %2 | DAC value = %3").arg(chip).arg(dac_code).arg(dac_val);
+//    qDebug().noquote() << QString("[DEBUG]\tChip = %1 | DAC Code = %2 | DAC value = %3").arg(chip).arg(dac_code).arg(dac_val);
 
     //! Actually set DAC
     //! If and after it is complete, continue with GUI code

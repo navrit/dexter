@@ -85,7 +85,9 @@ void QCstmGLVisualization::setThresholdsVector(int chipId, int threshold, int DA
     if (chipId >=0 && chipId < __max_number_of_chips && threshold >=0 && threshold < __max_number_of_thresholds) {
         _thresholdsVector[chipId][threshold] = DAC_value;
     } else {
-        qDebug() << "[ERROR]\tOut of bounds --> chip =" << chipId << "| threshold =" << threshold << "| DAC_value =" << DAC_value;
+        if (threshold >= 0 && threshold < __max_number_of_thresholds) {
+            qDebug() << "[ERROR]\tOut of bounds --> chip =" << chipId << "| threshold =" << threshold << "| DAC_value =" << DAC_value;
+        }
     }
 }
 
@@ -1303,7 +1305,7 @@ void QCstmGLVisualization::setCSM(bool active)
 
 void QCstmGLVisualization::loadDefaultEqualisation()
 {
-    _mpx3gui->getEqualization()->LoadEqualization(false, true, "");
+    _mpx3gui->getEqualization()->LoadEqualisation(false, true, "");
 
     emit someCommandHasFinished_Successfully();
 }
@@ -1314,7 +1316,7 @@ void QCstmGLVisualization::loadEqualisation(QString path)
         path = path.append(QDir::separator());
     }
 
-    _mpx3gui->getEqualization()->LoadEqualization(false,false ,path);
+    _mpx3gui->getEqualization()->LoadEqualisation(false,false ,path);
 
     emit someCommandHasFinished_Successfully();
 }
@@ -1565,7 +1567,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
     if (_mpx3gui->getConfig()->getColourMode()) {
         naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x();
     }
-    int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
+    int chip = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
 
 
     if (_maskingRequestFromServer) {
@@ -1604,7 +1606,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     auto dataset = _mpx3gui->getDataset();
     int nx = dataset->x();
-    auto eqRes = _mpx3gui->getEqualization()->GetEqualizationResults(deviceID);
+    auto eqRes = _mpx3gui->getEqualization()->GetEqualizationResults(chip);
 
     if (_maskOperation == MASK) {
         if ( _mpx3gui->getConfig()->getColourMode() ) {
@@ -1684,11 +1686,11 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
         for ( ; itrM != itrME ; ++itrM ) {
 
-            int chip = (itrM).key();
+            int chip1 = (itrM).key();
             int vsize = (*itrM).size();
-            qDebug() << "[DEBUG]\tChip" << chip << "--> Mask" << vsize;
+            qDebug() << "[DEBUG]\tChip" << chip1 << "--> Mask" << vsize;
 
-            auto eqResChip = _mpx3gui->getEqualization()->GetEqualizationResults( chip );
+            auto eqResChip = _mpx3gui->getEqualization()->GetEqualizationResults( chip1 );
             for ( int iv = 0 ; iv < vsize ; iv++ ) {
                 if ( colourMode ) {
                     eqResChip->maskPixel( (*itrM).value(iv) );
@@ -1704,16 +1706,13 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     }
 
-    if (_maskOperation == NULL_MASK) {
-        return;
-    }
+    if (_maskOperation == NULL_MASK) return;
 
-    _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID, true, false);
+    _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), chip, true);
 }
 
 void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 {
-
     // Before toogle save the current range to percentile
     // If unselecting save the info
     if ( ! checked ) {
@@ -1723,14 +1722,10 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
     }
 
     if ( checked ) {
-
         // When toggling here recompute the min and max
         // if the range is still the initial (0,1)
-        //if ( _manualRange == QCPRange( 0,0 ) ) {
-        // current threshold
         int activeTHL = getActiveThreshold();
         if ( activeTHL >= 0 ) {
-
             // Throw a recomendation here to the user.  If manual has never been set, then use
             //  the values from percentile.
             if ( ! _manualRangePicked ) {
@@ -1743,39 +1738,24 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
         } else {
             _manualRange = QCPRange( 0, 0 );
         }
-        //}
 
         setRangeSpinBoxesManual();
         ui->histPlot->changeRange( _manualRange );
-        //ui->histPlot->changeRange(QCPRange(ui->lowerManualSpin->value(), ui->upperManualSpin->value()));
-        //i+
         ui->histPlot->scaleToInterest();
     }
-
 }
 
 void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 {
-
     if ( checked ) {
-
         int activeTHL = getActiveThreshold();
-
         if ( activeTHL >= 0 ) {
 
             // When toggling here recompute the min and max
             int * data = _mpx3gui->getDataset()->getLayer( activeTHL );
-//            if (data == nullptr) {
-//                qDebug() << "WTF IS HAPPENING??"; //! TODO FIX THIS SHIT RIGHT NOW
-//                return;
-//            }
             int size = _mpx3gui->getDataset()->getPixelsPerLayer();
             int min = INT_MAX, max = INT_MIN;
             for(int i = 0; i < size; i++) {
-//                if (data[i] == 0x0) {
-//                    min = 0;
-//                    max = 1;
-//                }
                 if(data[i] < min)
                     min = data[i];
                 if(data[i] > max)
@@ -1791,31 +1771,22 @@ void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
         setRangeSpinBoxesManual();
         ui->histPlot->set_scale_full(getActiveThreshold());
     }
-
     ui->histPlot->scaleToInterest();
-
 }
 
 void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
 {
-
     // If unselecting save the info
     if ( !checked ) _percentileRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
 
     if ( checked ) {
-
         setRangeSpinBoxesPercentile();
         ui->histPlot->changeRange( _percentileRange );
-
-        //ui->histPlot->set_scale_percentile(getActiveThreshold(),
-        //                                   ui->lowerPercentileSpin->value(),
-        //                                   ui->upperPercentileSpin->value());
         _percentileRangeNatural = ui->histPlot->set_scale_percentile(getActiveThreshold(),
                                                                      ui->lowerSpin->value(),
                                                                      ui->upperSpin->value());
         ui->histPlot->scaleToInterest();
     }
-
 }
 
 void QCstmGLVisualization::on_outOfBoundsCheckbox_toggled(bool checked)
@@ -2066,7 +2037,7 @@ void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
     /* So that the equalisation won't save the mask file to the wrong folder during equalisation */
     if ( _equalisationPath != "") {
 
-        qDebug() << "[INFO]\tPixels masked, making a file in " << _equalisationPath ;
+        qDebug() << "[INFO]\tPixels loaded/masked, making a file in " << _equalisationPath ;
 
         QFile file(_equalisationPath + QString("mask_") + QString::number(devID));
 
