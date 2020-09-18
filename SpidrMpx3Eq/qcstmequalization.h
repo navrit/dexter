@@ -185,7 +185,7 @@ public:
         __PrepareInterpolation_0x0,
         __PrepareInterpolation_0x5,
         __ScanOnInterpolation,
-        __EstimateEqualisationTarget,
+        //        __EstimateEqualisationTarget,
         __FineTuning,
         __EQStatus_Count
     } eqStatus;
