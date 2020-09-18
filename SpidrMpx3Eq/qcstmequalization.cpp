@@ -1508,11 +1508,11 @@ void QCstmEqualization::DisplayStatsInTextBrowser(int adj, int dac_disc, ScanRes
     statsString += "] Adj=";
     if (adj >= 0) statsString += QString::number(adj, 'd', 0);
     else {
-        if (_eqStatus == __EstimateEqualisationTarget) {
-            statsString += "TP";
-        } else {
-            statsString += "X";
-        }
+        //        if (_eqStatus == __EstimateEqualisationTarget) {
+        //            statsString += "TP";
+        //        } else {
+        statsString += "X";
+        //        }
     }
 
     statsString += " | ";
