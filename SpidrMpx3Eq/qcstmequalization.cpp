@@ -899,31 +899,15 @@ void QCstmEqualization::StartEqualization() {
         // New limits --> ask the last scan
         ScanOnInterpolation();
 
-    } else if ( EQ_NEXT_STEP( __ScanOnInterpolation) ) {
-        //        qDebug() << "[INFO]\tSkipped the extra test pulse scan due to having test pulses on all the time when doing a test pulse equalisation";
-        //        ScanThreadFinished();
-
-        //        for ( uint i = 0 ; i < chipListSize ; i++ ) {
-        //            _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
-        //            DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
-        //        }
-
-        //        printNonReactiveWarning(chipListSize);
-        //        estimateEqualisationTarget();
-
-        //    } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
-
-        //        if (testPulseMode) {
-
-        //            printNonReactiveWarning(chipListSize);
-
-        //            for ( uint i = 0 ; i < chipListSize ; i++ ) {
-        //                _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
-        //                DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])));
-        //            }
-        //        } else {
-        //            qDebug() << "[INFO] [Equalisation]\tSkipping test pulse scans";
-        //        }
+    } else if (EQ_NEXT_STEP(__ScanOnInterpolation)) {
+        printNonReactiveWarning(chipListSize);
+        for (uint i = 0; i < chipListSize; i++) {
+            _scans[int(_scanIndex - 1)]->ExtractStatsOnChart(int(_workChipsIndx[i]), _setId - 1);
+            DisplayStatsInTextBrowser(-1,
+                                      _steeringInfo[i]->currentDAC_DISC_OptValue,
+                                      _scans[int(_scanIndex - 1)]->GetScanResults(
+                                          int(_workChipsIndx[i])));
+        }
 
         // If fast equalization, skip fine tuning, same for all chips
         if ( _steeringInfo[0]->equalizationType == __NoiseCentroidFAST ||
@@ -940,8 +924,7 @@ void QCstmEqualization::StartEqualization() {
             FineTuning(); // 5) Attempt fine tuning
         }
 
-    } else if ( EQ_NEXT_STEP( __FineTuning ) ) {
-
+    } else if (EQ_NEXT_STEP(__FineTuning)) {
         clearPreviousData(chipListSize);
 
         // Decide if the equalization needs to be ran again for THH or if we are done
