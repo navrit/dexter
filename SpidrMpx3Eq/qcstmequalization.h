@@ -244,7 +244,7 @@ public:
 
     bool estimate_V_TP_REF_AB(uint electrons, bool makeDialog);      //! This should fail if requested charge cannot be injected.
     uint setDACToVoltage(int chipID, int dacCode, double V);
-    bool initialiseTestPulses(SpidrController * spidrcontrol);
+    //    bool initialiseTestPulses(SpidrController * spidrcontrol);
 
     //! GUI functions
     void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);

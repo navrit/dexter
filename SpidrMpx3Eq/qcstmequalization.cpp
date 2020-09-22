@@ -775,13 +775,13 @@ void QCstmEqualization::StartEqualization() {
     // Preliminary) Find out the equalization range
     // First) DAC_Disc Optimisation
     if ( EQ_NEXT_STEP( __INIT) ) {
-        if (testPulseMode) {
-            updateTestpulseVariables();
+        //        if (testPulseMode) {
+        //            updateTestpulseVariables();
 
-            //! Activate test pulses with the configuration from the GUI or the defaults
-            initialiseTestPulses(spidrcontrol);
-            qDebug() << "[INFO] [Equalisation]\tInitialised test pulses for the entire scan!!!!!";
-        }
+        //            //! Activate test pulses with the configuration from the GUI or the defaults
+        //            initialiseTestPulses(spidrcontrol);
+        //            qDebug() << "[INFO] [Equalisation]\tInitialised test pulses for the entire scan!!!!!";
+        //        }
 
         //! We only want to update this the first time
         if (_steeringInfo[0]->currentDAC_DISC_String == "DAC_DISC_L") {
@@ -2119,26 +2119,26 @@ uint QCstmEqualization::setDACToVoltage(int chipID, int dacCode, double V)
     return dac_val;
 }
 
-bool QCstmEqualization::initialiseTestPulses(SpidrController * spidrcontrol)
-{
-    if ( ! _mpx3gui->getConfig()->isConnected() ) {
-        QMessageBox::warning ( this, tr("Activate Test Pulses"), tr( "No device connected." ) );
-        return false;
-    }
+//bool QCstmEqualization::initialiseTestPulses(SpidrController * spidrcontrol)
+//{
+//    if ( ! _mpx3gui->getConfig()->isConnected() ) {
+//        QMessageBox::warning ( this, tr("Activate Test Pulses"), tr( "No device connected." ) );
+//        return false;
+//    }
 
-    //! Very basic error check
-    if (spidrcontrol == nullptr) return false;
+//    //! Very basic error check
+//    if (spidrcontrol == nullptr) return false;
 
-    //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
-    //! Set Pulse width: 400 --> 10 us default
-    spidrcontrol->setTpFrequency(true, int(testPulseEqualisationDialog->getTestPulsePeriod()), int(testPulseEqualisationDialog->getTestPulseLength()));
+//    //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
+//    //! Set Pulse width: 400 --> 10 us default
+//    spidrcontrol->setTpFrequency(true, int(testPulseEqualisationDialog->getTestPulsePeriod()), int(testPulseEqualisationDialog->getTestPulseLength()));
 
-    //! Set some SPIDR registers, these should match the setTpFrequency call
-    spidrcontrol->setSpidrReg(0x10C0, int(testPulseEqualisationDialog->getTestPulseLength()), true);
-    spidrcontrol->setSpidrReg(0x10BC, int(testPulseEqualisationDialog->getTestPulsePeriod()), true);
+//    //! Set some SPIDR registers, these should match the setTpFrequency call
+//    spidrcontrol->setSpidrReg(0x10C0, int(testPulseEqualisationDialog->getTestPulseLength()), true);
+//    spidrcontrol->setSpidrReg(0x10BC, int(testPulseEqualisationDialog->getTestPulsePeriod()), true);
 
-    return true;
-}
+//    return true;
+//}
 
 //bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int * maskedPixels)
 //{
@@ -2216,57 +2216,57 @@ void QCstmEqualization::resetForNewEqualisation()
     nbc->setHidden(true);
 }
 
-void QCstmEqualization::estimateEqualisationTarget()
-{
-    //! If test pulses are being used, then we want to start a the test pulse scanning procedure.
-    //! Otherwise, leave it at the default value
+//void QCstmEqualization::estimateEqualisationTarget()
+//{
+//    //! If test pulses are being used, then we want to start a the test pulse scanning procedure.
+//    //! Otherwise, leave it at the default value
 
-    if (testPulseMode) {
-        //! New limits
-        SetMinScan( 511 );
-        SetMaxScan( 0 );
-        setStep( 1 );
+//    if (testPulseMode) {
+//        //! New limits
+//        SetMinScan( 511 );
+//        SetMaxScan( 0 );
+//        setStep( 1 );
 
-        ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
-        tscan_opt_testPulses->ConnectToHardware(_mpx3gui->GetSpidrController(), _mpx3gui->GetSpidrDaq());
-        BarChartProperties cprop_opt_testPulses;
-        cprop_opt_testPulses.min_x = 0;
-        cprop_opt_testPulses.max_x = 511;
-        cprop_opt_testPulses.nBins = 512;
-        cprop_opt_testPulses.color_r = 255;
-        cprop_opt_testPulses.color_g = 149;
-        cprop_opt_testPulses.color_b = 0;
+//        ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
+//        tscan_opt_testPulses->ConnectToHardware(_mpx3gui->GetSpidrController(), _mpx3gui->GetSpidrDaq());
+//        BarChartProperties cprop_opt_testPulses;
+//        cprop_opt_testPulses.min_x = 0;
+//        cprop_opt_testPulses.max_x = 511;
+//        cprop_opt_testPulses.nBins = 512;
+//        cprop_opt_testPulses.color_r = 255;
+//        cprop_opt_testPulses.color_g = 149;
+//        cprop_opt_testPulses.color_b = 0;
 
-        QString legend = _steeringInfo[0]->currentDAC_DISC_String;
-        legend += "_Opt_testPulses";
-        for (int i = 0 ; i < int(_workChipsIndx.size()); ++i) {
-            cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
-            GetBarChart( _workChipsIndx[i])->AppendSet( cprop_opt_testPulses );
-        }
+//        QString legend = _steeringInfo[0]->currentDAC_DISC_String;
+//        legend += "_Opt_testPulses";
+//        for (int i = 0 ; i < int(_workChipsIndx.size()); ++i) {
+//            cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
+//            GetBarChart( _workChipsIndx[i])->AppendSet( cprop_opt_testPulses );
+//        }
 
-        //tscan_opt_testPulses->SetStopWhenPlateau(true);
-        //! -1: Do all loops
-        //! Note the last flag here
-        //! testPulseMode is always true here.
-        tscan_opt_testPulses->setScanParameters(_steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, true);
+//        //tscan_opt_testPulses->SetStopWhenPlateau(true);
+//        //! -1: Do all loops
+//        //! Note the last flag here
+//        //! testPulseMode is always true here.
+//        tscan_opt_testPulses->setScanParameters(_steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, true);
 
-        tscan_opt_testPulses->setAdjustmentType( ThlScan::__adjust_to_equalisationMatrix );
-        tscan_opt_testPulses->setWorkChipIndexes( _workChipsIndx, _steeringInfo );
+//        tscan_opt_testPulses->setAdjustmentType( ThlScan::__adjust_to_equalisationMatrix );
+//        tscan_opt_testPulses->setWorkChipIndexes( _workChipsIndx, _steeringInfo );
 
-        // Launch as thread. Connect the slot which signals when it's done
-        _scans.push_back( tscan_opt_testPulses );
-        _scanIndex++;
-        connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
-        tscan_opt_testPulses->start();
+//        // Launch as thread. Connect the slot which signals when it's done
+//        _scans.push_back( tscan_opt_testPulses );
+//        _scanIndex++;
+//        connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
+//        tscan_opt_testPulses->start();
 
-    } else {
-        //! Tell the state machine we've done a scan, oooooh cheeky
-        qDebug() << "[INFO]\tEqualisation target left at default value";
-        ScanThreadFinished();
-    }
+//    } else {
+//        //! Tell the state machine we've done a scan, oooooh cheeky
+//        qDebug() << "[INFO]\tEqualisation target left at default value";
+//        ScanThreadFinished();
+//    }
 
-    return;
-}
+//    return;
+//}
 
 bool QCstmEqualization::makeTeaCoffeeDialog()
 {
