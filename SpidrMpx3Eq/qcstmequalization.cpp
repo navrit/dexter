@@ -847,7 +847,8 @@ void QCstmEqualization::StartEqualization() {
 
         // And calculate the optimal DAC_Disc
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
-            ScanResults * res_100 = _scans[int(_scanIndex - 2)]->GetScanResults( int(int(_workChipsIndx[i])) );
+            ScanResults *res_100 = _scans[int(_scanIndex - 2)]->GetScanResults(
+                int(_workChipsIndx[i]));
             ScanResults * res_150 = _scans[int(_scanIndex - 1)]->GetScanResults( int(_workChipsIndx[i]) );
             DAC_Disc_Optimisation(int(_workChipsIndx[i]), res_100, res_150);
         }
@@ -1202,11 +1203,11 @@ void QCstmEqualization::DAC_Disc_Optimisation (int devId, ScanResults * res_100,
 
     // -------------------------------------------------------------------------
     // 4) Now IDAC_DISC optimal is such that:
-    //    With an adj-bit of 00101[5] the optimal mean is at defaultNoiseEqualisationTarget + 3.2 sigma
+    //    With an adj-bit of 00101[5] the optimal mean is at defaultNoiseEqualisationTarget + 3.7 sigma
 
-    // Desired mean value = defaultNoiseEqualisationTarget + 3.2 sigma
+    // Desired mean value = defaultNoiseEqualisationTarget + 3.7 sigma
     // Taking sigma from the first scan.
-    const double OPTIMAL_EQUALISATION_SIGMA_VALUE = 3; // v2.1.7 and before = 3.2
+    const double OPTIMAL_EQUALISATION_SIGMA_VALUE = 3.7; // <= v2.1.7  3.2, >= v2.2.8 = 3.7
 
     double meanTHL_for_opt_IDAC_DISC = defaultNoiseEqualisationTarget + OPTIMAL_EQUALISATION_SIGMA_VALUE * res_100->sigma;
 
