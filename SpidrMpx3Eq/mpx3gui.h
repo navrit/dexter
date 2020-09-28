@@ -78,7 +78,7 @@ const static int __thresholdScan_page_Id = 9;
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "Dexter";
-const static QString _softwareVersion = QString("v2.2.7 Minor bug fixes NB - "
+const static QString _softwareVersion = QString("v2.2.8 3.0 to 3.7 sigma NB - "
                                                 + QString(GIT_CURRENT_SHA1));
 
 const static int tcpCommandPort = 6351; //! Diamond - Merlin interface
