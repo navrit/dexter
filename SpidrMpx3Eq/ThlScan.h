@@ -180,7 +180,7 @@ private:
     int _fullsize_y;
 
     bool _testPulses = false;
-    void setEqualisationTargets();
+    //    void setEqualisationTargets();
 
     ofstream file_fineTuningStats;
 

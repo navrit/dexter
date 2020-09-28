@@ -181,45 +181,45 @@ void ThlScan::run() {
     }
 }
 
-void ThlScan::setEqualisationTargets()
-{
-    //! Find the mean of the thresholds from the map _pixelReactiveTHL
-    //! Set class variable (ScanResults->equalisationTarget to new equalisation target
+//void ThlScan::setEqualisationTargets()
+//{
+//    //! Find the mean of the thresholds from the map _pixelReactiveTHL
+//    //! Set class variable (ScanResults->equalisationTarget to new equalisation target
 
-    std::map<int, int>::iterator it = _pixelReactiveTHL.begin();
-    int sum = 0;
-    int activePixels = 0;
+//    std::map<int, int>::iterator it = _pixelReactiveTHL.begin();
+//    int sum = 0;
+//    int activePixels = 0;
 
-    while (it != _pixelReactiveTHL.end())
-    {
-        // Accessing KEY from element pointed by it.
-        //int pixelID = it->first;
-        // If I wanted to get the pixelIDs as well
+//    while (it != _pixelReactiveTHL.end())
+//    {
+//        // Accessing KEY from element pointed by it.
+//        //int pixelID = it->first;
+//        // If I wanted to get the pixelIDs as well
 
-        // Accessing VALUE from element pointed by it.
-        int turnOnThreshold = it->second;
-        // The turn on thresholds
+//        // Accessing VALUE from element pointed by it.
+//        int turnOnThreshold = it->second;
+//        // The turn on thresholds
 
-        //qDebug() << pixelID << " :: " << turnOnThreshold << "\n";
+//        //qDebug() << pixelID << " :: " << turnOnThreshold << "\n";
 
-        //! Ignore my initialised shitty -1 values
-        if (turnOnThreshold >= 0) {
-            sum += turnOnThreshold;
-            activePixels++;
-        }
-        ++it;
-    }
+//        //! Ignore my initialised shitty -1 values
+//        if (turnOnThreshold >= 0) {
+//            sum += turnOnThreshold;
+//            activePixels++;
+//        }
+//        ++it;
+//    }
 
-    vector<ScanResults *>::iterator i  = _results.begin();
-    vector<ScanResults *>::iterator iE = _results.end();
-    int equalisationTarget = int(sum/activePixels);
+//    vector<ScanResults *>::iterator i  = _results.begin();
+//    vector<ScanResults *>::iterator iE = _results.end();
+//    int equalisationTarget = int(sum/activePixels);
 
-    for ( ; i != iE ; ++i ) {
-        (*i)->equalisationTarget = equalisationTarget;
-    }
+//    for ( ; i != iE ; ++i ) {
+//        (*i)->equalisationTarget = equalisationTarget;
+//    }
 
-    qDebug() << "[INFO]\tTest pulses average turn on threshold :" << equalisationTarget;
-}
+//    qDebug() << "[INFO]\tTest pulses average turn on threshold :" << equalisationTarget;
+//}
 
 /**
  * @brief ThlScan::FineTuning, refinement step(s) after the relatively coarse scanning
