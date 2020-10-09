@@ -287,10 +287,9 @@ public:
     void SetMaxScan(int val = -1);
     void setWindowWidgetsStatus(win_status s = win_status::startup);
     bool getEqualisationHasBeenLoaded(){ return _equalisationLoaded; }
-
+    bool isEqualisingTHHOnly() { return _equalisationCombination == __OnlyTHH; }
 
 private:
-
     Ui::QCstmEqualization * _ui = nullptr;
     Mpx3GUI * _mpx3gui = nullptr;
     QApplication * _coreApp = nullptr;
@@ -351,12 +350,7 @@ private:
     vector<uint> _workChipsIndx;
     uint _eqStatus; //! Important state machine variable
     uint _scanIndex;
-    enum {
-        __THLandTHH = 0,
-        __OnlyTHL,
-        __OnlyTHH,
-        __nEQCombinations
-    };
+    enum { __THLandTHH = 0, __OnlyTHL, __OnlyTHH, __nEQCombinations };
     int _equalisationCombination;
     int _prevEqualizationCombination;
     QString _tempEqSaveDir;

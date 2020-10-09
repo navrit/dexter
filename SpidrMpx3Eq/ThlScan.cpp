@@ -261,6 +261,7 @@ void ThlScan::FineTuning() {
     const ulong workChipsSize = _workChipsIdx.size();
     const bool colourMode = _mpx3gui->getConfig()->getColourMode();
     const bool csmMode = _mpx3gui->getConfig()->getCsmSpm();
+    const bool equalisingTHHonly = _mpx3gui->getEqualization()->isEqualisingTHHOnly();
 
     //! Send configuration to the chip
     for (unsigned int di = 0; di < workChipsSize; di++) {
@@ -283,7 +284,7 @@ void ThlScan::FineTuning() {
         } else if ( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
             // If equalising THH with CSM+Colour mode, then set th0 to 30 (__just_above_noise_th0_CSM_colour)
             // Otherwise, normal operation. Set to 256 (__above_noise_threshold)
-            if (colourMode && csmMode) {
+            if (equalisingTHHonly && colourMode && csmMode) {
                 setDac(sc, currentChip, MPX3RX_DAC_THRESH_0, __just_above_noise_th0_CSM_colour);
             } else {
                 setDac(sc, currentChip, MPX3RX_DAC_THRESH_0, __above_noise_threshold);
@@ -461,8 +462,8 @@ void ThlScan::FineTuning() {
                             setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_7, _thlItr);
                         }
 
-                        // When equalising THH in CSM+colour mode, always set th0 to 30 (__just_above_noise_th0_CSM_colour)
-                        if (colourMode && csmMode) {
+                        // When equalising THH_only in CSM+colour mode, always set th0 to 30 (__just_above_noise_th0_CSM_colour)
+                        if (equalisingTHHonly && colourMode && csmMode) {
                             if (_dac_code == MPX3RX_DAC_THRESH_1 || _dac_code == MPX3RX_DAC_THRESH_3
                                 || _dac_code == MPX3RX_DAC_THRESH_5
                                 || _dac_code == MPX3RX_DAC_THRESH_7) {
@@ -833,6 +834,7 @@ void ThlScan::EqualizationScan() {
     const ulong workChipsSize = _workChipsIdx.size();
     const bool colourMode = _mpx3gui->getConfig()->getColourMode();
     const bool csmMode = _mpx3gui->getConfig()->getCsmSpm();
+    const bool equalisingTHHonly = _mpx3gui->getEqualization()->isEqualisingTHHOnly();
 
     for (unsigned int di = 0; di < workChipsSize; di++) {
         int currentChip = _workChipsIdx[di];
@@ -867,7 +869,7 @@ void ThlScan::EqualizationScan() {
         } else if (_DAC_Disc_code == MPX3RX_DAC_DISC_H) {
             // If equalising THH with CSM+Colour mode, then set th0 to 30 (__just_above_noise_th0_CSM_colour)
             // Otherwise, normal operation. Set to 256 (__above_noise_threshold)
-            if (colourMode && csmMode) {
+            if (equalisingTHHonly && colourMode && csmMode) {
                 setDac(sc, currentChip, MPX3RX_DAC_THRESH_0, __just_above_noise_th0_CSM_colour);
             } else {
                 setDac(sc, currentChip, MPX3RX_DAC_THRESH_0, __above_noise_threshold);
@@ -974,7 +976,7 @@ void ThlScan::EqualizationScan() {
                     }
 
                     // When equalising THH in CSM+colour mode, always set th0 to 30 (__just_above_noise_th0_CSM_colour)
-                    if (colourMode && csmMode) {
+                    if (equalisingTHHonly && colourMode && csmMode) {
                         if (_dac_code == MPX3RX_DAC_THRESH_1 || _dac_code == MPX3RX_DAC_THRESH_3
                             || _dac_code == MPX3RX_DAC_THRESH_5
                             || _dac_code == MPX3RX_DAC_THRESH_7) {
