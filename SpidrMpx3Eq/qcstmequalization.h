@@ -31,7 +31,6 @@ using namespace std;
 #define __default_step_scan 1
 #define __DAC_Disc_Optimisation_step 2
 #define __above_noise_threshold 256
-#define __just_above_noise_th0_CSM_colour 30
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
 
@@ -287,7 +286,15 @@ public:
     void SetMaxScan(int val = -1);
     void setWindowWidgetsStatus(win_status s = win_status::startup);
     bool getEqualisationHasBeenLoaded(){ return _equalisationLoaded; }
-    bool isEqualisingTHHOnly() { return _equalisationCombination == __OnlyTHH; }
+    int getFixedTh0()
+    {
+        if (_mpx3gui->getConfig()->getCsmSpm() && _mpx3gui->getConfig()->getColourMode()
+            && _fixTh0 > 0) {
+            return _fixTh0;
+        } else {
+            return -1;
+        }
+    }
 
 private:
     Ui::QCstmEqualization * _ui = nullptr;
@@ -340,6 +347,7 @@ private:
     int _maxScanTHL;
     int _stepScan;
     int _nHits;
+    int _fixTh0 = -1;
     int _fineTuningLoops;
     bool _threadFinished;
     bool _scanAllChips;
@@ -386,6 +394,7 @@ public slots:
 
 private slots:
 
+    void setFixTh0(int);
     void setFineTuningLoops(int);
     void setNHits(int);
     void ScanThreadFinished();

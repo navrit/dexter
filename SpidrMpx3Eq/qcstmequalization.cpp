@@ -77,10 +77,11 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 
     eqInstance = this;
 
+    _ui->h1LogyCheckBox->setVisible(true);
+
     // TODO
     // These two buttons will come back as we progress improving the equalization
     _ui->_startEqAll->setVisible( false );
-    _ui->h1LogyCheckBox->setVisible( false );
     _ui->h1CheckBox->setVisible( false );
 }
 
@@ -227,6 +228,11 @@ void QCstmEqualization::on_h1LogyCheckBox_toggled(bool checked) {
         }
         GetBarChart(int(_workChipsIndx[i]))->replot( QCustomPlot::rpQueued );
     }
+}
+
+void QCstmEqualization::setFixTh0(int dacValue)
+{
+    _fixTh0 = dacValue;
 }
 
 void QCstmEqualization::setFineTuningLoops(int nLoops) {
@@ -780,6 +786,8 @@ void QCstmEqualization::StartEqualization() {
         //            initialiseTestPulses(spidrcontrol);
         //            qDebug() << "[INFO] [Equalisation]\tInitialised test pulses for the entire scan!!!!!";
         //        }
+
+        qDebug() << "[DEBUG] shouldTh0BeFixed() = " << getFixedTh0();
 
         //! We only want to update this the first time
         if (_steeringInfo[0]->currentDAC_DISC_String == "DAC_DISC_L") {
@@ -2133,7 +2141,7 @@ uint QCstmEqualization::setDACToVoltage(int chipID, int dacCode, double V)
     spidrcontrol->setSpidrReg(0x10BC, int(testPulseEqualisationDialog->getTestPulsePeriod()), true);
 
     return true;
-}/*
+}*/
 
 /*bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int * maskedPixels)
 {
@@ -2517,7 +2525,12 @@ void QCstmEqualization::SetupSignalsAndSlots() {
 
     connect( _ui->equalizationTHLTHHCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationTHLTHH(int)) );
     connect( _ui->equalizationTypeCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationTHLType(int)) );
-    connect( _ui->equalizationSelectTHLTHHCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationShowTHLTHH(int)) );
+    connect(_ui->equalizationSelectTHLTHHCombo,
+            SIGNAL(activated(int)),
+            this,
+            SLOT(setEqualizationShowTHLTHH(int)));
+
+    connect(_ui->spinBox_fixTh0, SIGNAL(valueChanged(int)), this, SLOT(setFixTh0(int)));
 }
 
 void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
