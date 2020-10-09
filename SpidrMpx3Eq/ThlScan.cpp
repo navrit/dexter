@@ -258,11 +258,15 @@ void ThlScan::FineTuning() {
     //!   same object used for the on-extrapolation scan.
     _scheduledForFineTuning = ExtractPixelsNotOnTarget();
 
+    const ulong workChipsSize = _workChipsIdx.size();
+    const bool colourMode = _mpx3gui->getConfig()->getColourMode();
+    const bool csmMode = _mpx3gui->getConfig()->getCsmSpm();
 
     //! Send configuration to the chip
-    for ( unsigned int di = 0 ; di < _workChipsIndx.size() ; di++ ) {
-        int currentChip = _workChipsIndx[di];
-        if ( ! _mpx3gui->getConfig()->detectorResponds(currentChip)) continue;
+    for (unsigned int di = 0; di < workChipsSize; di++) {
+        int currentChip = _workChipsIdx[di];
+        if (!_mpx3gui->getConfig()->detectorResponds(currentChip))
+            continue;
 
         //! Send the adj bits
         _equalisation->SetAllAdjustmentBits(sc, currentChip, false);
@@ -270,22 +274,24 @@ void ThlScan::FineTuning() {
         //! While equalizing one threshold the other should be set at a high value
         //!   to keep that circuit from reacting.  Set it to 256 unless test pulses are on
         if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-            SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_1, __above_noise_threshold );
-            if ( _mpx3gui->getConfig()->getColourMode() ) {
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_3, __above_noise_threshold );
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_5, __above_noise_threshold );
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_7, __above_noise_threshold );
+            setDac(sc, currentChip, MPX3RX_DAC_THRESH_1, __above_noise_threshold);
+            if (colourMode) {
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_3, __above_noise_threshold);
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_5, __above_noise_threshold);
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_7, __above_noise_threshold);
             }
         } else if ( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-            int threshold = __above_noise_threshold;
-            //            if (_testPulses) {
-            //                threshold = 40;
-            //            }
-            SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_0, threshold );
-            if ( _mpx3gui->getConfig()->getColourMode() ) {
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_2, threshold );
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_4, threshold );
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_6, threshold );
+            // If equalising THH with CSM+Colour mode, then set th0 to 30 (__just_above_noise_th0_CSM_colour)
+            // Otherwise, normal operation. Set to 256 (__above_noise_threshold)
+            if (colourMode && csmMode) {
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_0, __just_above_noise_th0_CSM_colour);
+            } else {
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_0, __above_noise_threshold);
+            }
+            if (colourMode) {
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_2, __above_noise_threshold);
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_4, __above_noise_threshold);
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_6, __above_noise_threshold);
             }
         }
     }
@@ -293,7 +299,10 @@ void ThlScan::FineTuning() {
     //! Setup signals, 2 for GUI, 1 for data taking
     connect( this, SIGNAL( UpdateChartSignal(int, int, int) ), this, SLOT( UpdateChart(int, int, int) ) );
     connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
-    connect(_equalisation, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+    connect(_equalisation,
+            SIGNAL(stop_data_taking_thread()),
+            this,
+            SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 
     //! Start with the adjustments currently reacting
     //FillAdjReactTHLHistory();
@@ -440,17 +449,28 @@ void ThlScan::FineTuning() {
                     // ---------------------------------------------------------
 
                     // Set the threshold on all chips
-                    const ulong workChipsSize = _workChipsIndx.size();
-                    for ( ulong devId = 0; devId < workChipsSize; devId++ ) {
-                        SetDAC_propagateInGUI( sc, _workChipsIndx[devId], _dac_code, _thlItr );
-                        if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
-                            SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
-                            SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
-                            SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
-                        } else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
-                            SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
-                            SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
-                            SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
+                    for (ulong chip = 0; chip < workChipsSize; chip++) {
+                        setDac(sc, _workChipsIdx[chip], _dac_code, _thlItr);
+                        if (colourMode && _dac_code == MPX3RX_DAC_THRESH_0) {
+                            setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_2, _thlItr);
+                            setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_4, _thlItr);
+                            setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_6, _thlItr);
+                        } else if (colourMode && _dac_code == MPX3RX_DAC_THRESH_1) {
+                            setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_3, _thlItr);
+                            setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_5, _thlItr);
+                            setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_7, _thlItr);
+                        }
+
+                        // When equalising THH in CSM+colour mode, always set th0 to 30 (__just_above_noise_th0_CSM_colour)
+                        if (colourMode && csmMode) {
+                            if (_dac_code == MPX3RX_DAC_THRESH_1 || _dac_code == MPX3RX_DAC_THRESH_3
+                                || _dac_code == MPX3RX_DAC_THRESH_5
+                                || _dac_code == MPX3RX_DAC_THRESH_7) {
+                                setDac(sc,
+                                       _workChipsIdx[chip],
+                                       MPX3RX_DAC_THRESH_0,
+                                       __just_above_noise_th0_CSM_colour);
+                            }
                         }
                     }
 
@@ -836,24 +856,26 @@ void ThlScan::EqualizationScan() {
         }
 
         //! While equalizing one threshold the other should be set at a high value
-        //!   to keep that circuit from reacting.  Set it at 256
+        //!   to keep that circuit from reacting.  Set to 256 (__above_noise_threshold)
         if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-            SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_1, __above_noise_threshold );
-            if ( _mpx3gui->getConfig()->getColourMode() ) {
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_3, __above_noise_threshold );
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_5, __above_noise_threshold );
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_7, __above_noise_threshold );
+            setDac(sc, currentChip, MPX3RX_DAC_THRESH_1, __above_noise_threshold);
+            if (colourMode) {
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_3, __above_noise_threshold);
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_5, __above_noise_threshold);
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_7, __above_noise_threshold);
             }
-        } else if ( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-            int threshold = __above_noise_threshold;
-            //            if (_testPulses) {
-            //                threshold = 40;
-            //            }
-            SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_0, threshold );
-            if ( _mpx3gui->getConfig()->getColourMode() ) {
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_2, threshold );
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_4, threshold );
-                SetDAC_propagateInGUI( sc, currentChip, MPX3RX_DAC_THRESH_6, threshold );
+        } else if (_DAC_Disc_code == MPX3RX_DAC_DISC_H) {
+            // If equalising THH with CSM+Colour mode, then set th0 to 30 (__just_above_noise_th0_CSM_colour)
+            // Otherwise, normal operation. Set to 256 (__above_noise_threshold)
+            if (colourMode && csmMode) {
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_0, __just_above_noise_th0_CSM_colour);
+            } else {
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_0, __above_noise_threshold);
+            }
+            if (colourMode) {
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_2, __above_noise_threshold);
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_4, __above_noise_threshold);
+                setDac(sc, currentChip, MPX3RX_DAC_THRESH_6, __above_noise_threshold);
             }
         }
     }
@@ -939,17 +961,28 @@ void ThlScan::EqualizationScan() {
                 disconnect( this, SIGNAL( fillText(QString) ), _equalisation->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
                 // Set the threshold on all chips
-                const ulong workChipsSize = _workChipsIndx.size();
-                for ( ulong devId = 0; devId < workChipsSize; devId++ ) {
-                    SetDAC_propagateInGUI( sc, _workChipsIndx[devId], _dac_code, _thlItr );
-                    if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
-                        SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
-                        SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
-                        SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
-                    } else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
-                        SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
-                        SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
-                        SetDAC_propagateInGUI( sc, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
+                for (ulong chip = 0; chip < workChipsSize; chip++) {
+                    setDac(sc, _workChipsIdx[chip], _dac_code, _thlItr);
+                    if (colourMode && _dac_code == MPX3RX_DAC_THRESH_0) {
+                        setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_2, _thlItr);
+                        setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_4, _thlItr);
+                        setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_6, _thlItr);
+                    } else if (colourMode && _dac_code == MPX3RX_DAC_THRESH_1) {
+                        setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_3, _thlItr);
+                        setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_5, _thlItr);
+                        setDac(sc, _workChipsIdx[chip], MPX3RX_DAC_THRESH_7, _thlItr);
+                    }
+
+                    // When equalising THH in CSM+colour mode, always set th0 to 30 (__just_above_noise_th0_CSM_colour)
+                    if (colourMode && csmMode) {
+                        if (_dac_code == MPX3RX_DAC_THRESH_1 || _dac_code == MPX3RX_DAC_THRESH_3
+                            || _dac_code == MPX3RX_DAC_THRESH_5
+                            || _dac_code == MPX3RX_DAC_THRESH_7) {
+                            setDac(sc,
+                                   _workChipsIdx[chip],
+                                   MPX3RX_DAC_THRESH_0,
+                                   __just_above_noise_th0_CSM_colour);
+                        }
                     }
                 }
 
