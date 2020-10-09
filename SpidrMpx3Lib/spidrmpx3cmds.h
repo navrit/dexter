@@ -61,7 +61,7 @@
 #define CMD_SET_DISCCSMSPM     0x332
 #define CMD_SET_INTERNALTP     0x333
 #define CMD_SET_COUNTERDEPTH   0x334
-#define CMD_SET_EQTHRESHH      0x335
+#define CMD_SET_EQUALISATION_BIT 0x335
 #define CMD_SET_COLOURMODE     0x336
 #define CMD_SET_CSMSPM         0x337
 #define CMD_SET_SENSEDAC       0x338
@@ -136,8 +136,7 @@
 #pragma GCC diagnostic ignored "-Wunused-variable"
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
-static const char *CMD_STR[] =
-  {
+static const char *CMD_STR[] = {
     "<no operation>   ", // 0x900
     "GET_SOFTWVERSION ", // 0x901
     "GET_FIRMWVERSION ", // 0x902
@@ -189,22 +188,22 @@ static const char *CMD_STR[] =
     "-----",             // 0x22E
     "-----",             // 0x22F
 
-    "SET_CRW          ", // 0x330
-    "SET_POLARITY     ", // 0x331
-    "SET_DISCCSMSPM   ", // 0x332
-    "SET_INTERNALTP   ", // 0x333
-    "SET_COUNTERDEPTH ", // 0x334
-    "SET_EQTHRESHH    ", // 0x335
-    "SET_COLOURMODE   ", // 0x336
-    "SET_CSMSPM       ", // 0x337
-    "SET_SENSEDAC     ", // 0x338
-    "SET_PS           ", // 0x339
-    "SET_EXTDAC       ", // 0x33A
-    "WRITE_OMR        ", // 0x33B
-    "SET_GAINMODE     ", // 0x33C
-    "-----",             // 0x33D
-    "-----",             // 0x33E
-    "-----",             // 0x33F
+    "SET_CRW          ",        // 0x330
+    "SET_POLARITY     ",        // 0x331
+    "SET_DISCCSMSPM   ",        // 0x332
+    "SET_INTERNALTP   ",        // 0x333
+    "SET_COUNTERDEPTH ",        // 0x334
+    "SET_EQUALISATION_BIT    ", // 0x335
+    "SET_COLOURMODE   ",        // 0x336
+    "SET_CSMSPM       ",        // 0x337
+    "SET_SENSEDAC     ",        // 0x338
+    "SET_PS           ",        // 0x339
+    "SET_EXTDAC       ",        // 0x33A
+    "WRITE_OMR        ",        // 0x33B
+    "SET_GAINMODE     ",        // 0x33C
+    "-----",                    // 0x33D
+    "-----",                    // 0x33E
+    "-----",                    // 0x33F
 
     "GET_TRIGCONFIG   ", // 0x440
     "SET_TRIGCONFIG   ", // 0x441
@@ -283,7 +282,7 @@ static const char *CMD_STR[] =
     "SET_CHIPBOARDID  ", // 0x785
     "SET_BOARDID      ", // 0x786
     "REINIT_MACADDR   "  // 0x787
-  };
+};
 
 // Reply bit: set in the reply message in the command identifier
 #define CMD_REPLY            0x00010000

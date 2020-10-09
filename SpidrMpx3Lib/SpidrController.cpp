@@ -840,12 +840,12 @@ bool SpidrController::setPixelDepth( int dev_nr, int bits,
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setEqThreshH( int dev_nr, bool equalize )
+bool SpidrController::setEqualisationOMRBit(int dev_nr, bool equalize)
 {
   // Matches 'Equalization' bit for Medipix3RX
   int val = 0;
   if( equalize ) val = 1;
-  return this->requestSetInt( CMD_SET_EQTHRESHH, dev_nr, val );
+  return this->requestSetInt(CMD_SET_EQUALISATION_BIT, dev_nr, val);
 }
 
 // ----------------------------------------------------------------------------

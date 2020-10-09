@@ -130,7 +130,7 @@ class MY_LIB_API SpidrController
   bool setPixelDepth           ( int  dev_nr, int  bits,
                                  bool two_counter_readout = false,
                                  bool two_counter_readout_softw = false );
-  bool setEqThreshH            ( int  dev_nr, bool equalize );
+  bool setEqualisationOMRBit(int dev_nr, bool equalize);
   bool setColourMode           ( int  dev_nr, bool colour );
   bool setCsmSpm               ( int  dev_nr, int  csm );
   bool setEnablePixelCom       ( int  dev_nr, bool enable );

@@ -248,7 +248,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     //spidrcontrol->setInternalTestPulse( deviceIndex, true ); // Internal tests pulse
 
     // Not an equalization
-    if ( item == __ALL ) spidrcontrol->setEqThreshH( deviceIndex, false );
+    if ( item == __ALL ) spidrcontrol->setEqualisationOMRBit( deviceIndex, false );
 
     if ( item == __ALL || item == __colourMode ) spidrcontrol->setColourMode( deviceIndex, getColourMode() );   // false: Fine Pitch
     if ( item == __ALL || item == __CsmSpm ) spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() );   			// 0: Single Pixel mode
@@ -345,7 +345,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     //spidrcontrol->setInternalTestPulse( deviceIndex, true ); // Internal tests pulse
 
     // Not an equalization
-    if( item == __ALL ) spidrcontrol->setEqThreshH( deviceIndex, extrapars.equalizationBit );
+    if( item == __ALL ) spidrcontrol->setEqualisationOMRBit( deviceIndex, extrapars.equalizationBit );
 
     if( item == __ALL || item == __colourMode ) spidrcontrol->setColourMode( deviceIndex, getColourMode() ); // false       // Fine Pitch
     if( item == __ALL || item == __CsmSpm ) spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() ); // 0 );				// Single Pixel mode
