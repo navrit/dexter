@@ -993,54 +993,57 @@ void ThlScan::EqualizationScan() {
 
                 while ( _spidrdaq->hasFrame( _timeOut ) ) {
 
-                    doReadFrames.push_back( true ); // assume a good frame
+                    if (_thlItr < __above_noise_threshold) { // Always ignore the first frame (THL=256), sometimes there's all noise
+                        doReadFrames.push_back( true ); // assume a good frame
 
-                    // Check quality
-                    FrameSet *frameSet = _spidrdaq->getFrameSet();
-                    if  (frameSet->pixelsLost() != 0 ) { // The total number of lost packets/pixels detected in the current frame
-                        // schedule a bad frame.  Don't 'continue' the loop or release frame just yet !
-                        qDebug() << "[ERROR]\tFrameSet, bad frame, thl: " << _thlItr << " | lost pixels =" << frameSet->pixelsLost();
-                        doReadFrames[ulong(framesCntr)] = false;
-                    }
-
-                    if ( doReadFrames[ulong(framesCntr)] ) {
-
-                        int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
-                        // Go through all chips avoiding those not present
-                        for ( int idx = 0 ; idx < nChips ; idx++ ) {
-
-                            if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
-
-                            // Stack
-                            _dataset->setFrame(frameSet, idx, 0);
+                        // Check quality
+                        FrameSet *frameSet = _spidrdaq->getFrameSet();
+                        if  (frameSet->pixelsLost() != 0 ) { // The total number of lost packets/pixels detected in the current frame
+                            // schedule a bad frame.  Don't 'continue' the loop or release frame just yet !
+                            qDebug() << "[ERROR]\tFrameSet, bad frame, thl: " << _thlItr << " | lost pixels =" << frameSet->pixelsLost();
+                            doReadFrames[ulong(framesCntr)] = false;
                         }
 
-                        // Once the frame is complete, extract info
-                        _data = _dataset->getLayer( 0 );
-                        // I am assuming that all the frames have the same size in bytes
-                        _pixelReactiveInScan += ExtractScanInfo( _data, MPX_PIXELS * 4 * _nchipsX*_nchipsY, _thlItr );
-                    }
+                        if ( doReadFrames[ulong(framesCntr)] ) {
 
-                    _spidrdaq->releaseFrame(frameSet);
+                            int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+                            // Go through all chips avoiding those not present
+                            for ( int idx = 0 ; idx < nChips ; idx++ ) {
 
-                    if ( doReadFrames[ulong(framesCntr)] ) {
+                                if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
 
-                        // Report to heatmap
-                        emit UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
+                                // Stack
+                                _dataset->setFrame(frameSet, idx, 0);
+                            }
 
-                        // Report to graph
-                        for ( ulong devId = 0; devId < workChipsSize; devId++ ) {
-                            if (!_blindScan)
-                                emit UpdateChartSignal(int(_workChipsIdx[devId]), _setId, _thlItr);
+                            // Once the frame is complete, extract info
+                            _data = _dataset->getLayer( 0 );
+                            // I am assuming that all the frames have the same size in bytes
+                            _pixelReactiveInScan += ExtractScanInfo( _data, MPX_PIXELS * 4 * _nchipsX*_nchipsY, _thlItr );
                         }
 
-                        // Last scan boundaries
-                        // This information could be useful for a next scan
-                        if ( _pixelReactiveInScan != 0 ) {
-                            if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
-                            if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+                        _spidrdaq->releaseFrame(frameSet);
+
+                        if ( doReadFrames[ulong(framesCntr)] ) {
+
+                            // Report to heatmap
+                            emit UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
+
+                            // Report to graph
+                            for ( ulong devId = 0; devId < workChipsSize; devId++ ) {
+                                if (!_blindScan)
+                                    emit UpdateChartSignal(int(_workChipsIdx[devId]), _setId, _thlItr);
+                            }
+
+                            // Last scan boundaries
+                            // This information could be useful for a next scan
+                            if ( _pixelReactiveInScan != 0 ) {
+                                if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
+                                if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+                            }
                         }
                     }
+
                     framesCntr++;
                 }
 

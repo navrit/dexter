@@ -707,7 +707,11 @@ void QCstmEqualization::StartEqualizationSingleChip() {
     // Init
     if ( ! InitEqualization( _deviceIndex ) ) return;
 
+    // Calling this multiple times hopefully deals with the noise at the beginning of a scan problem, idk..
     KeepOtherChipsQuiet();
+    KeepOtherChipsQuiet();
+    KeepOtherChipsQuiet();
+
     _ui->_startEq->setEnabled(false);
     _ui->_startEqAllSequential->setEnabled(false);
     StartEqualization( );
@@ -722,7 +726,7 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
         // if the user accepts to continue _deviceIndex will start at 0
         _deviceIndex = -1;
         _isSequentialAllChipsEqualization = true;
-        if(!_isRemotePath){
+        if (!_isRemotePath) {
             if ( ! makeTeaCoffeeDialog() ) {
                 setDeviceIndex(0, true);
                 _ui->_startEq->setEnabled(true);
@@ -748,7 +752,7 @@ void QCstmEqualization::StartEqualizationSequentialSingleChipsRemotely(const QSt
 
 void QCstmEqualization::StartEqualizationAllChips() {
 
-    if(makeTeaCoffeeDialog()){
+    if (makeTeaCoffeeDialog()) {
         // Get busy !
         _busy = true;
         _scanAllChips = true;
