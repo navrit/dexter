@@ -107,7 +107,7 @@ void QCstmEqualization::FullEqRewind()
 
     // Suggest a descendant scan
     _maxScanTHL = 0;
-    _minScanTHL = MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
+    _minScanTHL = 200;//MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
     _scanDescendant = true;
     _busy = false;
     _resdataset = nullptr;
@@ -824,14 +824,14 @@ void QCstmEqualization::StartEqualization() {
             Configuration(int(_workChipsIndx[i]), _steeringInfo[i]->currentTHx, true);
             _steeringInfo[i]->globalAdj = 0;
             _steeringInfo[i]->currentDAC_DISC_OptValue = int(DAC_DISC_1_value); // for now make the opt value equal to the test value
-            //! Default = 100 for noise (SLGM)
+            //! Default = 80 for noise (SLGM)
             qDebug() << "[INFO] [Equalisation]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
 
         temporarilyOverrideUserChosenSpacing();
-        DAC_Disc_Optimisation_100(); // Prepare and launch the thread
+        DAC_Disc_Optimisation_80(); // Prepare and launch the thread
 
-    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimisation_100) ) {
+    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimisation_80) ) {
 
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
             // Extract results from immediately previous scan. Calc the stats now (this is quick)
@@ -840,14 +840,14 @@ void QCstmEqualization::StartEqualization() {
             DAC_Disc_Optimisation_DisplayResults( _scans[int(_scanIndex - 1)]->GetScanResults(int(_workChipsIndx[i])) );
             // New text value
             _steeringInfo[i]->currentDAC_DISC_OptValue = int(DAC_DISC_2_value); // for now make the opt value equal to the test value
-            //! Default = 150 for noise (SLGM)
+            //! Default = 120 for noise (SLGM)
             qDebug() << "[INFO] [Equalisation]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
 
         // And go for next scan
-        DAC_Disc_Optimisation_150( );
+        DAC_Disc_Optimisation_120( );
 
-    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimisation_150 ) ) {
+    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimisation_120 ) ) {
 
         for ( ulong i = 0 ; i < chipListSize ; i++ ) {
             // Extract results from immediately previous scan. Calc the stats now (this is quick)
@@ -858,10 +858,10 @@ void QCstmEqualization::StartEqualization() {
 
         // And calculate the optimal DAC_Disc
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
-            ScanResults *res_100 = _scans[int(_scanIndex - 2)]->GetScanResults(
+            ScanResults *res_80 = _scans[int(_scanIndex - 2)]->GetScanResults(
                 int(_workChipsIndx[i]));
-            ScanResults * res_150 = _scans[int(_scanIndex - 1)]->GetScanResults( int(_workChipsIndx[i]) );
-            DAC_Disc_Optimisation(int(_workChipsIndx[i]), res_100, res_150);
+            ScanResults * res_120 = _scans[int(_scanIndex - 1)]->GetScanResults( int(_workChipsIndx[i]) );
+            DAC_Disc_Optimisation(int(_workChipsIndx[i]), res_80, res_120);
         }
 
         // ------ //
@@ -1075,7 +1075,7 @@ std::string QCstmEqualization::BuildChartName(int val, const QString& leg) {
     return chartName.toStdString();
 }
 
-void QCstmEqualization::DAC_Disc_Optimisation_100() {
+void QCstmEqualization::DAC_Disc_Optimisation_80() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
@@ -1089,7 +1089,7 @@ void QCstmEqualization::DAC_Disc_Optimisation_100() {
     setMin( __half_DAC_range-1, true );
 
     // -------------------------------------------------------------------------
-    // 1) Scan with MPX3RX_DAC_DISC_L = 100
+    // 1) Scan with MPX3RX_DAC_DISC_L = 80
     ThlScan * tscan = new ThlScan(_mpx3gui, this);
     tscan->ConnectToHardware(spidrcontrol, spidrdaq);
     // Append the data set which will be used for this scan
@@ -1109,7 +1109,7 @@ void QCstmEqualization::DAC_Disc_Optimisation_100() {
         GetBarChart( int(_workChipsIndx[i]) )->rescaleX( double(_ui->eqMaxSpinBox->value()), double(_ui->eqMinSpinBox->value()));
     }
 
-    // DAC_DiscL=100
+    // DAC_DiscL=80
     for ( ulong i = 0 ; i < _workChipsIndx.size(); i++ ) {
         SetDAC_propagateInGUI(spidrcontrol, int(_workChipsIndx[i]), _steeringInfo[i]->currentDAC_DISC, _steeringInfo[i]->currentDAC_DISC_OptValue);
     }
@@ -1125,7 +1125,7 @@ void QCstmEqualization::DAC_Disc_Optimisation_100() {
     tscan->start();
 }
 
-void QCstmEqualization::DAC_Disc_Optimisation_150() {
+void QCstmEqualization::DAC_Disc_Optimisation_120() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
@@ -1139,22 +1139,22 @@ void QCstmEqualization::DAC_Disc_Optimisation_150() {
     setMin( __half_DAC_range-1, true );
 
     // -------------------------------------------------------------------------
-    // 2) Scan with MPX3RX_DAC_DISC_L = 150
+    // 2) Scan with MPX3RX_DAC_DISC_L = 120
     ThlScan * tscan = new ThlScan(_mpx3gui, this);
     tscan->ConnectToHardware(spidrcontrol, spidrdaq);
-    BarChartProperties cprop_150;
-    cprop_150.min_x = 0;
-    cprop_150.max_x = 200;
-    cprop_150.nBins = 512;
-    cprop_150.color_r = 0;
-    cprop_150.color_g = 122;
-    cprop_150.color_b = 255;
+    BarChartProperties cprop_120;
+    cprop_120.min_x = 0;
+    cprop_120.max_x = 200;
+    cprop_120.nBins = 512;
+    cprop_120.color_r = 0;
+    cprop_120.color_g = 122;
+    cprop_120.color_b = 255;
     for ( ulong i = 0 ; i < _workChipsIndx.size(); i++ ) {
-        cprop_150.name = BuildChartName( int(_workChipsIndx[i]), legend );
-        GetBarChart( int(_workChipsIndx[i]) )->AppendSet( cprop_150 );
+        cprop_120.name = BuildChartName( int(_workChipsIndx[i]), legend );
+        GetBarChart( int(_workChipsIndx[i]) )->AppendSet( cprop_120 );
     }
 
-    // DAC_DiscL=150
+    // DAC_DiscL=120
     for ( ulong i = 0 ; i < _workChipsIndx.size(); i++ ) {
         SetDAC_propagateInGUI(spidrcontrol, int(_workChipsIndx[i]), _steeringInfo[i]->currentDAC_DISC, _steeringInfo[i]->currentDAC_DISC_OptValue);
     }
@@ -1203,12 +1203,12 @@ int QCstmEqualization::FineTuning() {
     return 0;
 }
 
-void QCstmEqualization::DAC_Disc_Optimisation (int devId, ScanResults * res_100, ScanResults * res_150) {
+void QCstmEqualization::DAC_Disc_Optimisation (int devId, ScanResults * res_80, ScanResults * res_120) {
 
     ////////////////////////////////////////////////////////////////////////////////////
     // 3) With the results of step 1 and 2 I can obtain the dependency DAC_Disc[L/H](THL)
     double eta = 0., cut = 0.;
-    GetSlopeAndCut_IDAC_DISC_THL(res_100, res_150, eta, cut);
+    GetSlopeAndCut_IDAC_DISC_THL(res_80, res_120, eta, cut);
     GetSteeringInfo(devId)->currentEta_THx_DAC_Disc = eta;
     GetSteeringInfo(devId)->currentCut_THx_DAC_Disc = cut;
 
@@ -1220,7 +1220,7 @@ void QCstmEqualization::DAC_Disc_Optimisation (int devId, ScanResults * res_100,
     // Taking sigma from the first scan.
     const double OPTIMAL_EQUALISATION_SIGMA_VALUE = 3.7; // <= v2.1.7  3.2, >= v2.2.8 = 3.7
 
-    double meanTHL_for_opt_IDAC_DISC = defaultNoiseEqualisationTarget + OPTIMAL_EQUALISATION_SIGMA_VALUE * res_100->sigma;
+    double meanTHL_for_opt_IDAC_DISC = defaultNoiseEqualisationTarget + OPTIMAL_EQUALISATION_SIGMA_VALUE * res_80->sigma;
 
     // Using the relation DAC_Disc[L/H](THL) we can find the value of DAC_Disc
     //
@@ -2586,13 +2586,13 @@ void QCstmEqualization::setMin(int min, bool uisetting) {
     // 2) min and max equal
     // 3) not enough range for a scan
     if( min < 0 || min == _maxScanTHL || qAbs(min - _maxScanTHL) <= _stepScan ) {
-        _ui->eqMinSpinBox->setValue( _minScanTHL );
+        //_ui->eqMinSpinBox->setValue( _minScanTHL );
         return;
     }
 
     _minScanTHL = min;
 
-    if ( uisetting ) _ui->eqMinSpinBox->setValue( _minScanTHL );
+    /*if ( uisetting ) _ui->eqMinSpinBox->setValue( _minScanTHL );*/
 
     // decide if the scan is descendant
     if ( _minScanTHL > _maxScanTHL ) _scanDescendant = true;
@@ -2602,18 +2602,17 @@ void QCstmEqualization::setMin(int min, bool uisetting) {
 void QCstmEqualization::setMax(int max, bool uisetting) {
 
     if( max < 0 || max == _minScanTHL || qAbs(max - _minScanTHL) <= _stepScan ) {
-        _ui->eqMaxSpinBox->setValue( _maxScanTHL );
+        //_ui->eqMaxSpinBox->setValue( _maxScanTHL );
         return;
     }
 
     _maxScanTHL = max;
 
-    if ( uisetting ) _ui->eqMaxSpinBox->setValue( _maxScanTHL );
+    /*if ( uisetting ) _ui->eqMaxSpinBox->setValue( _maxScanTHL );*/
 
     // decide if the scan is descendant
     if ( _maxScanTHL < _minScanTHL ) _scanDescendant = true;
     else _scanDescendant = false;
-
 }
 
 void QCstmEqualization::setStep(int step, bool uisetting) {

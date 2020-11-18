@@ -180,8 +180,8 @@ public:
 
     typedef enum {
         __INIT = 0,
-        __DAC_Disc_Optimisation_100,
-        __DAC_Disc_Optimisation_150,
+        __DAC_Disc_Optimisation_80,
+        __DAC_Disc_Optimisation_120,
         __PrepareInterpolation_0x0,
         __PrepareInterpolation_0x5,
         __ScanOnInterpolation,
@@ -197,9 +197,9 @@ public:
     bool InitEqualization(int chipId);      //! chipId = -1  will equalize all available chips at once
     void NewRunInitEqualization();          //! partial initialisation
     void Configuration(int devId, int THx, bool reset);
-    void DAC_Disc_Optimisation_100();
-    void DAC_Disc_Optimisation_150();
-    void DAC_Disc_Optimisation(int devId, ScanResults * res_100, ScanResults * res_150);
+    void DAC_Disc_Optimisation_80();
+    void DAC_Disc_Optimisation_120();
+    void DAC_Disc_Optimisation(int devId, ScanResults * res_80, ScanResults * res_120);
     void PrepareInterpolation_0x0();
     void PrepareInterpolation_0x5();
     void ScanOnInterpolation();
@@ -320,8 +320,8 @@ private:
     bool testPulseMode = false;
 
     uint defaultNoiseEqualisationTarget = 10;
-    uint DAC_DISC_1_value = 100;
-    uint DAC_DISC_2_value = 150;
+    uint DAC_DISC_1_value = 80;
+    uint DAC_DISC_2_value = 120;
 
     void resetForNewEqualisation();
     void estimateEqualisationTarget();

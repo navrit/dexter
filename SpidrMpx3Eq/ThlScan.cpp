@@ -481,7 +481,7 @@ void ThlScan::FineTuning() {
 
                     while ( _spidrdaq->hasFrame( _timeOut ) ) {
 
-                        doReadFrames = true;// A frame is here
+                        doReadFrames = true; // A frame is here
 
                         //! Check quality
                         //! The total number of lost packets/pixels detected in the current frame
@@ -1366,7 +1366,7 @@ void ThlScan::SetMinScan(int min) {
     }
 
     _minScan = min;
-    _equalisation->GetUI()->eqMinSpinBox->setValue( _minScan );
+    //_equalisation->GetUI()->eqMinSpinBox->setValue( _minScan );
 }
 
 void ThlScan::SetMaxScan(int max) {
@@ -1378,7 +1378,7 @@ void ThlScan::SetMaxScan(int max) {
     }
 
     _maxScan = max;
-    _equalisation->GetUI()->eqMaxSpinBox->setValue( _maxScan );
+    //_equalisation->GetUI()->eqMaxSpinBox->setValue( _maxScan );
 }
 
 /**
@@ -1595,7 +1595,10 @@ void ThlScan::ExtractStatsOnChart(int devId, int setId) {
     QCPBarDataMap * dataSet = bc->GetDataSet( setId )->data();
     QCPBarDataMap::iterator i = dataSet->begin();
 
-    for (; i != dataSet->end(); ++i) {
+    // std::prev should be same as this dataSet->remove(dataSet->lastKey()); // Because there is often some shit right at the end from outlying noisy pixels.
+    dataSet->remove(dataSet->lastKey());
+
+    for (; i != std::prev(dataSet->end()); ++i) {
         if (int((*i).value) != 0) {
             weightedSum += ( (*i).key * (*i).value );
             weights += (*i).value;
@@ -1612,7 +1615,7 @@ void ThlScan::ExtractStatsOnChart(int devId, int setId) {
     // I need to weight the sigmas first
 
     i = dataSet->begin();
-    for (; i != dataSet->end(); ++i) {
+    for (; i != std::prev( dataSet->end() ); ++i) {
         GetScanResults(devId)->sigma += ( (*i).value * norm_val ) * (
                     ( (*i).key - GetScanResults(devId)->weighted_arithmetic_mean )
                     *
