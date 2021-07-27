@@ -67,18 +67,15 @@ const static int __stepperMotor_page_Id = 8;
 const static int __thresholdScan_page_Id = 9;
 
 #define BIN_FILES "Binary (*.bin)"
-#define TIFF_FILES "TIFF (*.tiff)"
-#define SPATIAL_TIFF_FILES "Spatial corrected TIFF (*_spatialCorrected.tiff)"
-#define RAW_TIFF_FILES "Raw TIFF (*_raw.tiff)"
-#define RAW_TIFF16_FILES "Raw TIFF16 (*_raw.tiff)"
+#define TIFF_FILES "Raw TIFF (*_raw.tiff)"
+#define TIFF16_FILES "Raw TIFF16 (*_raw.tiff)"
 #define PGM16_FILES "PGM16 (*_raw.pgm)"
-#define BOTH_TIFF_FILES "Corrected and uncorrected TIFFs (*.tiff)"
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"
 #define LONG_PERIOD_US 100000000
 
 const static QString _softwareName = "Dexter";
-const static QString _softwareVersion = QString("v2.3.0 ColourCsmEqRafa NB - "
+const static QString _softwareVersion = QString("v2.3.1 Fedora34 NB - "
                                                 + QString(GIT_CURRENT_SHA1));
 
 const static int tcpCommandPort = 6351; //! Diamond - Merlin interface

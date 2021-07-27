@@ -74,7 +74,6 @@ SOURCES += main.cpp \
     qcstmruler.cpp \
     heatmapdisplay.cpp \
     qcstmct.cpp \
-    qcstmcorrectionsdialog.cpp \
     statsdialog.cpp \
     profiledialog.cpp \
     dataconsumerthread.cpp \
@@ -122,7 +121,6 @@ HEADERS += mpx3gui.h \
     qcstmruler.h \
     heatmapdisplay.h \
     qcstmct.h \
-    qcstmcorrectionsdialog.h \
     statsdialog.h \
     profiledialog.h \
     dataconsumerthread.h \
@@ -165,7 +163,6 @@ FORMS    += mpx3gui.ui \
     qcstmct.ui \
     qcstmBHWindow.ui \
     qcstmBHdialog.ui \
-    qcstmcorrectionsdialog.ui \
     statsdialog.ui \
     profiledialog.ui \
     qcstmBHdialog.ui \

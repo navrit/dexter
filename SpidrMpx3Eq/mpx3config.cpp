@@ -2,1109 +2,1151 @@
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
 
+Mpx3Config::Mpx3Config() {
+  // number of devices connected
+  _devicePresenceLayout.clear();
+  _nDevicesPresent = 0;
 
-Mpx3Config::Mpx3Config()
-{
-    // number of devices connected
-    _devicePresenceLayout.clear();
-    _nDevicesPresent = 0;
-
-    _controller = nullptr;
+  _controller = nullptr;
 }
 
 bool Mpx3Config::RequiredOnEveryChipConfig(Mpx3Config::config_items item) {
-    return (
-                item == __ALL ||
-                (
-                    item != __nTriggers &&
-            item != __triggerLength &&
-            item != __triggerDowntime &&
-            item != __triggerMode &&
-            item != __biasVoltage
-            )
-                );
+  return (item == __ALL || (item != __nTriggers && item != __triggerLength &&
+                            item != __triggerDowntime &&
+                            item != __triggerMode && item != __biasVoltage));
 }
 
-bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
-{
-    return (
-                item == __ALL ||
-                item == __nTriggers ||
-                item == __triggerLength ||
-                item == __triggerDowntime ||
-                item == __triggerMode ||
-                item == __operationMode // operation mode requires trigger config too !
-                );
+bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item) {
+  return (
+      item == __ALL || item == __nTriggers || item == __triggerLength ||
+      item == __triggerDowntime || item == __triggerMode ||
+      item == __operationMode // operation mode requires trigger config too !
+  );
 }
 
-QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
-{
-    QJsonObject JSobjectParent, objIp, objDetector, objStepper, objIDELAY, objEnergyArray, objTargetEnergiesArray;
-    QJsonArray objDacsArray, objEnergySlopesArray, objEnergyOffsetsArray;
+QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs) {
+  QJsonObject JSobjectParent, objIp, objDetector, objStepper, objIDELAY,
+      objEnergyArray, objTargetEnergiesArray;
+  QJsonArray objDacsArray, objEnergySlopesArray, objEnergyOffsetsArray;
 
-    objIp.insert("SpidrControllerIp", SpidrAddress.toString());
-    objIp.insert("SpidrControllerPort", this->port);
-    objIp.insert("ZmqPubAddress", Zmq_Pub_address);
-    objIp.insert("ZmqSubAddress", Zmq_Sub_address);
+  objIp.insert("SpidrControllerIp", SpidrAddress.toString());
+  objIp.insert("SpidrControllerPort", this->port);
+  objIp.insert("ZmqPubAddress", Zmq_Pub_address);
+  objIp.insert("ZmqSubAddress", Zmq_Sub_address);
 
-    objDetector.insert("OperationMode", this->OperationMode);
-    objDetector.insert("PixelDepth", this->PixelDepth);
+  objDetector.insert("OperationMode", this->OperationMode);
+  objDetector.insert("PixelDepth", this->PixelDepth);
 
-    objDetector.insert("Polarity", getPolarityString());
+  objDetector.insert("Polarity", getPolarityString());
 
-    objDetector.insert("CsmSpm", this->CsmSpm);
-    objDetector.insert("GainMode", this->GainMode);
-    objDetector.insert("MaxPacketSize", this->MaxPacketSize);
-    objDetector.insert("TriggerMode", this->TriggerMode);
-    objDetector.insert("TriggerLength_us", (qint64)this->TriggerLength_us_64);
-    objDetector.insert("ContRWFreq", this->ContRWFreq);
+  objDetector.insert("CsmSpm", this->CsmSpm);
+  objDetector.insert("GainMode", this->GainMode);
+  objDetector.insert("MaxPacketSize", this->MaxPacketSize);
+  objDetector.insert("TriggerMode", this->TriggerMode);
+  objDetector.insert("TriggerLength_us", (qint64)this->TriggerLength_us_64);
+  objDetector.insert("ContRWFreq", this->ContRWFreq);
 
-    objDetector.insert("TriggerDeadtime_us",  (qint64)this->TriggerDowntime_us_64);
-    objDetector.insert("nTriggers", this->nTriggers);
-    objDetector.insert("ColourMode", this->colourMode);
-    objDetector.insert("BothCounters", this->readBothCounters);
-    objDetector.insert("DecodeFrames", this->decodeFrames);
-    objDetector.insert("BiasVoltage", this->biasVolt);
+  objDetector.insert("TriggerDeadtime_us", (qint64)this->TriggerDowntime_us_64);
+  objDetector.insert("nTriggers", this->nTriggers);
+  objDetector.insert("ColourMode", this->colourMode);
+  objDetector.insert("BothCounters", this->readBothCounters);
+  objDetector.insert("DecodeFrames", this->decodeFrames);
+  objDetector.insert("BiasVoltage", this->biasVolt);
 
-    objStepper.insert("Acceleration", this->stepperAcceleration);
-    objStepper.insert("Speed", this->stepperSpeed);
-    objStepper.insert("UseCalib", this->stepperUseCalib);
-    objStepper.insert("CalibPos0", this->stepperCalibPos0);
-    objStepper.insert("CalibAngle0", this->stepperCalibAngle0);
-    objStepper.insert("CalibPos1", this->stepperCalibPos1);
-    objStepper.insert("CalibAngle1", this->stepperCalibAngle1);
+  objStepper.insert("Acceleration", this->stepperAcceleration);
+  objStepper.insert("Speed", this->stepperSpeed);
+  objStepper.insert("UseCalib", this->stepperUseCalib);
+  objStepper.insert("CalibPos0", this->stepperCalibPos0);
+  objStepper.insert("CalibAngle0", this->stepperCalibAngle0);
+  objStepper.insert("CalibPos1", this->stepperCalibPos1);
+  objStepper.insert("CalibAngle1", this->stepperCalibAngle1);
 
-    /* Construct the IDELAY parameters */
-    for (int i = 0; i < _chipIDELAYS.size(); ++i) {
-        QString field_name = "chip_";
-        field_name.append(QString::number(i));
-        objIDELAY.insert(field_name, _chipIDELAYS[i]);
+  /* Construct the IDELAY parameters */
+  for (int i = 0; i < _chipIDELAYS.size(); ++i) {
+    QString field_name = "chip_";
+    field_name.append(QString::number(i));
+    objIDELAY.insert(field_name, _chipIDELAYS[i]);
+  }
+
+  /* Construct the target energies */
+  for (int th = 0; th < MPX3RX_DAC_THRESH_7; th++) {
+    objTargetEnergiesArray.insert(MPX3RX_DAC_TABLE[th].name,
+                                  this->getTargetEnergies(th));
+  }
+
+  /* Construct the Slopes and Offsets */
+  for (int chip = 0; chip < this->getDacCount(); chip++) {
+    QJsonObject obj, obj2;
+
+    for (int th = 0; th < MPX3RX_DAC_THRESH_7; th++) {
+      obj.insert(MPX3RX_DAC_TABLE[th].name,
+                 _mpx3gui->getEnergyCalibrator()->getSlope(chip, th));
     }
 
-    /* Construct the target energies */
-    for (int th = 0 ; th < MPX3RX_DAC_THRESH_7; th++) {
-        objTargetEnergiesArray.insert(MPX3RX_DAC_TABLE[th].name, this->getTargetEnergies(th));
+    for (int th = 0; th < MPX3RX_DAC_THRESH_7; th++) {
+      obj2.insert(MPX3RX_DAC_TABLE[th].name,
+                  _mpx3gui->getEnergyCalibrator()->getOffset(chip, th));
     }
 
-    /* Construct the Slopes and Offsets */
+    objEnergySlopesArray.insert(chip, obj);
+    objEnergyOffsetsArray.insert(chip, obj2);
+  }
+  /* Construct the energy array object with the Slopes and Offsets */
+  objEnergyArray.insert("Slopes", objEnergySlopesArray);
+  objEnergyArray.insert("Offsets", objEnergyOffsetsArray);
+
+  /* The user may or may not want to record the DACs, based on a GUI option */
+  if (includeDacs) {
     for (int chip = 0; chip < this->getDacCount(); chip++) {
-        QJsonObject obj, obj2;
-
-        for(int th = 0 ; th < MPX3RX_DAC_THRESH_7; th++) {
-            obj.insert(MPX3RX_DAC_TABLE[th].name, _mpx3gui->getEnergyCalibrator()->getSlope(chip, th));
-        }
-
-        for(int th = 0 ; th < MPX3RX_DAC_THRESH_7; th++) {
-            obj2.insert(MPX3RX_DAC_TABLE[th].name, _mpx3gui->getEnergyCalibrator()->getOffset(chip, th));
-        }
-
-        objEnergySlopesArray.insert(chip, obj);
-        objEnergyOffsetsArray.insert(chip, obj2);
+      QJsonObject obj;
+      for (int dac = 0; dac < MPX3RX_DAC_COUNT; dac++) {
+        obj.insert(MPX3RX_DAC_TABLE[dac].name, _dacVals[dac][chip]);
+      }
+      objDacsArray.insert(chip, obj);
     }
-    /* Construct the energy array object with the Slopes and Offsets */
-    objEnergyArray.insert("Slopes", objEnergySlopesArray);
-    objEnergyArray.insert("Offsets", objEnergyOffsetsArray);
+    JSobjectParent.insert("DACs", objDacsArray);
+  }
 
-    /* The user may or may not want to record the DACs, based on a GUI option */
-    if (includeDacs) {
-        for(int chip = 0; chip < this->getDacCount(); chip++){
-            QJsonObject obj;
-            for (int dac = 0 ; dac < MPX3RX_DAC_COUNT; dac++) {
-                obj.insert(MPX3RX_DAC_TABLE[dac].name, _dacVals[dac][chip]);
-            }
-            objDacsArray.insert(chip, obj);
-        }
-        JSobjectParent.insert("DACs", objDacsArray);
-    }
+  /* Insert all top level objects into the main document now */
+  JSobjectParent.insert("IDELAYConfig", objIDELAY);
+  JSobjectParent.insert("IPConfig", objIp);
+  JSobjectParent.insert("DetectorConfig", objDetector);
+  JSobjectParent.insert("StepperConfig", objStepper);
+  JSobjectParent.insert("EnergyCalibrationCoefficients", objEnergyArray);
+  JSobjectParent.insert("TargetEnergies", objTargetEnergiesArray);
 
-    /* Insert all top level objects into the main document now */
-    JSobjectParent.insert("IDELAYConfig", objIDELAY);
-    JSobjectParent.insert("IPConfig", objIp);
-    JSobjectParent.insert("DetectorConfig", objDetector);
-    JSobjectParent.insert("StepperConfig", objStepper);
-    JSobjectParent.insert("EnergyCalibrationCoefficients", objEnergyArray);
-    JSobjectParent.insert("TargetEnergies", objTargetEnergiesArray);
+  QJsonDocument doc;
+  doc.setObject(JSobjectParent);
 
-    QJsonDocument doc;
-    doc.setObject(JSobjectParent);
-
-    return doc;
+  return doc;
 }
 
-void Mpx3Config::onSetInhibitShutterRegisterOffset(int offset)
-{
-    _inhibitShutterRegisterOffset = offset;
+void Mpx3Config::onSetInhibitShutterRegisterOffset(int offset) {
+  _inhibitShutterRegisterOffset = offset;
 }
 
-bool Mpx3Config::isInhibitShutterSelected()
-{
-    return _isInhibitShutterSelected;
+bool Mpx3Config::isInhibitShutterSelected() {
+  return _isInhibitShutterSelected;
 }
 
-void Mpx3Config::setHdmiRegisterValue(int value)
-{
-    _hdmiregisterValue = value;
-}
+void Mpx3Config::setHdmiRegisterValue(int value) { _hdmiregisterValue = value; }
 
 void Mpx3Config::PickupStaticConfigurationFigures() {
 
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-    if ( spidrcontrol == nullptr ) return;
+  SpidrController *spidrcontrol = _mpx3gui->GetSpidrController();
+  if (spidrcontrol == nullptr)
+    return;
 
-    int clockMHz;
-    if ( spidrcontrol->getMpx3Clock( &clockMHz ) ) {
-        SystemClock = clockMHz;
-    }
-
+  int clockMHz;
+  if (spidrcontrol->getMpx3Clock(&clockMHz)) {
+    SystemClock = clockMHz;
+  }
 }
 
-void Mpx3Config::SendConfiguration( config_items item ) {
+void Mpx3Config::SendConfiguration(config_items item) {
 
-    // Before the globals, the configuration for each chip
-    // has to be loaded (otherwise there's a conflict with
-    // the initization of ReceiverThreadC
+  // Before the globals, the configuration for each chip
+  // has to be loaded (otherwise there's a conflict with
+  // the initization of ReceiverThreadC
 
-    // This are configuration bits which are not settable like the system clock
-    if ( item == __ALL ) {
-        _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP0, _chipIDELAYS[0], true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP1, _chipIDELAYS[1], true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP2, _chipIDELAYS[2], true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP3, _chipIDELAYS[3], true);
+  // This are configuration bits which are not settable like the system clock
+  if (item == __ALL) {
+    _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP0,
+                                                _chipIDELAYS[0], true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP1,
+                                                _chipIDELAYS[1], true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP2,
+                                                _chipIDELAYS[2], true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(MPX3RX_IDELAY_CHIP3,
+                                                _chipIDELAYS[3], true);
 
-        PickupStaticConfigurationFigures();
+    PickupStaticConfigurationFigures();
+  }
+
+  ////////////////////////////////////////////////////////////
+  // Items which don't need any communication to the device
+  if (item == __contRWFreq)
+    return;
+
+  ////////////////////////////////////////////////////////////
+  // Configuration required on every chip
+  if (RequiredOnEveryChipConfig(item)) {
+    int nDevSupported = getNDevicesSupported();
+    for (int i = 0; i < nDevSupported; i++) {
+      if (detectorResponds(i)) {
+        Configuration(false, i, item);
+      }
     }
+  }
 
-    ////////////////////////////////////////////////////////////
-    // Items which don't need any communication to the device
-    if ( item == __contRWFreq ) return;
+  ////////////////////////////////////////////////////////////
+  // Global configurations
+  SpidrController *spidrcontrol = _mpx3gui->GetSpidrController();
+  if (spidrcontrol == nullptr)
+    return;
 
-    ////////////////////////////////////////////////////////////
-    // Configuration required on every chip
-    if ( RequiredOnEveryChipConfig( item ) ) {
-        int nDevSupported = getNDevicesSupported();
-        for ( int i = 0 ; i < nDevSupported ; i++ ) {
-            if ( detectorResponds( i ) ) {
-                Configuration(false, i, item);
-            }
-        }
+  // Log level
+  if (item == __logLevel) {
+    spidrcontrol->setLogLevel(getLogLevel());
+  }
+
+  // Bias
+  if (item == __ALL || item == __biasVoltage) {
+    if (getBiasVoltage() > 0) {
+
+      spidrcontrol->setBiasSupplyEna(true);
+
+      if (spidrcontrol->setBiasVoltage(int(getBiasVoltage()))) {
+        qDebug() << "[CONF]\tSetting bias voltage to: " << getBiasVoltage()
+                 << "(V)";
+      } else {
+        qDebug() << "[ERROR]\tError setting internal bias voltage";
+      }
+
+    } else {
+      spidrcontrol->setBiasSupplyEna(false);
     }
+  }
 
-    ////////////////////////////////////////////////////////////
-    // Global configurations
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-    if ( spidrcontrol == nullptr ) return;
-
-    // Log level
-    if ( item == __logLevel ) {
-        spidrcontrol->setLogLevel( getLogLevel() );
-    }
-
-    // Bias
-    if( item == __ALL || item == __biasVoltage ) {
-        if ( getBiasVoltage() > 0 ) {
-
-            spidrcontrol->setBiasSupplyEna( true );
-
-            if ( spidrcontrol->setBiasVoltage(int(getBiasVoltage()))) {
-                qDebug() << "[CONF]\tSetting bias voltage to: " << getBiasVoltage() << "(V)";
-            } else {
-                qDebug() << "[ERROR]\tError setting internal bias voltage";
-            }
-
-        } else {
-            spidrcontrol->setBiasSupplyEna( false );
-        }
-    }
-
-    // Done with globals
+  // Done with globals
 }
 
 void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+  SpidrController *spidrcontrol = _mpx3gui->GetSpidrController();
 
-    // Reset pixel configuration if requested
-    if ( reset ) spidrcontrol->resetPixelConfig();
+  // Reset pixel configuration if requested
+  if (reset)
+    spidrcontrol->resetPixelConfig();
 
-    // Number of links
-    if ( item == __ALL ) {
-        spidrcontrol->setPs( deviceIndex, 3 ); // 3: 8 links
+  // Number of links
+  if (item == __ALL) {
+    spidrcontrol->setPs(deviceIndex, 3); // 3: 8 links
+  }
+
+  // Operation mode
+  if (item == __ALL || item == __operationMode) {
+    if (OperationMode == __operationMode_SequentialRW) {
+      spidrcontrol->setContRdWr(deviceIndex, false);
+    } else if (OperationMode == __operationMode_ContinuousRW) {
+      spidrcontrol->setContRdWr(deviceIndex, true);
+    } else {
+      spidrcontrol->setContRdWr(deviceIndex, false);
     }
+  }
 
-    // Operation mode
-    if ( item == __ALL || item == __operationMode ) {
-        if ( OperationMode == __operationMode_SequentialRW ) {
-            spidrcontrol->setContRdWr( deviceIndex, false );
-        } else if ( OperationMode == __operationMode_ContinuousRW ) {
-            spidrcontrol->setContRdWr( deviceIndex, true );
-        } else {
-            spidrcontrol->setContRdWr( deviceIndex, false );
-        }
-    }
+  // OMR
+  if (item == __ALL || item == __polarity)
+    spidrcontrol->setPolarity(deviceIndex,
+                              getPolarity()); // true: Holes collection
+  //_spidrcontrol->setDiscCsmSpm( 0 );		   // DiscL used
+  // spidrcontrol->setInternalTestPulse( deviceIndex, true ); // Internal tests
+  // pulse
 
-    // OMR
-    if ( item == __ALL || item == __polarity ) spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
-    //_spidrcontrol->setDiscCsmSpm( 0 );		   // DiscL used
-    //spidrcontrol->setInternalTestPulse( deviceIndex, true ); // Internal tests pulse
+  // Not an equalization
+  if (item == __ALL)
+    spidrcontrol->setEqualisationOMRBit(deviceIndex, false);
 
-    // Not an equalization
-    if ( item == __ALL ) spidrcontrol->setEqualisationOMRBit( deviceIndex, false );
+  if (item == __ALL || item == __colourMode)
+    spidrcontrol->setColourMode(deviceIndex,
+                                getColourMode()); // false: Fine Pitch
+  if (item == __ALL || item == __CsmSpm)
+    spidrcontrol->setCsmSpm(deviceIndex, getCsmSpm()); // 0: Single Pixel mode
 
-    if ( item == __ALL || item == __colourMode ) spidrcontrol->setColourMode( deviceIndex, getColourMode() );   // false: Fine Pitch
-    if ( item == __ALL || item == __CsmSpm ) spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() );   			// 0: Single Pixel mode
+  // Particular for Equalization
+  // spidrcontrol->setEqThreshH( deviceIndex, true );
+  // spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0:
+  // Selects DiscL, 1: Selects DiscH
 
-    // Particular for Equalization
-    //spidrcontrol->setEqThreshH( deviceIndex, true );
-    //spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+  // Gain
+  // LSB first for NO REASON !!!
+  // 00: SHGM  0
+  // 10: HGM   1
+  // 01: LGM   2
+  // 11: SLGM  3
+  if (item == __ALL || item == __gainMode)
+    spidrcontrol->setGainMode(deviceIndex, getGainMode());
 
-    // Gain
-    // LSB first for NO REASON !!!
-    // 00: SHGM  0
-    // 10: HGM   1
-    // 01: LGM   2
-    // 11: SLGM  3
-    if ( item == __ALL || item == __gainMode ) spidrcontrol->setGainMode( deviceIndex, getGainMode() );
+  // Other OMR
+  if (item == __ALL || item == __pixelDepth || item == __readBothCounters) {
+    bool bothCounters = (OperationMode == __operationMode_SequentialRW) &&
+                        getReadBothCounters();
+    spidrcontrol->setPixelDepth(deviceIndex, getPixelDepth(), bothCounters,
+                                false);
+    _mpx3gui->GetSpidrDaq()->setBothCounters(bothCounters);
+  }
 
-    // Other OMR
-    if ( item == __ALL || item == __pixelDepth || item == __readBothCounters) {
-        bool bothCounters = (OperationMode == __operationMode_SequentialRW) && getReadBothCounters();
-        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), bothCounters, false );
-        _mpx3gui->GetSpidrDaq()->setBothCounters(bothCounters);
-    }
+  // Packet size reports NOT IMPLEMENTED in the Leon software
+  // if ( item == __ALL || item == __maxPacketSize )
+  // spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
 
-    // Packet size reports NOT IMPLEMENTED in the Leon software
-    //if ( item == __ALL || item == __maxPacketSize ) spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
+  // HDMI cable config
+  if (item == __ALL) {
+    // HDMI 1 configs
+    unsigned int val1 = 0x5; // external_shutter first lemo connector
 
-    // HDMI cable config
-    if ( item == __ALL ) {
-        //HDMI 1 configs
-        unsigned int val1 = 0x5;//external_shutter first lemo connector
+    unsigned int val2 = 0xF; // reserved for inhibit shutter ( default is
+                             // disable) second lemo connector
+    val2 = val2 << 4;
+    // val2 = val2 << 16;
+    // unsigned int val1 = 0xB; // Debug shutter OUT (read back) | Connector 1,
+    // signal 3
+    //        unsigned int val3 = 0x4;//0x9; // Debug shutter OUT (read back) |
+    //        Connector 1, signal 3 val3 = val3 << 8;
 
+    // HDMI 2 configs  //outputs
 
-        unsigned int val2 = 0xF; //reserved for inhibit shutter ( default is disable) second lemo connector
-        val2 = val2 << 4;
-        //val2 = val2 << 16;
-        //unsigned int val1 = 0xB; // Debug shutter OUT (read back) | Connector 1, signal 3
-//        unsigned int val3 = 0x4;//0x9; // Debug shutter OUT (read back) | Connector 1, signal 3
-//        val3 = val3 << 8;
+    unsigned int val4 = 0x4; // shutter out  first lemo connector
+    val4 = val4 << 12;
 
-        //HDMI 2 configs  //outputs
+    unsigned int val5 = 0xA; // inhibit_shuter AND shutter second lemo connector
+    val5 = val5 << 16;
 
-        unsigned int val4 = 0x4;  //shutter out  first lemo connector
-        val4 = val4 << 12;
+    unsigned int val6 = 0xB; // counter_select in continous
+    val6 = val6 << 20;
 
-        unsigned int val5 = 0xA; //inhibit_shuter AND shutter second lemo connector
-        val5 = val5 << 16;
-
-
-        unsigned int val6 = 0xB; //counter_select in continous
-        val6 = val6 << 20;
-
-       // val3 = val3 << 20;
-        // mask
-        // mask
-        // mask
-        unsigned int val = val1 | val2 |val4|val5|val6;
-        //qDebug() << "HDMI Setting : " << val;
-        spidrcontrol->setSpidrReg(0x0810, val, true);
-        int valout = 0;
-        spidrcontrol->getSpidrReg(0x0810,&valout);
-        qDebug().noquote() << "[INFO]\tHDMI config : " << QString::number(valout, 2);
-    }
-
+    // val3 = val3 << 20;
+    // mask
+    // mask
+    // mask
+    unsigned int val = val1 | val2 | val4 | val5 | val6;
+    // qDebug() << "HDMI Setting : " << val;
+    spidrcontrol->setSpidrReg(0x0810, val, true);
+    int valout = 0;
+    spidrcontrol->getSpidrReg(0x0810, &valout);
+    qDebug().noquote() << "[INFO]\tHDMI config : "
+                       << QString::number(valout, 2);
+  }
 }
 
-void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_parameters extrapars, config_items item) {
+void Mpx3Config::Configuration(bool reset, int deviceIndex,
+                               extra_config_parameters extrapars,
+                               config_items item) {
 
-    qDebug() << "[INFO]\tConfiguring chip [" << deviceIndex << "] for equalization.";
+  qDebug() << "[INFO]\tConfiguring chip [" << deviceIndex
+           << "] for equalization.";
 
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+  SpidrController *spidrcontrol = _mpx3gui->GetSpidrController();
 
-    // Number of links
-    if( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 );
+  // Number of links
+  if (item == __ALL)
+    spidrcontrol->setPs(deviceIndex, 3);
 
-    // Reset pixel configuration
-    if ( reset ) spidrcontrol->resetPixelConfig();
+  // Reset pixel configuration
+  if (reset)
+    spidrcontrol->resetPixelConfig();
 
-    // Operation mode
-    if ( item == __ALL || item == __operationMode ) {
-        if ( OperationMode == __operationMode_SequentialRW ) {
-            spidrcontrol->setContRdWr( deviceIndex, false );
-        } else if ( OperationMode == __operationMode_ContinuousRW ) {
-            spidrcontrol->setContRdWr( deviceIndex, true );
-        } else {
-            spidrcontrol->setContRdWr( deviceIndex, false );
-        }
+  // Operation mode
+  if (item == __ALL || item == __operationMode) {
+    if (OperationMode == __operationMode_SequentialRW) {
+      spidrcontrol->setContRdWr(deviceIndex, false);
+    } else if (OperationMode == __operationMode_ContinuousRW) {
+      spidrcontrol->setContRdWr(deviceIndex, true);
+    } else {
+      spidrcontrol->setContRdWr(deviceIndex, false);
     }
+  }
 
-    if ( item == __ALL || item == __polarity ) spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
+  if (item == __ALL || item == __polarity)
+    spidrcontrol->setPolarity(deviceIndex,
+                              getPolarity()); // true: Holes collection
 
-    // OMR
-    //spidrcontrol->setPolarity( true );		// Holes collection
-    //_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
-    //spidrcontrol->setInternalTestPulse( deviceIndex, true ); // Internal tests pulse
+  // OMR
+  // spidrcontrol->setPolarity( true );		// Holes collection
+  //_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+  // spidrcontrol->setInternalTestPulse( deviceIndex, true ); // Internal tests
+  // pulse
 
-    // Not an equalization
-    if( item == __ALL ) spidrcontrol->setEqualisationOMRBit( deviceIndex, extrapars.equalizationBit );
+  // Not an equalization
+  if (item == __ALL)
+    spidrcontrol->setEqualisationOMRBit(deviceIndex, extrapars.equalizationBit);
 
-    if( item == __ALL || item == __colourMode ) spidrcontrol->setColourMode( deviceIndex, getColourMode() ); // false       // Fine Pitch
-    if( item == __ALL || item == __CsmSpm ) spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() ); // 0 );				// Single Pixel mode
+  if (item == __ALL || item == __colourMode)
+    spidrcontrol->setColourMode(deviceIndex,
+                                getColourMode()); // false       // Fine Pitch
+  if (item == __ALL || item == __CsmSpm)
+    spidrcontrol->setCsmSpm(
+        deviceIndex,
+        getCsmSpm()); // 0 );				// Single Pixel mode
 
-    // Particular for Equalization
-    //spidrcontrol->setEqThreshH( deviceIndex, true );
-    if( item == __ALL ) spidrcontrol->setDiscCsmSpm( deviceIndex, extrapars.DiscCsmSpm );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
-    //_spidrcontrol->setGainMode( 1 );
+  // Particular for Equalization
+  // spidrcontrol->setEqThreshH( deviceIndex, true );
+  if (item == __ALL)
+    spidrcontrol->setDiscCsmSpm(
+        deviceIndex,
+        extrapars
+            .DiscCsmSpm); // In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+  //_spidrcontrol->setGainMode( 1 );
 
-    // Gain modes[0:1]  .. but that is backwards, so the values are in logical order!
-    // 00: SHGM  = 0
-    // 10: HGM   = 1 !!
-    // 01: LGM   = 2 !!
-    // 11: SLGM  = 3
-    if( item == __ALL || item == __gainMode ) spidrcontrol->setGainMode( deviceIndex, getGainMode() );
+  // Gain modes[0:1]  .. but that is backwards, so the values are in logical
+  // order! 00: SHGM  = 0 10: HGM   = 1 !! 01: LGM   = 2 !! 11: SLGM  = 3
+  if (item == __ALL || item == __gainMode)
+    spidrcontrol->setGainMode(deviceIndex, getGainMode());
 
-    // Other OMR
-    if( item == __ALL || item == __pixelDepth || item == __readBothCounters ) {
-        bool bothCounters = (OperationMode == __operationMode_SequentialRW) && getReadBothCounters();
-        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), bothCounters, false );
-        _mpx3gui->GetSpidrDaq()->setBothCounters(bothCounters);
+  // Other OMR
+  if (item == __ALL || item == __pixelDepth || item == __readBothCounters) {
+    bool bothCounters = (OperationMode == __operationMode_SequentialRW) &&
+                        getReadBothCounters();
+    spidrcontrol->setPixelDepth(deviceIndex, getPixelDepth(), bothCounters,
+                                false);
+    _mpx3gui->GetSpidrDaq()->setBothCounters(bothCounters);
+  }
+
+  // Packet size reports NOT IMPLEMENTED in the Leon software
+  // if( item == __ALL || item == __maxPacketSize )
+  // spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
+
+  // Write OMR ... i shouldn't call this here
+  //_spidrcontrol->writeOmr( 0 );
+
+  // Trigger config
+  int trig_mode = getTriggerMode(); // Auto-trigger mode = 4
+  int trig_length_us =
+      getTriggerLength_64(); // This time shouldn't be longer than the period
+                             // defined by trig_freq_hz
+
+  // int trig_freq_mhz   = (int) 1000 * ( 1. /
+  // (2.*((double)trig_length_us/1000000)) );   // Make the period double the
+  // trig_len
+  int trig_freq_mhz =
+      getTriggerFreq_mHz(); // Make the period double the trig_len
+  // int trig_freq_hz   = (int) ( 1. / (1.1*((double)trig_length_us/1000000)) );
+  // // Make the period double the trig_len
+
+  // int nr_of_triggers = getNTriggers();    // This is the number of shutter
+  // open i get
+
+  if (item == __ALL || item == __nTriggers) {
+
+    spidrcontrol->setShutterTriggerConfig(SHUTTERMODE_AUTO, trig_length_us,
+                                          trig_freq_mhz, extrapars.nTriggers);
+
+    qDebug() << "[CONF] id:" << deviceIndex << "| trig_mode:" << trig_mode
+             << "| trig_length_us:" << trig_length_us
+             << "| trig_freq_mhz:" << trig_freq_mhz
+             << "| nr_of_triggers:" << extrapars.nTriggers;
+  }
+  // Bias
+  if (item == __ALL) {
+    if (getBiasVoltage() > 0) {
+
+      spidrcontrol->setBiasSupplyEna(true);
+
+      if (spidrcontrol->setBiasVoltage(int(getBiasVoltage()))) {
+        qDebug() << "[CONF]\tSetting bias voltage to: " << getBiasVoltage()
+                 << "(V)";
+      } else {
+        qDebug() << "[ERROR]\tError setting internal bias voltage";
+      }
+    } else {
+      spidrcontrol->setBiasSupplyEna(false);
     }
-
-    // Packet size reports NOT IMPLEMENTED in the Leon software
-    //if( item == __ALL || item == __maxPacketSize ) spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
-
-    // Write OMR ... i shouldn't call this here
-    //_spidrcontrol->writeOmr( 0 );
-
-    // Trigger config
-    int trig_mode      = getTriggerMode();     // Auto-trigger mode = 4
-    int trig_length_us = getTriggerLength_64();  // This time shouldn't be longer than the period defined by trig_freq_hz
-
-    //int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
-    int trig_freq_mhz   = getTriggerFreq_mHz();   // Make the period double the trig_len
-    //int trig_freq_hz   = (int) ( 1. / (1.1*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
-
-    //int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
-
-
-
-    if( item == __ALL || item == __nTriggers ) {
-
-        spidrcontrol->setShutterTriggerConfig( SHUTTERMODE_AUTO,
-                                               trig_length_us,
-                                               trig_freq_mhz,
-                                               extrapars.nTriggers );
-
-        qDebug() << "[CONF] id:" << deviceIndex
-                 << "| trig_mode:" << trig_mode
-                 << "| trig_length_us:" << trig_length_us
-                 << "| trig_freq_mhz:" <<  trig_freq_mhz
-                 << "| nr_of_triggers:" << extrapars.nTriggers;
-    }
-    // Bias
-    if( item == __ALL ) {
-        if ( getBiasVoltage() > 0 ) {
-
-            spidrcontrol->setBiasSupplyEna( true );
-
-            if ( spidrcontrol->setBiasVoltage(int(getBiasVoltage()))) {
-                qDebug() << "[CONF]\tSetting bias voltage to: " << getBiasVoltage() << "(V)";
-            } else {
-                qDebug() << "[ERROR]\tError setting internal bias voltage";
-            }
-        } else {
-            spidrcontrol->setBiasSupplyEna( false );
-        }
-    }
+  }
 }
 
 void Mpx3Config::setColourMode(bool mode) {
 
-    if (mode != colourMode) {
-        // When changing mode data needs to be cleared if connected...
-        if (_mpx3gui->getConfig()->isConnected()) {
-            _mpx3gui->clear_data();
-        }
-
-        colourMode = mode;
-        emit colourModeChanged(mode);
-
-        //updateColourMode();
-        SendConfiguration( __colourMode );
+  if (mode != colourMode) {
+    // When changing mode data needs to be cleared if connected...
+    if (_mpx3gui->getConfig()->isConnected()) {
+      _mpx3gui->clear_data();
     }
 
+    colourMode = mode;
+    emit colourModeChanged(mode);
+
+    // updateColourMode();
+    SendConfiguration(__colourMode);
+  }
 }
 
-SpidrController * Mpx3Config::establishConnection(){
+SpidrController *Mpx3Config::establishConnection() {
 
-    // number of devices connected
-    _devicePresenceLayout.clear();
-    _nDevicesPresent = 0;
-    _activeChips.clear();
+  // number of devices connected
+  _devicePresenceLayout.clear();
+  _nDevicesPresent = 0;
+  _activeChips.clear();
 
-    // Addres from Json config file
-    quint32 ipaddr =  SpidrAddress.toIPv4Address();
-    //cout << SpidrAddress.toString().toStdString() << endl;
+  // Addres from Json config file
+  quint32 ipaddr = SpidrAddress.toIPv4Address();
+  // cout << SpidrAddress.toString().toStdString() << endl;
 
-    // If previously connected
-    if ( _controller ) delete _controller;
-    _controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
-    connected = _controller->isConnected();
+  // If previously connected
+  if (_controller)
+    delete _controller;
+  _controller =
+      new SpidrController(((ipaddr >> 24) & 0xFF), ((ipaddr >> 16) & 0xFF),
+                          ((ipaddr >> 8) & 0xFF), ((ipaddr >> 0) & 0xFF), port);
+  connected = _controller->isConnected();
 
-    // Connection failed
-    if ( ! connected ) return _controller;
-
-    // number of device that the system can support
-    _controller->getDeviceCount(&_nDevicesSupported);
-
-    //! Work around
-    //! If we attempt a connection while the system is already sending data
-    //! (this may happen if for instance the program died for whatever reason,
-    //!  or when it is close while a very long data taking has been lauched and
-    //! the system failed to stop the data taking).  If this happens we ought
-    //! to stop data taking, and give the system a bit of delay.
-    _controller->stopAutoTrigger();
-    Sleep( 50 );
-
-    // Response
-    _responseChips = QVector<detector_response>( _nDevicesSupported );
-
-    // Run a simple reponse check by reaching a DAC setting
-    for(int i = 0 ; i < _nDevicesSupported ; i++) {
-        QCoreApplication::processEvents();
-
-        int id = 0;
-        _controller->getDeviceId(i, &id);
-
-        QDebug dbg(QtInfoMsg);
-        dbg.noquote().nospace() << "[INFO]\tChip " << i << " - ";
-
-        // This is how it goes (page 57 Medipix3RS manual v1.4)
-        // Efuse [0:31]
-        // NU     : not used
-        // X[0:3] : Alphabet letter from A to M
-        // Y[0:3] : Number from 1 to 11
-        //
-        // NU[0:1]  MOD_VAL[0:7] MOD[0:1]     WAFER#[0:11]    X[0:3]  Y[0:3]
-        //   00       00000000      00       0000 0000 0000    0000    0000
-        // It comes in a 32 bits word
-        // A minimum of 5 nibbles is necessary
-        // The last three bring the correction and the not used part
-
-        if ( id != 0 ) {
-
-            QString idStr = "0x" + QString("%1").arg(id, 8, 16, QChar('0')).toUpper();
-            QString decodedId = "W"
-                + QString::number((id >> 8) & 0xfff)
-                + "_"
-                + ((uchar) (0x40 + ((id >> 4) & 0xf)))
-                + QString::number(id & 0xf);
-
-            dbg.noquote().nospace() << "ID: " << decodedId << " (" << idStr << ") - ";
-            _devicePresenceLayout.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
-            _deviceWaferIdMap.push_back( decodedId );
-            _nDevicesPresent++;
-
-            // If connected check response
-            checkChipResponse( i, __CONTROLLER_OK ); // this fills a vector
-
-            // And then I just consult that vector
-            if( detectorResponds(i) ) {
-                _activeChips.push_back(i);
-                dbg << "OK";
-            }
-
-        } else {
-            dbg << "NOT RESPONDING !";
-            _devicePresenceLayout.push_back( QPoint(0, 0) );
-            // If not connected tag it immediately
-            _responseChips[i] = __NOT_RESPONDING;
-        }
-
-        // the CR for the QDebug object is emmited when the object is destroyed
-    }
-
+  // Connection failed
+  if (!connected)
     return _controller;
-}
 
-void Mpx3Config::closeConnection()
-{
-    destroyController();
-    connected = false;
-}
+  // number of device that the system can support
+  _controller->getDeviceCount(&_nDevicesSupported);
 
-void Mpx3Config::destroyController()
-{
-    if ( _controller != nullptr ) {
-        delete _controller;
-        _controller = nullptr;
+  //! Work around
+  //! If we attempt a connection while the system is already sending data
+  //! (this may happen if for instance the program died for whatever reason,
+  //!  or when it is close while a very long data taking has been lauched and
+  //! the system failed to stop the data taking).  If this happens we ought
+  //! to stop data taking, and give the system a bit of delay.
+  _controller->stopAutoTrigger();
+  Sleep(50);
 
+  // Response
+  _responseChips = QVector<detector_response>(_nDevicesSupported);
+
+  // Run a simple reponse check by reaching a DAC setting
+  for (int i = 0; i < _nDevicesSupported; i++) {
+    QCoreApplication::processEvents();
+
+    int id = 0;
+    _controller->getDeviceId(i, &id);
+
+    QDebug dbg(QtInfoMsg);
+    dbg.noquote().nospace() << "[INFO]\tChip " << i << " - ";
+
+    // This is how it goes (page 57 Medipix3RS manual v1.4)
+    // Efuse [0:31]
+    // NU     : not used
+    // X[0:3] : Alphabet letter from A to M
+    // Y[0:3] : Number from 1 to 11
+    //
+    // NU[0:1]  MOD_VAL[0:7] MOD[0:1]     WAFER#[0:11]    X[0:3]  Y[0:3]
+    //   00       00000000      00       0000 0000 0000    0000    0000
+    // It comes in a 32 bits word
+    // A minimum of 5 nibbles is necessary
+    // The last three bring the correction and the not used part
+
+    if (id != 0) {
+
+      QString idStr = "0x" + QString("%1").arg(id, 8, 16, QChar('0')).toUpper();
+      QString decodedId = "W" + QString::number((id >> 8) & 0xfff) + "_" +
+                          ((uchar)(0x40 + ((id >> 4) & 0xf))) +
+                          QString::number(id & 0xf);
+
+      dbg.noquote().nospace() << "ID: " << decodedId << " (" << idStr << ") - ";
+      _devicePresenceLayout.push_back(
+          QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y));
+      _deviceWaferIdMap.push_back(decodedId);
+      _nDevicesPresent++;
+
+      // If connected check response
+      checkChipResponse(i, __CONTROLLER_OK); // this fills a vector
+
+      // And then I just consult that vector
+      if (detectorResponds(i)) {
+        _activeChips.push_back(i);
+        dbg << "OK";
+      }
+
+    } else {
+      dbg << "NOT RESPONDING !";
+      _devicePresenceLayout.push_back(QPoint(0, 0));
+      // If not connected tag it immediately
+      _responseChips[i] = __NOT_RESPONDING;
     }
+
+    // the CR for the QDebug object is emmited when the object is destroyed
+  }
+
+  return _controller;
+}
+
+void Mpx3Config::closeConnection() {
+  destroyController();
+  connected = false;
+}
+
+void Mpx3Config::destroyController() {
+  if (_controller != nullptr) {
+    delete _controller;
+    _controller = nullptr;
+  }
 }
 
 int Mpx3Config::getDacCount() {
-    if (_dacVals->length() > 0) {
-        return _dacVals[0].length();
-    }
-    //! Error otherwise. Most likely this function is called too early by a fool!
-    //! Deal with it elsewhere
-    return -1;
+  if (_dacVals->length() > 0) {
+    return _dacVals[0].length();
+  }
+  //! Error otherwise. Most likely this function is called too early by a fool!
+  //! Deal with it elsewhere
+  return -1;
 }
 
 int Mpx3Config::getDACValue(uint chip, int dacIndex) {
-    if (_dacVals->length() > 0) {
-        return _dacVals[dacIndex][int(chip)];
-    }
-    //! Error otherwise. Most likely this function is called too early by a fool!
-    //! Deal with it elsewhere
-    return -1;
+  if (_dacVals->length() > 0) {
+    return _dacVals[dacIndex][int(chip)];
+  }
+  //! Error otherwise. Most likely this function is called too early by a fool!
+  //! Deal with it elsewhere
+  return -1;
 }
 
 void Mpx3Config::setDACValue(uint chip, int dacIndex, int dac_value) {
-    if (_dacVals->length() > 0) {
-        _dacVals[dacIndex][int(chip)] = dac_value;
-    } else {
-        qDebug() << "[WARN]\tMpx3Config::setDACValue failed. _dacVals is empty - report this bug. chip =" << chip << " dac_index =" << dacIndex << " dac_value =" << dac_value;
-    }
+  if (_dacVals->length() > 0) {
+    _dacVals[dacIndex][int(chip)] = dac_value;
+  } else {
+    qDebug() << "[WARN]\tMpx3Config::setDACValue failed. _dacVals is empty - "
+                "report this bug. chip ="
+             << chip << " dac_index =" << dacIndex
+             << " dac_value =" << dac_value;
+  }
 }
 
-//! If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
-//! Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1.
-//! This member computes that transform using the detected status of the chips.
+//! If there is only one device connected, no matter what the devIndx is, the
+//! data is always at DataBuffer 0 Otherwise, for instance if only devices 0 and
+//! 2 are connected.  The data will be found in 0,1. This member computes that
+//! transform using the detected status of the chips.
 int Mpx3Config::getDataBufferId(int devIndx) {
 
-    // If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
-    if ( getNDevicesPresent() == 1 ) return 0;
+  // If there is only one device connected, no matter what the devIndx is, the
+  // data is always at DataBuffer 0
+  if (getNDevicesPresent() == 1)
+    return 0;
 
-    // Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1
-    int dataBufferId = -1;
-    for ( int i = 0 ; i < _nDevicesSupported ; i++ ) {
-        if ( _responseChips[i] != __NOT_RESPONDING ) dataBufferId++;
-        if ( devIndx == i ) return dataBufferId;
-    }
+  // Otherwise, for instance if only devices 0 and 2 are connected.  The data
+  // will be found in 0,1
+  int dataBufferId = -1;
+  for (int i = 0; i < _nDevicesSupported; i++) {
+    if (_responseChips[i] != __NOT_RESPONDING)
+      dataBufferId++;
+    if (devIndx == i)
+      return dataBufferId;
+  }
 
-    return -1;
+  return -1;
 }
 
-double Mpx3Config::getTargetEnergies(int threshold)
-{
-    if (threshold >= 0 && threshold < int(targetEnergies.size())) {
-        return targetEnergies[size_t(threshold)];
-    } else {
-        return -1.0;
-    }
+double Mpx3Config::getTargetEnergies(int threshold) {
+  if (threshold >= 0 && threshold < int(targetEnergies.size())) {
+    return targetEnergies[size_t(threshold)];
+  } else {
+    return -1.0;
+  }
 }
 
 void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 
-    if ( dr == __CONTROLLER_OK ) { // Check if the detector responds ok to the Controller
+  if (dr ==
+      __CONTROLLER_OK) { // Check if the detector responds ok to the Controller
 
-        // For instance try to read a DAC
-        int dac_val = 0;
+    // For instance try to read a DAC
+    int dac_val = 0;
 
-        if ( ! _controller->setDac( devIndx, MPX3RX_DAC_TABLE[0].code, dac_val ) ) {
-            //cout << "chip response failed : "  << controller->errorString();
-            _responseChips[devIndx] = __NOT_RESPONDING;
-        } else {
-            //cout << "Response OK";
-            _responseChips[devIndx] = __CONTROLLER_OK;
-        }
-
+    if (!_controller->setDac(devIndx, MPX3RX_DAC_TABLE[0].code, dac_val)) {
+      // cout << "chip response failed : "  << controller->errorString();
+      _responseChips[devIndx] = __NOT_RESPONDING;
+    } else {
+      // cout << "Response OK";
+      _responseChips[devIndx] = __CONTROLLER_OK;
     }
-
+  }
 }
 
 void Mpx3Config::setPolarityByString(QString itemS, int indx) {
 
-    bool polarityChange = Polarity;
+  bool polarityChange = Polarity;
 
-    if( itemS.contains("pos", Qt::CaseInsensitive) ) polarityChange = true; // positive, holes collection
-    else if ( itemS.contains("neg", Qt::CaseInsensitive) ) polarityChange = false; // negative
-    else polarityChange = true; //default
+  if (itemS.contains("pos", Qt::CaseInsensitive))
+    polarityChange = true; // positive, holes collection
+  else if (itemS.contains("neg", Qt::CaseInsensitive))
+    polarityChange = false; // negative
+  else
+    polarityChange = true; // default
 
-    // Now find the index to update the ComboBox
-    // if indx == -1 (default in this member) it means that we are coming from
-    //  a place where we don't know the index, like the json config.  In this case
-    //  find the right index.
+  // Now find the index to update the ComboBox
+  // if indx == -1 (default in this member) it means that we are coming from
+  //  a place where we don't know the index, like the json config.  In this case
+  //  find the right index.
 
-    if ( indx == -1 ) {
-        // See how the polarity list was registered
-        QComboBox * cb = _mpx3gui->getConfigMonitoring()->getUI()->polarityComboBox;
-        indx = cb->findText( itemS, Qt::MatchContains);
-    }
+  if (indx == -1) {
+    // See how the polarity list was registered
+    QComboBox *cb = _mpx3gui->getConfigMonitoring()->getUI()->polarityComboBox;
+    indx = cb->findText(itemS, Qt::MatchContains);
+  }
 
-    if ( polarityChange != Polarity ) {
-        Polarity = polarityChange;
-        emit polarityChanged(indx);
-        //updateGainMode();
-        cout << "Polarity : " << itemS.toStdString() << " | item : " << indx << endl;
-        SendConfiguration( __polarity );
-    }
-
+  if (polarityChange != Polarity) {
+    Polarity = polarityChange;
+    emit polarityChanged(indx);
+    // updateGainMode();
+    cout << "Polarity : " << itemS.toStdString() << " | item : " << indx
+         << endl;
+    SendConfiguration(__polarity);
+  }
 }
 
 void Mpx3Config::setPolarity(int newVal) {
 
-    // See how the polarity list was registered
-    QComboBox * cb = _mpx3gui->getConfigMonitoring()->getUI()->polarityComboBox;
-    // Pick the right item
-    QString itemS = cb->itemText(newVal);
-    // And set it by string
-    setPolarityByString( itemS, newVal );
-
+  // See how the polarity list was registered
+  QComboBox *cb = _mpx3gui->getConfigMonitoring()->getUI()->polarityComboBox;
+  // Pick the right item
+  QString itemS = cb->itemText(newVal);
+  // And set it by string
+  setPolarityByString(itemS, newVal);
 }
 
 bool Mpx3Config::detectorResponds(int devIndx) {
 
-    if( devIndx >= _nDevicesSupported || devIndx < 0 || _responseChips.size() == 0 || _nDevicesSupported == -1) {
-        qDebug() << "[ERROR]\tDevice index out of range: " << devIndx << " nDevicesSupported - " << _nDevicesSupported << " response chips size" << _responseChips.size();
-        return false;
-    }
-
-    if ( _responseChips[devIndx] > __NOT_RESPONDING ) return true;
-
+  if (devIndx >= _nDevicesSupported || devIndx < 0 ||
+      _responseChips.size() == 0 || _nDevicesSupported == -1) {
+    qDebug() << "[ERROR]\tDevice index out of range: " << devIndx
+             << " nDevicesSupported - " << _nDevicesSupported
+             << " response chips size" << _responseChips.size();
     return false;
+  }
+
+  if (_responseChips[devIndx] > __NOT_RESPONDING)
+    return true;
+
+  return false;
 }
 
-bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
+bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs) {
 
-    if (filename == "./config/mpx3.json") {
-        qDebug() << "[INFO]\tReading the configuration from the DEFAULT JSON file: " << filename;
-    } else {
-        qDebug() << "[INFO]\tReading the configuration from the JSON file: " << filename;
+  if (filename == "./config/mpx3.json") {
+    qDebug() << "[INFO]\tReading the configuration from the DEFAULT JSON file: "
+             << filename;
+  } else {
+    qDebug() << "[INFO]\tReading the configuration from the JSON file: "
+             << filename;
+  }
+
+  QFile loadFile(filename);
+  if (!loadFile.open(QIODevice::ReadOnly)) {
+    qDebug() << "Couldn't open configuration file:" << filename << "\n";
+    return false;
+  }
+  QByteArray binaryData = loadFile.readAll();
+  QJsonObject JSobjectParent = QJsonDocument::fromJson(binaryData).object();
+  QJsonObject::iterator it, itParent;
+  itParent = JSobjectParent.find("IPConfig");
+  if (itParent != JSobjectParent.end()) {
+    QJsonObject JSobject = itParent.value().toObject();
+    it = JSobject.find("SpidrControllerIp");
+    if (it != JSobject.end())
+      setIpAddress(it.value().toString());
+    it = JSobject.find("ZmqPubAddress");
+    if (it != JSobject.end())
+      setIpZmqPubAddress(it.value().toString());
+    it = JSobject.find("ZmqSubAddress");
+    if (it != JSobject.end())
+      setIpZmqSubAddress(it.value().toString());
+  }
+
+  itParent = JSobjectParent.find("IDELAYConfig");
+  if (itParent != JSobjectParent.end()) {
+    QJsonObject JSobject = itParent.value().toObject();
+    it = JSobject.find("chip_0");
+    if (it != JSobject.end()) {
+      _chipIDELAYS[0] = uint8_t(it.value().toInt());
+    }
+    it = JSobject.find("chip_1");
+    if (it != JSobject.end()) {
+      _chipIDELAYS[1] = uint8_t(it.value().toInt());
+    }
+    it = JSobject.find("chip_2");
+    if (it != JSobject.end()) {
+      _chipIDELAYS[2] = uint8_t(it.value().toInt());
+    }
+    it = JSobject.find("chip_3");
+    if (it != JSobject.end()) {
+      _chipIDELAYS[3] = uint8_t(it.value().toInt());
+    }
+  }
+
+  itParent = JSobjectParent.find("DetectorConfig");
+  if (itParent != JSobjectParent.end()) {
+
+    QJsonObject JSobject = itParent.value().toObject();
+
+    it = JSobject.find("OperationMode");
+    if (it != JSobject.end())
+      setOperationMode(it.value().toInt());
+
+    it = JSobject.find("PixelDepth");
+    if (it != JSobject.end())
+      setPixelDepth(it.value().toInt());
+
+    // The user set polarity with the keywords: "pos":positive, "neg":negative
+    // Here we convert it to what is needed by the internal functions
+    it = JSobject.find("Polarity");
+    if (it != JSobject.end()) {
+      QString itemS = it.value().toString();
+      setPolarityByString(itemS);
     }
 
-    QFile loadFile(filename);
-    if(!loadFile.open(QIODevice::ReadOnly)){
-        qDebug() << "Couldn't open configuration file:" << filename << "\n";
-        return false;
-    }
-    QByteArray binaryData = loadFile.readAll();
-    QJsonObject JSobjectParent = QJsonDocument::fromJson(binaryData).object();
-    QJsonObject::iterator it, itParent;
-    itParent = JSobjectParent.find("IPConfig");
-    if(itParent != JSobjectParent.end()){
-        QJsonObject JSobject = itParent.value().toObject();
-        it = JSobject.find("SpidrControllerIp");
-        if(it != JSobject.end())
-            setIpAddress(it.value().toString());
-        it = JSobject.find("ZmqPubAddress");
-        if(it != JSobject.end())
-            setIpZmqPubAddress(it.value().toString());
-        it = JSobject.find("ZmqSubAddress");
-        if(it != JSobject.end())
-            setIpZmqSubAddress(it.value().toString());
+    it = JSobject.find("CsmSpm");
+    if (it != JSobject.end())
+      setCsmSpm(it.value().toInt());
+
+    it = JSobject.find("GainMode");
+    if (it != JSobject.end())
+      setGainMode(it.value().toInt());
+
+    it = JSobject.find("MaxPacketSize");
+    if (it != JSobject.end())
+      setMaxPacketSize(it.value().toInt());
+
+    it = JSobject.find("TriggerMode");
+    if (it != JSobject.end())
+      setTriggerMode(it.value().toInt());
+
+    it = JSobject.find("TriggerLength_us");
+    if (it != JSobject.end())
+      setTriggerLength(it.value().toDouble() / 1000);
+
+    it = JSobject.find("TriggerDeadtime_us");
+    if (it != JSobject.end())
+      setTriggerDowntime(it.value().toDouble() / 1000);
+
+    it = JSobject.find("ContRWFreq");
+    if (it != JSobject.end())
+      setContRWFreq(it.value().toInt());
+
+    it = JSobject.find("nTriggers");
+    if (it != JSobject.end())
+      setNTriggers(it.value().toInt());
+
+    it = JSobject.find("ColourMode");
+    if (it != JSobject.end())
+      setColourMode(it.value().toBool());
+
+    it = JSobject.find("DecodeFrames");
+    if (it != JSobject.end())
+      setDecodeFrames(it.value().toBool());
+
+    it = JSobject.find("BothCounters");
+    if (it != JSobject.end())
+      setReadBothCounters(it.value().toBool());
+
+    it = JSobject.find("BiasVoltage");
+    if (it != JSobject.end())
+      setBiasVoltage(it.value().toDouble());
+
+    it = JSobject.find("LogLevel");
+    if (it != JSobject.end())
+      setLogLevel(it.value().toInt());
+  }
+
+  itParent = JSobjectParent.find("StepperConfig");
+  if (itParent != JSobjectParent.end()) {
+
+    QJsonObject JSobject = itParent.value().toObject();
+
+    it = JSobject.find("Acceleration");
+    // double t1 = it.value().toDouble();
+    if (it != JSobject.end())
+      setStepperConfigAcceleration(it.value().toDouble());
+
+    it = JSobject.find("Speed");
+    if (it != JSobject.end())
+      setStepperConfigSpeed(it.value().toDouble());
+
+    it = JSobject.find("UseCalib");
+    if (it != JSobject.end())
+      setStepperConfigUseCalib(it.value().toBool());
+
+    it = JSobject.find("CalibPos0");
+    if (it != JSobject.end())
+      setStepperConfigCalibPos0(it.value().toDouble());
+
+    it = JSobject.find("CalibAngle0");
+    if (it != JSobject.end())
+      setStepperConfigCalibAngle0(it.value().toDouble());
+
+    it = JSobject.find("CalibPos1");
+    if (it != JSobject.end())
+      setStepperConfigCalibPos1(it.value().toDouble());
+
+    it = JSobject.find("CalibAngle1");
+    if (it != JSobject.end())
+      setStepperConfigCalibAngle1(it.value().toDouble());
+  }
+
+  if (includeDacs) {
+    for (int i = 0; i < MPX3RX_DAC_COUNT; i++) {
+      _dacVals[i].clear();
     }
 
-    itParent = JSobjectParent.find("IDELAYConfig");
-    if(itParent != JSobjectParent.end()){
-        QJsonObject JSobject = itParent.value().toObject();
-        it = JSobject.find("chip_0");
-        if(it != JSobject.end()) {
-            _chipIDELAYS[0] = uint8_t (it.value().toInt());
-        }
-        it = JSobject.find("chip_1");
-        if(it != JSobject.end()) {
-            _chipIDELAYS[1] = uint8_t (it.value().toInt());
-        }
-        it = JSobject.find("chip_2");
-        if(it != JSobject.end()) {
-            _chipIDELAYS[2] = uint8_t (it.value().toInt());
-        }
-        it = JSobject.find("chip_3");
-        if(it != JSobject.end()) {
-            _chipIDELAYS[3] = uint8_t (it.value().toInt());
-        }
-    }
+    QJsonArray dacsArray;
+    itParent = JSobjectParent.find("DACs");
 
-    itParent = JSobjectParent.find("DetectorConfig");
     if (itParent != JSobjectParent.end()) {
-
-        QJsonObject JSobject = itParent.value().toObject();
-
-        it = JSobject.find("OperationMode");
-        if(it != JSobject.end())
-            setOperationMode(it.value().toInt());
-
-        it = JSobject.find("PixelDepth");
-        if(it != JSobject.end())
-            setPixelDepth(it.value().toInt());
-
-        // The user set polarity with the keywords: "pos":positive, "neg":negative
-        // Here we convert it to what is needed by the internal functions
-        it = JSobject.find("Polarity");
-        if(it != JSobject.end()) {
-            QString itemS = it.value().toString();
-            setPolarityByString( itemS );
+      dacsArray = itParent.value().toArray();
+      foreach (const QJsonValue &value, dacsArray) {
+        QJsonObject obj = value.toObject();
+        for (int i = 0; i < MPX3RX_DAC_COUNT; i++) {
+          _dacVals[i].push_back(obj[MPX3RX_DAC_TABLE[i].name].toInt());
+          // qDebug() << obj[MPX3RX_DAC_TABLE[i].name].toInt();
         }
+      }
+    }
+  }
 
-        it = JSobject.find("CsmSpm");
-        if(it != JSobject.end())
-            setCsmSpm(it.value().toInt());
+  itParent = JSobjectParent.find("EnergyCalibrationCoefficients");
+  if (itParent != JSobjectParent.end()) {
+    QJsonObject JSobject = itParent.value().toObject();
+    QJsonArray slopesArray, offsetsArray;
 
-        it = JSobject.find("GainMode");
-        if(it != JSobject.end())
-            setGainMode(it.value().toInt());
+    it = JSobject.find("Slopes");
+    itParent = JSobjectParent.find("Slopes");
 
-        it = JSobject.find("MaxPacketSize");
-        if(it != JSobject.end())
-            setMaxPacketSize(it.value().toInt());
+    if (it != JSobjectParent.end()) {
+      slopesArray = it.value().toArray();
+      QJsonObject obj = slopesArray.first().toObject();
 
-        it = JSobject.find("TriggerMode");
-        if(it != JSobject.end())
-            setTriggerMode(it.value().toInt());
+      for (int chip = 0; chip < slopesArray.size(); ++chip) {
+        QJsonObject s = slopesArray[chip].toObject();
 
-        it = JSobject.find("TriggerLength_us");
-        if(it != JSobject.end())
-            setTriggerLength(it.value().toDouble()/1000);
-
-        it = JSobject.find("TriggerDeadtime_us");
-        if(it != JSobject.end())
-            setTriggerDowntime(it.value().toDouble()/1000);
-
-        it = JSobject.find("ContRWFreq");
-        if(it != JSobject.end())
-            setContRWFreq(it.value().toInt());
-
-        it = JSobject.find("nTriggers");
-        if(it != JSobject.end())
-            setNTriggers(it.value().toInt());
-
-        it = JSobject.find("ColourMode");
-        if(it != JSobject.end())
-            setColourMode(it.value().toBool());
-
-        it = JSobject.find("DecodeFrames");
-        if(it != JSobject.end())
-            setDecodeFrames(it.value().toBool());
-
-        it = JSobject.find("BothCounters");
-        if(it != JSobject.end())
-            setReadBothCounters(it.value().toBool());
-
-        it = JSobject.find("BiasVoltage");
-        if(it != JSobject.end())
-            setBiasVoltage(it.value().toDouble());
-
-        it = JSobject.find("LogLevel");
-        if(it != JSobject.end())
-            setLogLevel(it.value().toInt());
-
+        for (int threshold = 0; threshold < s.size(); ++threshold) {
+          QJsonValue value = s.value(MPX3RX_DAC_TABLE[threshold].name);
+          _mpx3gui->getEnergyCalibrator()->setSlope(chip, threshold,
+                                                    value.toDouble());
+        }
+      }
     }
 
-    itParent = JSobjectParent.find("StepperConfig");
-    if ( itParent != JSobjectParent.end() ) {
+    it = JSobject.find("Offsets");
+    itParent = JSobjectParent.find("Offsets");
 
-        QJsonObject JSobject = itParent.value().toObject();
+    if (it != JSobjectParent.end()) {
+      slopesArray = it.value().toArray();
+      QJsonObject obj = slopesArray.first().toObject();
 
-        it = JSobject.find("Acceleration");
-        //double t1 = it.value().toDouble();
-        if(it != JSobject.end())
-            setStepperConfigAcceleration(it.value().toDouble());
+      for (int chip = 0; chip < slopesArray.size(); ++chip) {
+        QJsonObject s = slopesArray[chip].toObject();
 
-        it = JSobject.find("Speed");
-        if(it != JSobject.end())
-            setStepperConfigSpeed(it.value().toDouble());
-
-        it = JSobject.find("UseCalib");
-        if(it != JSobject.end())
-            setStepperConfigUseCalib(it.value().toBool());
-
-        it = JSobject.find("CalibPos0");
-        if(it != JSobject.end())
-            setStepperConfigCalibPos0(it.value().toDouble());
-
-        it = JSobject.find("CalibAngle0");
-        if(it != JSobject.end())
-            setStepperConfigCalibAngle0(it.value().toDouble());
-
-        it = JSobject.find("CalibPos1");
-        if(it != JSobject.end())
-            setStepperConfigCalibPos1(it.value().toDouble());
-
-        it = JSobject.find("CalibAngle1");
-        if(it != JSobject.end())
-            setStepperConfigCalibAngle1(it.value().toDouble());
-
-    }
-
-    if (includeDacs) {
-        for (int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-            _dacVals[i].clear();
+        for (int threshold = 0; threshold < s.size(); ++threshold) {
+          QJsonValue value = s.value(MPX3RX_DAC_TABLE[threshold].name);
+          _mpx3gui->getEnergyCalibrator()->setOffset(chip, threshold,
+                                                     value.toDouble());
         }
-
-        QJsonArray dacsArray;
-        itParent = JSobjectParent.find("DACs");
-
-        if (itParent != JSobjectParent.end()) {
-            dacsArray = itParent.value().toArray();
-            foreach (const QJsonValue &value, dacsArray) {
-                QJsonObject obj = value.toObject();
-                for (int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-                    _dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
-                    //qDebug() << obj[MPX3RX_DAC_TABLE[i].name].toInt();
-                }
-            }
-        }
+      }
     }
+  }
 
-    itParent = JSobjectParent.find("EnergyCalibrationCoefficients");
-    if ( itParent != JSobjectParent.end() ) {
-        QJsonObject JSobject = itParent.value().toObject();
-        QJsonArray slopesArray, offsetsArray;
-
-        it = JSobject.find("Slopes");
-        itParent = JSobjectParent.find("Slopes");
-
-        if (it != JSobjectParent.end()) {
-            slopesArray = it.value().toArray();
-            QJsonObject obj = slopesArray.first().toObject();
-
-            for (int chip = 0; chip < slopesArray.size(); ++chip) {
-                QJsonObject s = slopesArray[chip].toObject();
-
-                for (int threshold = 0; threshold < s.size(); ++threshold) {
-                    QJsonValue value = s.value(MPX3RX_DAC_TABLE[threshold].name);
-                    _mpx3gui->getEnergyCalibrator()->setSlope(chip, threshold, value.toDouble());
-                }
-            }
-        }
-
-        it = JSobject.find("Offsets");
-        itParent = JSobjectParent.find("Offsets");
-
-        if (it != JSobjectParent.end()) {
-            slopesArray = it.value().toArray();
-            QJsonObject obj = slopesArray.first().toObject();
-
-            for (int chip = 0; chip < slopesArray.size(); ++chip) {
-                QJsonObject s = slopesArray[chip].toObject();
-
-                for (int threshold = 0; threshold < s.size(); ++threshold) {
-                    QJsonValue value = s.value(MPX3RX_DAC_TABLE[threshold].name);
-                    _mpx3gui->getEnergyCalibrator()->setOffset(chip, threshold, value.toDouble());
-                }
-            }
-        }
+  itParent = JSobjectParent.find("TargetEnergies");
+  if (itParent != JSobjectParent.end()) {
+    QJsonObject JSobject = itParent.value().toObject();
+    for (int threshold = 0; threshold < JSobject.size(); ++threshold) {
+      it = JSobject.find(MPX3RX_DAC_TABLE[threshold].name);
+      double energy = it.value().toDouble();
+      if (JSobject.size() != 8) {
+        qDebug() << "[WARN]\tTarget energies size =" << JSobject.size()
+                 << " (it should be 8)";
+      }
+      if (energy < 0 || energy > 500) {
+        qDebug() << "[WARN]\tEnergy looks like it's out of range =" << energy
+                 << "| threshold =" << threshold;
+      }
+      setTargetEnergy(threshold, energy);
+      _mpx3gui->getEnergyConfiguration()->updateDACsFromConfig();
     }
+  }
 
-    itParent = JSobjectParent.find("TargetEnergies");
-    if ( itParent != JSobjectParent.end() ) {
-        QJsonObject JSobject = itParent.value().toObject();
-        for (int threshold = 0; threshold < JSobject.size(); ++threshold) {
-            it = JSobject.find(MPX3RX_DAC_TABLE[threshold].name);
-            double energy = it.value().toDouble();
-            if (JSobject.size() != 8) {
-                qDebug() << "[WARN]\tTarget energies size =" << JSobject.size() << " (it should be 8)";
-                 }
-            if (energy < 0 || energy > 500) {
-                qDebug() << "[WARN]\tEnergy looks like it's out of range =" << energy << "| threshold =" << threshold;
-            }
-            setTargetEnergy(threshold, energy);
-            _mpx3gui->getEnergyConfiguration()->updateDACsFromConfig();
-        }
-    }
+  QSettings settings(_mpx3gui->settingsFile, QSettings::NativeFormat);
+  QString path = filename.section("/", 0, -2);
+  if (path != "./config") {
+    settings.setValue("last_configuration_path", path);
+  }
 
-    QSettings settings(_mpx3gui->settingsFile, QSettings::NativeFormat);
-    QString path = filename.section("/", 0 ,-2);
-    if (path != "./config") {
-        settings.setValue("last_configuration_path", path);
-    }
-
-    return true;
+  return true;
 }
 
 void Mpx3Config::setIpAddress(QString ipn) {
 
-    // The ip and port will come in the string.
-    // 192.168.1.10:50000
+  // The ip and port will come in the string.
+  // 192.168.1.10:50000
 
-    QStringList list = ipn.split(':', QString::SkipEmptyParts);
-    // expect the ip address in the first part
-    QString ip = list.at( 0 );
+  QStringList list = ipn.split(':', QString::SkipEmptyParts);
+  // expect the ip address in the first part
+  QString ip = list.at(0);
 
-    uint16_t newPort;
-    if ( list.size() < 2 ) { // if the separator wasn't found
-        newPort = __default_port;
-    } else {
-        QString portS = list.at( 1 );
-        // check that is numeric
-        bool ok = false;
-        newPort = portS.toInt(&ok);
-        if ( ! ok ) newPort = __default_port;
-    }
+  uint16_t newPort;
+  if (list.size() < 2) { // if the separator wasn't found
+    newPort = __default_port;
+  } else {
+    QString portS = list.at(1);
+    // check that is numeric
+    bool ok = false;
+    newPort = portS.toInt(&ok);
+    if (!ok)
+      newPort = __default_port;
+  }
 
-    // Port, change only the value
-    port = newPort;
+  // Port, change only the value
+  port = newPort;
 
-    // Check that the parts are fine
-    //qDebug() << " parse --> " << ip << " : " << newPort;
+  // Check that the parts are fine
+  // qDebug() << " parse --> " << ip << " : " << newPort;
 
-    // IP
-    if ( ip != this->getIpAddress() ) {
-        SpidrAddress.setAddress(ip);
-        if(SpidrAddress.toString().length() == 0)
-            SpidrAddress.setAddress( __default_IP );
-        //establishConnection();
-    }
+  // IP
+  if (ip != this->getIpAddress()) {
+    SpidrAddress.setAddress(ip);
+    if (SpidrAddress.toString().length() == 0)
+      SpidrAddress.setAddress(__default_IP);
+    // establishConnection();
+  }
 
-    emit IpAdressChanged( this->getIpAddressPortString() );
-
+  emit IpAdressChanged(this->getIpAddressPortString());
 }
 
-void Mpx3Config::setIpZmqPubAddress(QString ip_and_port)
-{
-    if (ip_and_port == ""){
-        return;
-    }
+void Mpx3Config::setIpZmqPubAddress(QString ip_and_port) {
+  if (ip_and_port == "") {
+    return;
+  }
 
-    QString string = ip_and_port.toLower();
+  QString string = ip_and_port.toLower();
 
-    if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
-        Zmq_Pub_address = ip_and_port;
+  if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+    Zmq_Pub_address = ip_and_port;
 
-        emit IpZmqPubAddressChanged( this->getIpZmqPubAddressPortString() );
-    } else {
-        qDebug() << "[ERROR] ZMQ IP PUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
+    emit IpZmqPubAddressChanged(this->getIpZmqPubAddressPortString());
+  } else {
+    qDebug()
+        << "[ERROR] ZMQ IP PUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
                     \n You need to match the following Regex: '(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
-        emit IpZmqPubAddressChangedFailed( "Eg.: tcp://192.168.1.1:5555 - Invalid input" );
-    }
+    emit IpZmqPubAddressChangedFailed(
+        "Eg.: tcp://192.168.1.1:5555 - Invalid input");
+  }
 }
 
-void Mpx3Config::setIpZmqSubAddress(QString ip_and_port)
-{
-    if (ip_and_port == ""){
-        return;
-    }
+void Mpx3Config::setIpZmqSubAddress(QString ip_and_port) {
+  if (ip_and_port == "") {
+    return;
+  }
 
-    QString string = ip_and_port.toLower();
+  QString string = ip_and_port.toLower();
 
-    if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
-        Zmq_Sub_address = ip_and_port;
+  if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+    Zmq_Sub_address = ip_and_port;
 
-        emit IpZmqSubAddressChanged( this->getIpZmqSubAddressPortString() );
-    } else {
-        qDebug() << "[ERROR] ZMQ IP SUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
+    emit IpZmqSubAddressChanged(this->getIpZmqSubAddressPortString());
+  } else {
+    qDebug()
+        << "[ERROR] ZMQ IP SUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
                     \n You need to match the following Regex: '(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
-        emit IpZmqSubAddressChangedFailed( "Eg.: tcp://192.168.1.1:5555 - Invalid input" );
-    }
-
+    emit IpZmqSubAddressChangedFailed(
+        "Eg.: tcp://192.168.1.1:5555 - Invalid input");
+  }
 }
 
 QString Mpx3Config::getIpAddressPortString() {
-    QString fullS = this->getIpAddress();
-    fullS += QString(":%1").arg(this->getIpAddressPort());
-    return fullS;
+  QString fullS = this->getIpAddress();
+  fullS += QString(":%1").arg(this->getIpAddressPort());
+  return fullS;
 }
 
-QString Mpx3Config::getIpZmqPubAddressPortString()
-{
-    return Zmq_Pub_address;
-}
+QString Mpx3Config::getIpZmqPubAddressPortString() { return Zmq_Pub_address; }
 
-QString Mpx3Config::getIpZmqSubAddressPortString()
-{
-    return Zmq_Sub_address;
-}
+QString Mpx3Config::getIpZmqSubAddressPortString() { return Zmq_Sub_address; }
 
 bool Mpx3Config::toJsonFile(QString filename, bool includeDacs) {
-    QFile loadFile(filename);
-    if(!loadFile.open(QIODevice::WriteOnly)){
-        printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
-        return false;
-    }
+  QFile loadFile(filename);
+  if (!loadFile.open(QIODevice::WriteOnly)) {
+    printf("Couldn't open configuration file %s\n",
+           filename.toStdString().c_str());
+    return false;
+  }
 
-    QJsonDocument doc = buildConfigJSON(includeDacs);
-    qDebug() << "[INFO]\tDumping JSON to the terminal\n"
-             << QString(doc.toJson(QJsonDocument::JsonFormat::Indented));
-    loadFile.write(doc.toJson());
+  QJsonDocument doc = buildConfigJSON(includeDacs);
+  qDebug() << "[INFO]\tDumping JSON to the terminal\n"
+           << QString(doc.toJson(QJsonDocument::JsonFormat::Indented));
+  loadFile.write(doc.toJson());
 
-    return true;
+  return true;
 }
 
-void  Mpx3Config::setStepperConfigCalib(QStandardItem * item) {
+void Mpx3Config::setStepperConfigCalib(QStandardItem *item) {
 
-    int row = item->row();
-    int col = item->column();
+  int row = item->row();
+  int col = item->column();
 
-    // Check value integrity. Needs to convert to a double.
-    QVariant val = item->data(Qt::DisplayRole);
-    double dval = 0.0;
-    QString posS;
-    if ( val.canConvert<QString>() ) {
+  // Check value integrity. Needs to convert to a double.
+  QVariant val = item->data(Qt::DisplayRole);
+  double dval = 0.0;
+  QString posS;
+  if (val.canConvert<QString>()) {
 
-        posS = val.toString();
-        cout << posS.toStdString() << endl;
-        bool valok = false;
-        double dval = posS.toDouble( &valok );
-        cout << dval << endl;
+    posS = val.toString();
+    cout << posS.toStdString() << endl;
+    bool valok = false;
+    double dval = posS.toDouble(&valok);
+    cout << dval << endl;
 
-        if( ! valok ) return;
+    if (!valok)
+      return;
+  }
 
-    }
+  // If the value is ok check where it goes
 
-    // If the value is ok check where it goes
-
-    if        ( row == 0 && col == 0 ) {
-        setStepperConfigCalibPos0( dval );
-    } else if ( row == 0 && col == 1 ) {
-        setStepperConfigCalibAngle0( dval );
-    } else if ( row == 1 && col == 0 ) {
-        setStepperConfigCalibPos1( dval );
-    } else if ( row == 1 && col == 1 ) {
-        setStepperConfigCalibAngle1( dval );
-    }
-
+  if (row == 0 && col == 0) {
+    setStepperConfigCalibPos0(dval);
+  } else if (row == 0 && col == 1) {
+    setStepperConfigCalibAngle0(dval);
+  } else if (row == 1 && col == 0) {
+    setStepperConfigCalibPos1(dval);
+  } else if (row == 1 && col == 1) {
+    setStepperConfigCalibAngle1(dval);
+  }
 }
 
-void Mpx3Config::setInhibitShutter(bool turnOn)
-{
-    if(_inhibitShutterRegisterOffset == -1)
-    {
-        qDebug() << "First configure the HDMI pins for inhibit shutter please.";
-        QCstmConfigMonitoring::getInstance()->getUI()->inhibitShutterCheckBox->setChecked(false);
-        return;
-    }
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-    int val = 0;
-    spidrcontrol->getSpidrReg(0x0810,&val);
-    qDebug().noquote() << "[INFO]\tOld HDMI config : " << QString::number(val, 2);
+void Mpx3Config::setInhibitShutter(bool turnOn) {
+  if (_inhibitShutterRegisterOffset == -1) {
+    qDebug() << "First configure the HDMI pins for inhibit shutter please.";
+    QCstmConfigMonitoring::getInstance()
+        ->getUI()
+        ->inhibitShutterCheckBox->setChecked(false);
+    return;
+  }
+  SpidrController *spidrcontrol = _mpx3gui->GetSpidrController();
+  int val = 0;
+  spidrcontrol->getSpidrReg(0x0810, &val);
+  qDebug().noquote() << "[INFO]\tOld HDMI config : " << QString::number(val, 2);
 
-   // uint8_t inhibitShutterVal = (turnOn ? 0x8 : 0xF) << 4;// inhibitShutterOffset
-    uint8_t inhibitShutterVal = (turnOn ? 0x8 : 0xF) << _inhibitShutterRegisterOffset;// inhibitShutterOffset
-    uint32_t mask = 0;
-    int i = 0;
-    while(i<=20)
-    {
-        int temp = 0;
-        if(i == _inhibitShutterRegisterOffset)
-            temp = 0;
-        else
-            temp = 0xF;
+  // uint8_t inhibitShutterVal = (turnOn ? 0x8 : 0xF) << 4;//
+  // inhibitShutterOffset
+  uint8_t inhibitShutterVal =
+      (turnOn ? 0x8 : 0xF)
+      << _inhibitShutterRegisterOffset; // inhibitShutterOffset
+  uint32_t mask = 0;
+  int i = 0;
+  while (i <= 20) {
+    int temp = 0;
+    if (i == _inhibitShutterRegisterOffset)
+      temp = 0;
+    else
+      temp = 0xF;
 
-        mask |=  (temp << i);
-        i = i + 4;
-    }
+    mask |= (temp << i);
+    i = i + 4;
+  }
 
-    //val = (val & 0xFFFFFF0F) | inhibitShutterVal;
-   // val = (mask) | inhibitShutterVal;
-    _hdmiregisterValue &= (mask);
-    _hdmiregisterValue |= inhibitShutterVal;
-    spidrcontrol->setSpidrReg(0x0810, _hdmiregisterValue, true);
-    spidrcontrol->getSpidrReg(0x0810,&val);
-    qDebug().noquote() << "[INFO]\tNew HDMI config : " << QString::number(val, 2);
-    _isInhibitShutterSelected = turnOn;
-    emit inhibitShutterchanged(turnOn);
+  // val = (val & 0xFFFFFF0F) | inhibitShutterVal;
+  // val = (mask) | inhibitShutterVal;
+  _hdmiregisterValue &= (mask);
+  _hdmiregisterValue |= inhibitShutterVal;
+  spidrcontrol->setSpidrReg(0x0810, _hdmiregisterValue, true);
+  spidrcontrol->getSpidrReg(0x0810, &val);
+  qDebug().noquote() << "[INFO]\tNew HDMI config : " << QString::number(val, 2);
+  _isInhibitShutterSelected = turnOn;
+  emit inhibitShutterchanged(turnOn);
 }
 
 /*! @brief  This only updates the local config
  *          It is picked up in the energy calibration after
  */
-void Mpx3Config::setTargetEnergy(int threshold, double energy)
-{
-    if (threshold >= 0 && threshold < int(targetEnergies.size())) {
-        //qDebug() << "[DEBUG]\tConfig setTargetEnergy th =" << threshold << "| E =" << energy;
-        targetEnergies[size_t(threshold)] = energy;
-    } else {
-        qDebug() << "[ERROR]\tMpx3Config::setTargetEnergy --> threshold out of bounds th =" << threshold << "| targetEnergies size =" << targetEnergies.size();
-    }
+void Mpx3Config::setTargetEnergy(int threshold, double energy) {
+  if (threshold >= 0 && threshold < int(targetEnergies.size())) {
+    // qDebug() << "[DEBUG]\tConfig setTargetEnergy th =" << threshold << "| E
+    // =" << energy;
+    targetEnergies[size_t(threshold)] = energy;
+  } else {
+    qDebug() << "[ERROR]\tMpx3Config::setTargetEnergy --> threshold out of "
+                "bounds th ="
+             << threshold << "| targetEnergies size =" << targetEnergies.size();
+  }
 }

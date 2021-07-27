@@ -14,7 +14,7 @@ TARGET   = spidrflash
 # Create a console app
 QT -= gui
 QT += core network
-CONFIG += qt console warn_on exceptions debug_and_release
+CONFIG += c++1z qt console warn_on exceptions debug_and_release
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug

@@ -36,7 +36,6 @@ class QCstmGLVisualization;
 }
 
 class CorrectionItem;
-class QCstmCorrectionsDialog;
 class Mpx3Config;
 
 typedef struct { int ix, iy; } imgDirection;
@@ -158,8 +157,6 @@ public:
     void fromASCIIMatrixGetSizeAndLayers(QFile * file, int *x, int *y, int *framesPerLayer);
 
     void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
-    void applyCorrections(QCstmCorrectionsDialog * corrdiag);//<!Handles all corrections.  This function is blocking for the moment !
-    void applyOBCorrection();//!< Computes and applies the flat-field correction
     void dumpAllActivePixels(); //!< for testing purposes
     void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
     void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);

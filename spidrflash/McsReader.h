@@ -23,8 +23,8 @@ class McsReader
 
   ~McsReader();
 
-  byte* mem()     { return _mem; }
-  byte* page( int page_no );
+  unsigned char* mem()     { return _mem; }
+  unsigned char* page( int page_no );
   bool  pageIsEmpty( int page_no );
 
   int   maxAddr() { return _maxAddr; }
@@ -40,13 +40,13 @@ class McsReader
 
  private:
   void  interpretHexline( char *hexline,
-			  byte *pno_of_bytes,
+              unsigned char *pno_of_bytes,
 			  int  *paddr,
-			  byte *phextype,
-			  byte *databytes,
-			  byte *pchecksum );
+              unsigned char *phextype,
+              unsigned char *databytes,
+              unsigned char *pchecksum );
 
-  byte  str2Byt( char *str );
+  unsigned char  str2Byt( char *str );
 
   bool        _valid;
   int         _minAddr;
@@ -57,7 +57,7 @@ class McsReader
 
   // Pointer to storage for full FLASH or EEPROM memory image;
   // e.g. for the N25Q128 device: 16MBytes
-  byte *_mem;
+  unsigned char *_mem;
 };
 
 // ----------------------------------------------------------------------------

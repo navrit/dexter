@@ -23,7 +23,6 @@
 
 class DataTakingThread;
 class DataConsumerThread;
-class QCstmCorrectionsDialog;
 class StatsDialog;
 class ProfileDialog;
 
@@ -46,7 +45,6 @@ class QCstmGLVisualization : public QWidget
     int _estimatedETA;
 
     QMap<int, QString> layerNames;
-    QCstmCorrectionsDialog * _corrdialog = nullptr;
     StatsDialog * _statsdialog = nullptr;
     ProfileDialog * _profiledialog = nullptr;
 
@@ -223,8 +221,6 @@ private slots:
     void on_summingCheckbox_toggled(bool checked);
 
     void on_layerSelector_activated(const QString &arg1);
-
-    void on_correctionsDialogPushButton_clicked();
 
     void on_singleshotPushButton_clicked();
 
