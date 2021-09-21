@@ -52,7 +52,7 @@ public:
 
   // Parameters
   map<int, motorPars> getPars();
-  void ClearParsMap();
+//  void ClearParsMap();
   void setCurrPos(int motorid, long long int currPos) {
     _parsMap[motorid].currPos = currPos;
   }
@@ -80,7 +80,7 @@ public:
   long long int getPositionMax(int motorid);
 
   // Others
-  int stepper_simple(int motorid = 0); //<! Just a test routine
+//  int stepper_simple(int motorid = 0); //<! Just a test routine
   bool isStepperReady();
 
 private:

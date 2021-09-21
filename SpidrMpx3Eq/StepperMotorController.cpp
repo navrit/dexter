@@ -1,6 +1,7 @@
 // John Idarraga 2015
 
 #include "StepperMotorController.h"
+#include <QDebug>
 
 StepperMotorController::StepperMotorController() { _stepper = nullptr; }
 
@@ -14,7 +15,7 @@ int CCONV AttachHandler(CPhidgetHandle stepper, void *userptr) {
 
   CPhidget_getDeviceName(stepper, &name);
   CPhidget_getSerialNumber(stepper, &serialNo);
-  printf("%s %10d attached!\n", name, serialNo);
+  qDebug() << name << "attached, S/N = " << serialNo;
 
   return 0;
 }
@@ -26,7 +27,7 @@ int CCONV DetachHandler(CPhidgetHandle stepper, void *userptr) {
 
   CPhidget_getDeviceName(stepper, &name);
   CPhidget_getSerialNumber(stepper, &serialNo);
-  printf("%s %10d detached!\n", name, serialNo);
+  qDebug() << name << "detached, S/N = " << serialNo;
 
   return 0;
 }
@@ -35,7 +36,7 @@ int CCONV ErrorHandler(CPhidgetHandle stepper, void *userptr, int ErrorCode,
                        const char *Description) {
   (void)(stepper);
   (void)(userptr);
-  printf("Error handled. %d - %s\n", ErrorCode, Description);
+  qDebug() << "Error handled:" << ErrorCode << " | " << Description;
   return 0;
 }
 
@@ -61,14 +62,13 @@ int StepperMotorController::display_properties(CPhidgetStepperHandle phid) {
 
   CPhidgetStepper_getMotorCount(phid, &numMotors);
 
-  printf("       Hardware: %s | Serial Number: %d | Version: %d | number of "
-         "motors: %d\n",
-         ptr, serialNo, version, numMotors);
+  qDebug() << "[MOTOR] Hardware:" << ptr << " << | Serial Number:" << serialNo << "| Version:" << version << "| number of motors: " << numMotors;
 
   return 0;
 }
 
 bool StepperMotorController::arm_stepper() {
+  qDebug() << "[MOTOR] Starting to arm stepper motor";
 
   int result;
   const char *err;
@@ -76,6 +76,7 @@ bool StepperMotorController::arm_stepper() {
   // create the stepper object
   _stepper = nullptr;
   CPhidgetStepper_create(&_stepper);
+  qDebug() << "[MOTOR] Stepper motor object made";
 
   // Set the handlers to be run when the device is plugged in or opened from
   // software, unplugged or closed from software, or generates an error.
@@ -95,10 +96,10 @@ bool StepperMotorController::arm_stepper() {
   CPhidget_open(CPhidgetHandle(_stepper), -1);
 
   // get the program to wait for an stepper device to be attached
-  printf("[STEP] Waiting for Phidget to be attached....");
-  if ((result = CPhidget_waitForAttachment(CPhidgetHandle(_stepper), 10000))) {
+  qDebug() << "[MOTOR] Waiting for Phidget to be attached....";
+  if ((result = CPhidget_waitForAttachment(CPhidgetHandle(_stepper), 2000))) {
     CPhidget_getErrorDescription(result, &err);
-    printf("Problem waiting for attachment: %s\n", err);
+    qDebug() << "Problem waiting for attachment:" << err;
     return false;
   }
   // Display the properties of the attached device
@@ -137,7 +138,7 @@ bool StepperMotorController::arm_stepper() {
     // CurrentLimit
     double limit = 0.0;
     CPhidgetStepper_getCurrentLimit(_stepper, motorid, &limit);
-    cout << "limit : " << limit << endl;
+    qDebug() << "[MOTOR] limit : " << limit << endl;
     _parsMap[motorid].currentILimit = limit;
 
     CPhidgetStepper_setCurrentLimit(_stepper, motorid, limit);
@@ -146,7 +147,7 @@ bool StepperMotorController::arm_stepper() {
     long long int curr_pos = 0;
     if (CPhidgetStepper_getCurrentPosition(_stepper, motorid, &curr_pos) ==
         EPHIDGET_OK) {
-      printf("       Motor: %d > Current Position: %lld\n", motorid, curr_pos);
+      qDebug() << "[MOTOR] Motor: "<< motorid <<" > Current Position:" << curr_pos;
     }
     _parsMap[motorid].currPos = curr_pos;
     _parsMap[motorid].targetPos = _parsMap[motorid].currPos;
@@ -225,7 +226,7 @@ void StepperMotorController::SetCurrentILimit(int motorid, double val) {
 
 void StepperMotorController::disarm_stepper() {
 
-  printf("[STEP] Closing and deleting stepper handler.\n");
+  qDebug() << "[MOTOR] Closing and deleting stepper handler";
   CPhidget_close(CPhidgetHandle(_stepper));
   CPhidget_delete(CPhidgetHandle(_stepper));
   _stepper = nullptr;
@@ -237,116 +238,111 @@ bool StepperMotorController::isStepperReady() {
   return false;
 }
 
-int StepperMotorController::stepper_simple(int motorid) {
+//int StepperMotorController::stepper_simple(int motorid) {
 
-  int result;
-  __int64 curr_pos;
-  const char *err;
-  double minAccel, maxVel;
-  int stopped;
+//  int result;
+//  __int64 curr_pos;
+//  const char *err;
+//  double minAccel, maxVel;
+//  int stopped;
 
-  // Declare an stepper handle
-  CPhidgetStepperHandle stepper = nullptr;
+//  // Declare an stepper handle
+//  CPhidgetStepperHandle stepper = NULL;
 
-  // create the stepper object
-  CPhidgetStepper_create(&stepper);
+//  // create the stepper object
+//  CPhidgetStepper_create(&stepper);
 
-  // Set the handlers to be run when the device is plugged in or opened from
-  // software, unplugged or closed from software, or generates an error.
-  CPhidget_set_OnAttach_Handler(CPhidgetHandle(stepper), AttachHandler,
-                                nullptr);
-  CPhidget_set_OnDetach_Handler(CPhidgetHandle(stepper), DetachHandler,
-                                nullptr);
-  CPhidget_set_OnError_Handler(CPhidgetHandle(stepper), ErrorHandler, nullptr);
+//  // Set the handlers to be run when the device is plugged in or opened from
+//  // software, unplugged or closed from software, or generates an error.
+//  CPhidget_set_OnAttach_Handler(CPhidgetHandle(stepper), AttachHandler,
+//                                NULL);
+//  CPhidget_set_OnDetach_Handler(CPhidgetHandle(stepper), DetachHandler,
+//                                NULL);
+//  CPhidget_set_OnError_Handler(CPhidgetHandle(stepper), ErrorHandler, NULL);
 
-  // Registers a callback that will run when the motor position is changed.
-  // Requires the handle for the Phidget, the function that will be called, and
-  // an arbitrary pointer that will be supplied to the callback function (may be
-  // NULL).
-  CPhidgetStepper_set_OnPositionChange_Handler(stepper, PositionChangeHandler,
-                                               nullptr);
+//  // Registers a callback that will run when the motor position is changed.
+//  // Requires the handle for the Phidget, the function that will be called, and
+//  // an arbitrary pointer that will be supplied to the callback function (may be
+//  // NULL).
+//  CPhidgetStepper_set_OnPositionChange_Handler(stepper, PositionChangeHandler,
+//                                               NULL);
 
-  // open the device for connections
-  CPhidget_open(CPhidgetHandle(stepper), -1);
+//  // open the device for connections
+//  CPhidget_open(CPhidgetHandle(stepper), -1);
 
-  // get the program to wait for an stepper device to be attached
-  printf("Waiting for Phidget to be attached....");
-  if ((result = CPhidget_waitForAttachment(CPhidgetHandle(stepper), 10000))) {
-    CPhidget_getErrorDescription(result, &err);
-    printf("Problem waiting for attachment: %s\n", err);
-    return 0;
-  }
+//  // get the program to wait for an stepper device to be attached
+//  qDebug() << "[MOTOR] Waiting for Phidget to be attached....";
+//  if ((result = CPhidget_waitForAttachment(CPhidgetHandle(stepper), 2000))) {
+//    CPhidget_getErrorDescription(result, &err);
+//    qDebug() << "Problem waiting for attachment:" << err;
+//    return 0;
+//  }
 
-  // Display the properties of the attached device
-  display_properties(stepper);
+//  // Display the properties of the attached device
+//  display_properties(stepper);
 
-  // read event data
-  printf("Reading.....\n");
+//  // read event data
+//  qDebug() << "[MOTOR] Reading event data....";
 
-  // This example assumes stepper motor is attached to index 0
+//  // This example assumes stepper motor is attached to index 0
 
-  // Set up some initial acceleration and velocity values
-  CPhidgetStepper_getAccelerationMin(stepper, motorid, &minAccel);
-  CPhidgetStepper_setAcceleration(stepper, motorid, minAccel * 2);
-  CPhidgetStepper_getVelocityMax(stepper, motorid, &maxVel);
-  CPhidgetStepper_setVelocityLimit(stepper, motorid, maxVel / 2);
+//  // Set up some initial acceleration and velocity values
+//  CPhidgetStepper_getAccelerationMin(stepper, motorid, &minAccel);
+//  CPhidgetStepper_setAcceleration(stepper, motorid, minAccel * 2);
+//  CPhidgetStepper_getVelocityMax(stepper, motorid, &maxVel);
+//  CPhidgetStepper_setVelocityLimit(stepper, motorid, maxVel / 2);
 
-  // display current motor position if available
-  if (CPhidgetStepper_getCurrentPosition(stepper, motorid, &curr_pos) ==
-      EPHIDGET_OK)
-    printf("Motor: %d > Current Position: %lld\n", motorid, curr_pos);
+//  // display current motor position if available
+//  if (CPhidgetStepper_getCurrentPosition(stepper, motorid, &curr_pos) ==
+//      EPHIDGET_OK)
+//    qDebug() << "[MOTOR] Motor: "<< motorid <<" > Current Position:" << curr_pos;
 
-  // keep displaying stepper event data until user input is read
-  printf("Press any key to continue\n");
-  getchar();
+//  // change the motor position
+//  // we'll set it to a few random positions to move it around
 
-  // change the motor position
-  // we'll set it to a few random positions to move it around
+//  // Step 1: Position 0 - also engage stepper
+//  qDebug() << "Set to position 0 and engage.";
 
-  // Step 1: Position 0 - also engage stepper
-  printf("Set to position 0 and engage. Press any key to Continue\n");
-  getchar();
+//  CPhidgetStepper_setCurrentPosition(stepper, motorid, 0);
+//  CPhidgetStepper_setEngaged(stepper, motorid, 1);
 
-  CPhidgetStepper_setCurrentPosition(stepper, motorid, 0);
-  CPhidgetStepper_setEngaged(stepper, motorid, 1);
+//  // Step 2: Position 200
+//  printf("Move to position 200. Press any key to Continue\n");
+//  getchar();
 
-  // Step 2: Position 200
-  printf("Move to position 200. Press any key to Continue\n");
-  getchar();
+//  CPhidgetStepper_setTargetPosition(stepper, motorid, 200);
 
-  CPhidgetStepper_setTargetPosition(stepper, motorid, 200);
+//  // Step 3: Position -1200
+//  // printf("Move to position -1200. Press any key to Continue\n");
+//  // getchar();
+//  // CPhidgetStepper_setTargetPosition (stepper, motorid, -1200);
 
-  // Step 3: Position -1200
-  // printf("Move to position -1200. Press any key to Continue\n");
-  // getchar();
-  // CPhidgetStepper_setTargetPosition (stepper, motorid, -1200);
+//  // Step 4: Set to 0, wait for it to reach position, Disengage
+//  printf("Reseting to 0 and disengaging motor. Press any key to Continue\n");
+//  getchar();
 
-  // Step 4: Set to 0, wait for it to reach position, Disengage
-  printf("Reseting to 0 and disengaging motor. Press any key to Continue\n");
-  getchar();
+//  CPhidgetStepper_setTargetPosition(stepper, motorid, 0);
 
-  CPhidgetStepper_setTargetPosition(stepper, motorid, 0);
+//  stopped = PFALSE;
+//  while (!stopped) {
+//    CPhidgetStepper_getStopped(stepper, motorid, &stopped);
+//    // usleep(100000);
+//  }
 
-  stopped = PFALSE;
-  while (!stopped) {
-    CPhidgetStepper_getStopped(stepper, motorid, &stopped);
-    // usleep(100000);
-  }
+//  CPhidgetStepper_setEngaged(stepper, motorid, 0);
 
-  CPhidgetStepper_setEngaged(stepper, motorid, 0);
+//  printf("Press any key to end\n");
+//  getchar();
 
-  printf("Press any key to end\n");
-  getchar();
+//  // since user input has been read, this is a signal to terminate the program
+//  // so we will close the phidget and delete the object we created
+//  printf("Closing...\n");
+//  CPhidget_close(CPhidgetHandle(stepper));
+//  CPhidget_delete(CPhidgetHandle(stepper));
 
-  // since user input has been read, this is a signal to terminate the program
-  // so we will close the phidget and delete the object we created
-  printf("Closing...\n");
-  CPhidget_close(CPhidgetHandle(stepper));
-  CPhidget_delete(CPhidgetHandle(stepper));
-
-  // all done, exit
-  return 0;
-}
+//  // all done, exit
+//  return 0;
+//}
 
 void StepperMotorController::goToTarget(long long int targetPos, int motorid) {
 
@@ -364,7 +360,7 @@ bool StepperMotorController::SetStepAngleCalibration(
 
   // At least two points
   if (points.size() < 2) {
-    cout << "[STEP] two few points to calibrate" << endl;
+    qDebug() << "[STEP] two few points to calibrate";
     return false;
   }
 
@@ -399,6 +395,6 @@ double StepperMotorController::AngleToStep(int motorid, double angle) {
   return 0.0;
 }
 
-void StepperMotorController::ClearParsMap() {
-  //_parsMap[motorid].
-}
+//void StepperMotorController::ClearParsMap() {
+//  //_parsMap[motorid].
+//}

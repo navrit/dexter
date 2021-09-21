@@ -150,15 +150,22 @@ void QCstmStepperMotor::stepsModeGUI() {
 
 void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked) {
   // if the handler hasn't been initialized
+    qDebug() << "[MOTOR] on_stepperMotorCheckBox_toggled " << checked;
   if (!_stepper) {
-    QMessageBox::information(this, tr("Starting search for stepper motor"),
-                             tr("This should take less than 10s"));
+      qDebug() << "[MOTOR] Not connected yet, about to try to connect";
+    QMessageBox::information(this, tr("Trying to connect to a Phidgets stepper motor"),
+                             tr("This should be instant, try the StepperSimple example C program to test ."));
     _stepper = new StepperMotorController;
+    qDebug() << "[MOTOR] New StepperMotorController made";
+    qDebug() << "[MOTOR] About to set current limit to 0";
     setCurrentILimit(0.0);
-    sleep(500);
+    qDebug() << "[MOTOR] About to sleep for 500 ms";
+    usleep(500000);
+    qDebug() << "[MOTOR] About to set current limit to 1";
     setCurrentILimit(1.0);
   }
 
+  qDebug() << "[MOTOR] About to disconnect signals temporarily";
   // Make the table unsensitive with respect to the config for a moment.
   // This reconnects at the end of this function.
   // This line deals with all elements in the calibration table :)
@@ -171,12 +178,15 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked) {
              SLOT(setSpeed(double)));
   disconnect(ui->currentISpinBox, SIGNAL(valueChanged(double)), this,
              SLOT(setCurrentILimit(double)));
+  qDebug() << "[MOTOR] Done - disconnect signals temporarily";
 
   // the missing boolean (ui->stepperUseCalibCheckBox) is managed by an implicit
   // slot (on_stepperUseCalibCheckBox_toggled)
 
+  qDebug() << "[MOTOR] About to arm/disarm the motor, checked = " << checked;
   // On turn on --> setup, on turn off --> close
   if (checked) {
+      qDebug() << "[MOTOR] About to arm the stepper motor";
     if (!_stepper->arm_stepper()) {
       ui->stepperMotorCheckBox->setChecked(false);
 
@@ -186,6 +196,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked) {
 
       return; // problems attaching
     }
+    qDebug() << "[MOTOR] ARMED";
 
     // make stuff needed active
     activeInGUI();
