@@ -147,6 +147,8 @@ void QCstmCT::startCT()
         targetAngle = 0;
         _mpx3gui->getDataset()->clear();
 
+
+
         angleDelta = ui->spinBox_rotationAngle->value() /
                 ui->spinBox_numberOfProjections->value();
         numberOfProjections = ui->spinBox_numberOfProjections->value() + 1;
@@ -168,10 +170,9 @@ void QCstmCT::startCT()
         qDebug() << "[CT]\t--------------------------------------";
 
         setSpeed(__max_phidgets_motor_value);
-        resetMotor();
-        // These numbers work reliably
-        setSpeed(1500);
         setAcceleration(__max_phidgets_motor_value);
+        resetMotor();
+        setSpeed(1500);
 
         update_timeGUI();
         ui->CTPushButton->setText("Stop CT");
