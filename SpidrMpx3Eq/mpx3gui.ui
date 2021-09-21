@@ -436,14 +436,22 @@ adj_* and mask_*</string>
    </property>
   </action>
   <action name="actionDeveloper_mode">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/UI/toggle-off.svg</normaloff>
+     <normalon>:/icons/UI/toggle-on.svg</normalon>:/icons/UI/toggle-off.svg</iconset>
+   </property>
    <property name="text">
-    <string>Developer mode</string>
+    <string>Dev</string>
    </property>
    <property name="toolTip">
     <string>Show/hide various UI elements etc.</string>
    </property>
    <property name="shortcut">
     <string>F2</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionThreshold_Scan">

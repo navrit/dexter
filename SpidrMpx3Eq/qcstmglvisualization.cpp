@@ -372,12 +372,11 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
     ArmAndStartTimer();
     ConfigureGUIForDataTaking();
 
-    _timerId = this->startTimer(100); // Refresh readout information at ~60 Hz
+    _timerId = this->startTimer(100); // Refresh readout information at 10 Hz
 
   } else { // stop
     // By premature user signal !
-    _dataTakingThread
-        ->stop(); // this calls by SIGNAL/SLOT the dataTakingFinished
+    _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the dataTakingFinished
   }
 }
 

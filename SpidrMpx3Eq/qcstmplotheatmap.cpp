@@ -1,5 +1,6 @@
 #include "qcstmplotheatmap.h"
 #include <iostream>
+
 QCstmPlotHeatmap::QCstmPlotHeatmap(QWidget*& parent){
     this->setParent(parent);
     //aspectRatio = 1;

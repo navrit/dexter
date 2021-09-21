@@ -1001,7 +1001,7 @@ void Mpx3Config::setIpZmqPubAddress(QString ip_and_port) {
 
   QString string = ip_and_port.toLower();
 
-  if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+  if (string.contains(QRegularExpression("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
     Zmq_Pub_address = ip_and_port;
 
     emit IpZmqPubAddressChanged(this->getIpZmqPubAddressPortString());
@@ -1021,7 +1021,7 @@ void Mpx3Config::setIpZmqSubAddress(QString ip_and_port) {
 
   QString string = ip_and_port.toLower();
 
-  if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+  if (string.contains(QRegularExpression("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
     Zmq_Sub_address = ip_and_port;
 
     emit IpZmqSubAddressChanged(this->getIpZmqSubAddressPortString());

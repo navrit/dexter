@@ -61,6 +61,7 @@ function handle_mode_option() {
 function get_Qt_URL() {
   local OS=$(get_OS)
 
+  URL_Qt_5_15_2=https://download.qt.io/archive/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz
   URL_Qt_5_13_1=https://download.qt.io/archive/qt/5.13/5.13.1/single/qt-everywhere-src-5.13.1.tar.xz
   URL_Qt_5_7_1=https://download.qt.io/archive/qt/5.7/5.7.1/single/qt-everywhere-opensource-src-5.7.1.tar.xz
 
@@ -82,6 +83,7 @@ function get_Qt_URL() {
 function get_Qt_file_string() {
   local OS=$(get_OS)
 
+  Qt5_15_2=qt-everywhere-src-5.15.2.tar.xz
   Qt5_13_1=qt-everywhere-src-5.13.1.tar.xz
   Qt5_7_1=qt-everywhere-opensource-src-5.7.1.tar.xz
 
@@ -102,7 +104,7 @@ function get_Qt_file_string() {
 
 function install_fedora_packages() {
   local OS=$1
-  echo "[INFO] Only confirmed for Fedora 29 and 30"
+  echo "[INFO] Only confirmed for Fedora 29 and 30. Works for F33 and 34 but is overly aggressive."
   sudo dnf update
   sudo dnf install openblas-devel.x86_64 lapack.x86_64 gcc libusb-devel.x86_64 mesa-libGL-devel libtiff-devel.x86_64 dlib-devel.x86_64 boost-devel.x86_64 cppzmq-devel.x86_64 glib2-devel.x86_64 glibc-devel.x86_64 pulseaudio-libs-devel.x86_64 make gcc-c++ fontconfig-devel freetype-devel
 }
@@ -295,6 +297,10 @@ function configure_Qt_with_version() {
   version="$1"
   echo "Configuring for Qt $version"
 
+  # If using GCC 11+ to build, you need to modify two files https://bugreports.qt.io/browse/QTBUG-90395
+  # 1. qtbase/src/corelib/tools/qbytearraymatcher.h
+  # 2. qtbase/src/corelib/global/qendian.h
+  # By adding this include line to both files at the top: #include <limits>
   if [[ $version == "5_13_1" ]]; then
     ./configure --recheck-all -static \
                 -prefix ~/$Qt_static_build_folder-static-build \

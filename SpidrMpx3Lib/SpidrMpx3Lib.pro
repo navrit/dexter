@@ -19,7 +19,7 @@ contains(QT_MAJOR_VERSION,5) {
 }
 CONFIG += shared qt thread warn_on exceptions debug_and_release
 
-DEFINES += MY_LIB_EXPORT
+DEFINES += MY_LIB_EXPORT QT_DISABLE_DEPRECATED_BEFORE=0x050F00
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug

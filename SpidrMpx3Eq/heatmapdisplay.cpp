@@ -26,6 +26,7 @@ void HeatmapDisplay::setupSignalsAndSlots(){
     //connect(ui->heatmap, SIGNAL(size_changed(QPoint)), ui->NRuler, SLOT(set_max(QPoint)));
     //connect(ui->heatmap, SIGNAL(offset_changed(QPointF)), ui->WRuler, SLOT(set_offset(QPointF)));
     //connect(ui->heatmap, SIGNAL(zoom_changed(float)), ui->WRuler, SLOT(set_zoom(float)));
+
     connect(ui->heatmap, SIGNAL(bounds_changed(QRectF)), ui->WRuler, SLOT(on_bounds_changed(QRectF)));
     connect(ui->heatmap, SIGNAL(bounds_changed(QRectF)), ui->NRuler, SLOT(on_bounds_changed(QRectF)));
     connect(ui->heatmap, SIGNAL(size_changed(QPoint)), ui->NRuler, SLOT(set_cutoff(QPoint)));

@@ -9,6 +9,7 @@ TARGET = Dexter
 
 QT += core gui concurrent network opengl printsupport
 CONFIG   +=  c++1z debug_and_release
+#CONFIG -= import_plugins
 
 message("Explicitly enabling AVX2 instructions")
 QMAKE_CFLAGS          *= -mavx2

@@ -1,18 +1,16 @@
+#include <QThread>
 #include "qcstmct.h"
 #include "ui_qcstmct.h"
-
 #include "ui_mpx3gui.h"
-#include <QThread>
-
-
 #include "StepperMotorController.h"
+
+const static int __max_phidgets_motor_value = 32768;
 
 QCstmCT::QCstmCT(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::QCstmCT)
 {
     ui->setupUi(this);
-
 }
 
 QCstmCT::~QCstmCT()
@@ -169,11 +167,11 @@ void QCstmCT::startCT()
         qDebug() << "[CT]\tTake" << numberOfProjections << "frames";
         qDebug() << "[CT]\t--------------------------------------";
 
-        setSpeed(32768);
+        setSpeed(__max_phidgets_motor_value);
         resetMotor();
-        // These numbers happen to work reliably and are fast
-        setSpeed(32000);
-        setAcceleration(500000);
+        // These numbers work reliably
+        setSpeed(1500);
+        setAcceleration(__max_phidgets_motor_value);
 
         update_timeGUI();
         ui->CTPushButton->setText("Stop CT");

@@ -13,7 +13,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QObject>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStandardItem>
 
 #include "EnergyCalibrator.h"

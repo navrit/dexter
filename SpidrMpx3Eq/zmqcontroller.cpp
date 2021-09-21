@@ -2,7 +2,7 @@
 #include "QDebug"
 #include "QMessageBox"
 #include <QFileInfo>
-#include <QRegExp>
+#include <QRegularExpression>
 
 #include "mpx3config.h"
 #include "qcstmglvisualization.h"
